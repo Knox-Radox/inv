@@ -3,30 +3,42 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invitation } from "@/content/invitation";
 import { InvitationCard } from "./InvitationCard";
+import { coverGeometry } from "./coverGeometry";
 import styles from "./Envelope.module.css";
 
 /** Set once the opening has been seen on this device. */
 export const SEEN_KEY = "advika-sooraj-envelope-seen";
 
+const poly = (pts: readonly (readonly [number, number])[]) =>
+  `polygon(${pts.map(([x, y]) => `${x}% ${y}%`).join(",")})`;
+
 /**
- * The envelope — revision 4.
+ * The envelope — revision 5.
  *
- * Revisions 1–3 synthesised the paper and the wax with SVG lighting filters,
- * and the client's verdict was that it looked fake. It did. The reference's
- * quality comes from photography, not from code, so the cover is now a
- * photograph of a real sealed envelope with Advika and Sooraj's monogram
- * pressed into the real wax (`tools/cover.py`).
+ * Revision 4 made the cover a photograph, which answered the client's "it looks
+ * fake". It still framed that photograph as an *object*: a whole envelope, laid
+ * small on a backdrop, with the page's dead space around it. The reference is
+ * not an object on a page. It is a macro — cotton paper to all four edges, the
+ * flap's V running down to the wax, and nothing else in the frame. So the cover
+ * is now full bleed at every size, and the photograph is cropped two ways
+ * (`tools/cover.py`) so a phone and a desktop each get a frame made for them
+ * rather than one crop stretched across both.
  *
- * The photograph is cut down the middle of the seal into two doors. Tapping
- * the seal parts them — slowly at first, which reads as the wax giving way,
- * then wide — and the two halves of the seal go with the halves of the
- * envelope they are stuck to. Behind them is the card, which is the same
- * component as the page beneath, so when the cover fades nothing moves.
+ * The opening is the envelope's own. `tools/cover.py` measures where the flap's
+ * two creases run in the photograph and where they meet the wax, and emits it
+ * as `coverGeometry`; the flap is that polygon, cut along the creases that are
+ * already in the picture, turning on the hinge the real flap turns on. The wax
+ * shears along the line between the two creases — the flap keeps the segment
+ * above it, the envelope keeps the crescent below — and then the card rises out
+ * of the dark and the mouth dissolves into the page.
+ *
+ * There is no label and no visible skip: the whole cover is the target, which
+ * is what the reference does and what a sealed envelope does. The skip link is
+ * still in the document for a keyboard, it is just not decoration until then.
  *
  * Still not a gate: the invitation is server-rendered and first in the
- * document, the skip link is a real anchor that works with no script, `body`
- * is never `overflow:hidden`, every animation supplies only its *from* state,
- * and a nine-second failsafe resolves the sequence if it never reports done.
+ * document, the skip link is a real anchor that works with no script, `body` is
+ * never `overflow:hidden`, and a nine-second failsafe resolves the sequence.
  */
 export function Envelope({ cardSheet }: { cardSheet?: string }) {
   const { couple, day, copy } = invitation;
@@ -64,58 +76,86 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
 
   if (gone) return null;
 
+  const p = coverGeometry.portrait;
+  const l = coverGeometry.landscape;
+
+  // Both frames' geometry rides in as custom properties, and the stylesheet
+  // picks between them at the aspect-ratio breakpoint. It cannot be done the
+  // other way round: the numbers are generated from the photograph, and a
+  // media query cannot reach into a generated module.
+  const vars = {
+    "--p-ar": p.aspect,
+    "--p-hinge": `${p.hingeY}%`,
+    "--p-seal-y": `${p.sealY}%`,
+    "--p-seal-ry": `${p.sealRy}%`,
+    "--p-flap": poly(p.flap),
+    "--p-mouth": poly(p.mouth),
+    "--p-opened": poly(p.opened),
+    "--l-ar": l.aspect,
+    "--l-hinge": `${l.hingeY}%`,
+    "--l-seal-y": `${l.sealY}%`,
+    "--l-seal-ry": `${l.sealRy}%`,
+    "--l-flap": poly(l.flap),
+    "--l-mouth": poly(l.mouth),
+    "--l-opened": poly(l.opened),
+  } as React.CSSProperties;
+
   return (
     <div
       className={`envelope-overlay ${styles.overlay} ${opening ? styles.opening : ""}`}
+      style={vars}
       role="presentation"
       onAnimationEnd={(e) => {
         if (e.animationName.includes("overlay-out")) finish();
       }}
     >
-      <div className={styles.stage}>
-        <div className={styles.box}>
-          {/* What the doors part to reveal: the real card, again. */}
-          <div className={`${styles.reveal} ${opening ? "stitching composing" : ""}`}>
+      <div className={styles.frame}>
+        {/* The envelope, whole. Everything below the creases is this. */}
+        <picture>
+          <source media="(min-aspect-ratio: 1/1)" srcSet="/cover/envelope-landscape.webp" />
+          <img className={styles.photo} src="/cover/envelope-portrait.webp" alt="" />
+        </picture>
+
+        {/* Inside: the dark, then the card, then the mouth that shows them.
+            The card sits where the page's own card sits, so when the mouth
+            dissolves at the end there is nothing to move. */}
+        <div className={styles.mouth} aria-hidden="true">
+          <div className={`${styles.reveal} ${opening ? "stitching" : ""}`}>
             <InvitationCard replica sheetSrc={cardSheet} />
-            <div className={styles.scrim} aria-hidden="true" />
           </div>
+          {/* Over the card, not behind it: the card has to come *out* of the
+              dark, so the dark has to be on it while it is still inside. */}
+          <div className={styles.throat} />
+        </div>
 
-          {/* One photograph, cut down the middle of the seal. Each door holds a
-              full-width copy pinned to its own edge, so the two together are
-              seamless until they move. */}
-          <div className={`${styles.door} ${styles.doorLeft}`} aria-hidden="true">
-            <div className={styles.leaf}>
-              <div className={styles.photo} />
-            </div>
-          </div>
-          <div className={`${styles.door} ${styles.doorRight}`} aria-hidden="true">
-            <div className={styles.leaf}>
-              <div className={styles.photo} />
-            </div>
-          </div>
+        {/* The flap: the same photograph, cut along its own creases, turning on
+            its own hinge. Its share of the wax goes with it. */}
+        <div className={styles.flap} aria-hidden="true">
+          <picture>
+            <source media="(min-aspect-ratio: 1/1)" srcSet="/cover/envelope-landscape.webp" />
+            <img className={styles.photo} src="/cover/envelope-portrait.webp" alt="" />
+          </picture>
+          <span className={styles.flapShade} />
+        </div>
 
-          {/* Light moving across the paper: once every nine seconds at rest. */}
-          <div className={styles.gleam} aria-hidden="true" />
+        {/* Light moving across the paper: once every nine seconds at rest. */}
+        <div className={styles.gleam} aria-hidden="true" />
 
-          {/* The addressed face, over a soft wash so it stays legible on the
-              photograph. */}
-          <div className={styles.address}>
-            <p className={styles.names}>
-              {couple.first}
-              <span className={styles.amp}>{couple.conjunction}</span>
-              {couple.second}
-            </p>
-            <p className={styles.meta}>
-              <span className={styles.metaStrong}>{day.fullDateDisplay}</span>
-              <span>{`${day.venue.name}, ${day.venue.locality}`}</span>
-            </p>
-          </div>
-
-          <button type="button" className={styles.sealButton} onClick={open}>
-            <span className={styles.sealLabel}>{copy.controls.open}</span>
-          </button>
+        <div className={styles.type}>
+          <p className={styles.names}>
+            {couple.first}
+            <span className={styles.amp}>{couple.conjunction}</span>
+            {couple.second}
+          </p>
+          <p className={styles.date}>{day.fullDateDisplay}</p>
         </div>
       </div>
+
+      {/* The whole cover is the target. A button rather than a handler on the
+          overlay, so it is reachable and announced without a pointer. */}
+      <button type="button" className={styles.hit} onClick={open}>
+        <span className={styles.srOnly}>{copy.controls.open}</span>
+      </button>
 
       <a href="#invitation" className={styles.skip} onClick={finish}>
         {copy.controls.skip}

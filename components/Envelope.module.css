@@ -1,29 +1,56 @@
 /*
- * The opening — revision 4. Photographic, and continuously in motion.
+ * The opening — revision 5. Full bleed, and the envelope's own hinge.
  *
- *     0 -  120   the seal is pressed
- *   120 - 1500   the wax gives: the doors part a few pixels, slowly
- *   700 - 3400   the doors swing wide on their outer hinges
- *  1400 - 3000   the card rises out of the envelope's dark
- *  1900 - 3700   the dark lifts off it
- *  2600 - 5000   the jasmine is stitched on (Stitch.module.css, .stitching)
- *  3200 - 4900   the card composes (InvitationCard.module.css, .composing)
- *  4200 - 5300   light sweeps across the card
- *  5300 - 6200   the cover fades; the page beneath is the same component
+ *     0 -  240   the press: the frame takes the tap
+ *   180 -  680   the wax gives — the flap lifts three degrees on --ease-break,
+ *                which is deliberately slow off the mark
+ *   680 - 2460   the flap swings back and away, foreshortening on its hinge
+ *   850 - 2250   the card rises out of the envelope's dark
+ *   850 - 2350   the dark holds on the card, then lifts off it
+ *  1250 - 2400   the jasmine is stitched on (Stitch.module.css, .stitching)
+ *  1650 - 2650   the mouth opens out until it is the whole frame
+ *  2750 - 3600   the cover crossfades to the page beneath, which is the same
+ *                component in the same place, so nothing moves
  *
- * The seal is part of the photograph, so its two halves travel with the halves
- * of the envelope they are stuck to. Nothing here is linear; the door curve is
- * deliberately slow off the mark so the first movement reads as wax breaking
- * rather than as a door opening.
+ * The wax is part of the photograph, so the flap's share of it travels with the
+ * flap. Nothing here is linear.
+ *
+ * Every geometric number comes from tools/cover.py, which measures the creases
+ * on the photograph itself: --p-* for the portrait crop, --l-* for the
+ * landscape one, chosen below. Nothing in this file guesses where the paper is.
  */
 
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: var(--ground-deep);
+  background: var(--ground);
   overflow: hidden;
   display: none;
+
+  /* Portrait is the default; the landscape crop takes over once the viewport
+     is wider than it is tall. Two crops rather than one stretched across both:
+     a phone frame letterboxed onto a desktop is most of what made the old
+     cover look cheap on a laptop. */
+  --ar: var(--p-ar);
+  --hinge: var(--p-hinge);
+  --seal-y: var(--p-seal-y);
+  --seal-ry: var(--p-seal-ry);
+  --flap-cut: var(--p-flap);
+  --mouth-cut: var(--p-mouth);
+  --opened-cut: var(--p-opened);
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .overlay {
+    --ar: var(--l-ar);
+    --hinge: var(--l-hinge);
+    --seal-y: var(--l-seal-y);
+    --seal-ry: var(--l-seal-ry);
+    --flap-cut: var(--l-flap);
+    --mouth-cut: var(--l-mouth);
+    --opened-cut: var(--l-opened);
+  }
 }
 
 :global(.envelope-armed) .overlay {
@@ -34,229 +61,190 @@
   display: none !important;
 }
 
-.stage {
+/*
+ * The frame is the photograph at its own proportion, scaled until it covers the
+ * viewport and centred on it — object-fit: cover in a box of known aspect.
+ *
+ * It has to be done this way round rather than with object-fit, because the
+ * flap's clip path is a percentage of the *element*: with object-fit the
+ * browser crops inside the box, the picture slides against the box, and the cut
+ * stops following the crease. Sized like this the two can never disagree.
+ *
+ * lvh, not dvh or svh: dvh reflows the whole cover when a phone's URL bar
+ * moves, and svh leaves a strip uncovered when it hides. lvh always covers.
+ */
+.frame {
   position: absolute;
-  inset: 0;
-  overflow: auto;
-}
-
-.box {
-  position: relative;
-  width: 100%;
-  min-height: calc(100svh - 88px);
-  overflow: hidden;
-  perspective: 1600px;
-  background: var(--ground);
-}
-
-@media (min-width: 900px) {
-  .stage {
-    padding-top: clamp(32px, 5vh, 72px);
-  }
-  .box {
-    max-width: var(--card-width);
-    margin-inline: auto;
-    box-shadow:
-      0 1px 2px rgb(58 48 30 / 0.06),
-      0 26px 64px -22px rgb(58 48 30 / 0.36);
-  }
-}
-
-/* --- What is inside ------------------------------------------------------- */
-
-.reveal {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transform: scale(0.955);
-  transform-origin: 50% 42%;
-  will-change: transform, opacity;
-}
-
-.reveal > * {
-  min-height: 100%;
-}
-
-/* The dark inside the envelope. Opacity only — composited, never re-rastered. */
-.scrim {
-  position: absolute;
-  inset: 0;
-  background: rgb(38 32 22 / 0.4);
-  pointer-events: none;
-}
-
-/* --- The doors ------------------------------------------------------------ */
-
-.door {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  overflow: hidden;
-  will-change: transform;
-  backface-visibility: hidden;
-  /* A hinge at the outer edge, so the doors swing rather than slide. */
+  top: 50%;
+  left: 50%;
+  width: max(100vw, calc(100lvh * var(--ar)));
+  height: max(100lvh, calc(100vw / var(--ar)));
+  transform: translate(-50%, -50%);
+  perspective: 1500px;
+  perspective-origin: 50% var(--seal-y);
   transform-style: preserve-3d;
-}
-
-.doorLeft {
-  left: 0;
-  transform-origin: left center;
-}
-
-.doorRight {
-  right: 0;
-  transform-origin: right center;
-}
-
-/* Each door holds a full-width copy of the photograph pinned to its own edge,
-   so the two are seamless until they part. */
-.leaf {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 200%;
-}
-
-.doorLeft .leaf {
-  left: 0;
-}
-
-.doorRight .leaf {
-  right: 0;
+  background: var(--ground);
 }
 
 .photo {
   position: absolute;
   inset: 0;
-  background-image: url(/cover/envelope.webp);
-  background-size: cover;
-  background-position: center top;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
 }
 
-/* The inner edge of each door catches light as it turns away. */
-.doorLeft .leaf::after,
-.doorRight .leaf::after {
-  content: "";
+/* --- Inside the envelope -------------------------------------------------- */
+
+/*
+ * The mouth: everything the flap covers when it is shut. The card and the dark
+ * behind it are only ever visible through this, so the card appears from behind
+ * the envelope's front face exactly where a real card would.
+ */
+.mouth {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 26px;
+  inset: 0;
+  clip-path: var(--mouth-cut);
+  z-index: 1;
+}
+
+/* The dark inside the envelope, lying over the card as well as behind it, so
+   the card comes out of it rather than appearing in front of it. Opacity only
+   — a filter here re-rasters every frame. */
+.throat {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgb(28 23 16 / 0.92), rgb(38 32 22 / 0.62) 62%,
+      rgb(46 40 28 / 0.42) 100%);
+  opacity: 0;
+}
+
+/*
+ * The card, at the size and place the page's own card occupies, so the
+ * dissolve at the end has nothing to move. `min-height: 100lvh` matches the
+ * page's first screen.
+ */
+.reveal {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 1;
+  /* Not painted until the envelope is opening. The card is behind the flap and
+     inside the mouth's clip, so it was never visible at rest — but it is still
+     laid out, and when the fonts landed it resized behind the cover and Chrome
+     charged the reflow to CLS: 0.095 of a 0.1 budget, measured, for a shift no
+     guest could see. `visibility` takes it out of layout-shift accounting
+     without taking it out of the document. */
+  visibility: hidden;
+  /* The page's own ground. Once the mouth has opened out, this covers the
+     photograph completely and the frame already *is* the page, so the crossfade
+     at the end has nothing left to change. */
+  background: var(--ground-deep);
+}
+
+.reveal > * {
+  min-height: 100lvh;
+}
+
+@media (min-width: 900px) {
+  .reveal > * {
+    max-width: var(--card-width);
+    margin-inline: auto;
+  }
+}
+
+/* --- The flap ------------------------------------------------------------- */
+
+/*
+ * The flap is the same photograph, cut to the triangle above its own two
+ * creases plus its share of the wax, turning about the top of the frame.
+ *
+ * On the portrait crop that is the real hinge: cover.py crops so the envelope's
+ * top edge lands there, and coverGeometry reports it at -0.3%. On the landscape
+ * crop it cannot be — the envelope is not wide enough in the source to hold the
+ * hinge in frame and still fill it — and the generated --hinge comes out at
+ * -47%. Turning about that was tried and is wrong: an axis half a frame above
+ * the picture converts the rotation into mostly translation, and the flap does
+ * not open, it takes off. Measured, it left the viewport by 254px at 1.7s.
+ *
+ * So both turn about the frame's top edge, which is exactly right for portrait
+ * and the closest honest place for landscape.
+ */
+.flap {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  clip-path: var(--flap-cut);
+  transform-origin: 50% 0;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* The underside of a lifting flap goes into shadow before it turns away. */
+.flapShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(46 40 28 / 0.5), rgb(46 40 28 / 0) 62%);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 300ms ease-out;
 }
 
-.doorLeft .leaf::after {
-  right: 0;
-  background: linear-gradient(to right, transparent, rgb(58 48 30 / 0.22));
-}
+/* --- The type on the cover ------------------------------------------------ */
 
-.doorRight .leaf::after {
-  left: 0;
-  background: linear-gradient(to left, transparent, rgb(58 48 30 / 0.22));
-}
-
-.opening .doorLeft .leaf::after,
-.opening .doorRight .leaf::after {
-  opacity: 1;
-}
-
-/* --- The seal's hit target ------------------------------------------------ */
-
-/* The seal itself is in the photograph. This is the target over it: at 50% of
-   the frame's width and 60% of its height, where the wax sits. */
-.sealButton {
+/*
+ * Under the wax, on the paper, at the reference's own restraint: who, and when.
+ * No wash panel behind it — the crop is chosen so this lands on clean paper,
+ * and a panel on a photograph is the thing that reads as a website rather than
+ * as a letter. Everything else waits until the card.
+ */
+.type {
   position: absolute;
   left: 50%;
-  top: 46%;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-  width: clamp(96px, 26vw, 132px);
-  height: clamp(96px, 26vw, 132px);
-  display: grid;
-  place-items: end center;
-  padding-bottom: 0;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: transform 120ms var(--ease-press);
-}
-
-.sealButton:active {
-  transform: translate(-50%, calc(-50% + 2px)) scale(0.97);
-}
-
-.sealLabel {
-  transform: translateY(2.4em);
-  font-size: var(--text-body-s);
-  letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--ink) 82%, transparent);
-  white-space: nowrap;
-}
-
-.opening .sealButton {
-  pointer-events: none;
-}
-
-.opening .sealLabel {
-  animation: fade-out 260ms ease-out both;
-}
-
-/* --- The addressed face -------------------------------------------------- */
-
-.address {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  translate: -50% 0;
+  top: calc(var(--seal-y) + var(--seal-ry) + 6%);
   z-index: 3;
-  /* Starts well clear of the wax, which sits at 46% of the cover: an earlier
-     version began its wash across the seal and bleached it. */
-  top: 58%;
-  padding: 48px clamp(20px, 6vw, 48px) clamp(28px, 6vh, 56px);
+  width: min(88%, 30rem);
   text-align: center;
-  /* A wash of the paper's own colour, so the type is legible on a photograph
-     without a panel behind it. */
-  background: linear-gradient(
-    to bottom,
-    rgb(251 247 240 / 0) 0%,
-    rgb(251 247 240 / 0.55) 34%,
-    rgb(251 247 240 / 0.9) 62%,
-    rgb(251 247 240 / 0.97) 100%
-  );
+  pointer-events: none;
 }
 
 .names {
-  font-family: var(--font-script), "Snell Roundhand", cursive;
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
   color: var(--sage-deep);
-  font-size: clamp(2.5rem, 1.8rem + 3.4vw, 4rem);
-  line-height: 1.06;
-  letter-spacing: 0.01em;
+  /* Its own step rather than --text-script-xl: on the cover the names answer
+     the wax, which is a fixed fraction of the frame, so they are sized against
+     the frame and not against the card's measure. Capped at both ends of the
+     clamp so 3x Dynamic Type cannot drive them into the seal. */
+  font-size: clamp(min(3.4rem, 16vw), 2.4rem + 4.6vw, min(5.5rem, 18vw));
+  line-height: 1.02;
+  padding-right: 0.06em;
 }
 
-/* Script faces carry their own flourish; the conjunction only needs to step
-   back, not to be styled differently. */
+/* The script carries its own flourish; the conjunction only steps back. */
 .amp {
   display: block;
-  font-size: 0.44em;
-  line-height: 1.5;
-  opacity: 0.82;
-}
-
-.meta {
-  margin-top: clamp(12px, 2vh, 20px);
-  font-size: var(--text-body-s);
+  font-size: 0.4em;
   line-height: 1.6;
-  letter-spacing: 0.03em;
-  color: var(--ink);
-  display: grid;
-  gap: 2px;
+  opacity: 0.8;
 }
 
-.metaStrong {
-  font-weight: 500;
+.date {
+  margin-top: clamp(10px, 1.6vh, 18px);
+  font-family: var(--font-eaves-sc), Georgia, serif;
+  font-size: var(--text-body-s);
+  letter-spacing: 0.055em;
+  color: color-mix(in srgb, var(--ink) 88%, transparent);
+}
+
+@media (min-aspect-ratio: 1/1) {
+  /* The landscape crop puts the wax lower in a shorter frame; the type sits
+     tighter under it and stays off the bottom edge. */
+  .type {
+    top: calc(var(--seal-y) + var(--seal-ry) + 2%);
+    width: min(70%, 36rem);
+  }
 }
 
 /* --- Light on the paper --------------------------------------------------- */
@@ -267,13 +255,13 @@
   bottom: -20%;
   left: -60%;
   width: 55%;
-  z-index: 2;
+  z-index: 3;
   background: linear-gradient(
     100deg,
     rgb(255 255 255 / 0) 0%,
-    rgb(255 252 244 / 0.3) 45%,
-    rgb(255 252 244 / 0.5) 50%,
-    rgb(255 252 244 / 0.3) 55%,
+    rgb(255 252 244 / 0.28) 45%,
+    rgb(255 252 244 / 0.46) 50%,
+    rgb(255 252 244 / 0.28) 55%,
     rgb(255 255 255 / 0) 100%
   );
   mix-blend-mode: screen;
@@ -293,88 +281,195 @@
   }
 }
 
+/* --- The target ----------------------------------------------------------- */
+
+/* The whole cover opens it. There is no label: a sealed envelope does not
+   carry instructions, and the reference's does not either. */
+.hit {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hit:focus-visible {
+  outline: 2px solid var(--sage-deep);
+  outline-offset: -6px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.opening .hit {
+  pointer-events: none;
+}
+
+/*
+ * The skip link stays in the document and stays operable — it is the thing
+ * that makes this not a gate with no script — but it is not decoration on the
+ * cover. It appears where a skip link belongs: on focus.
+ */
 .skip {
   position: absolute;
-  right: clamp(16px, 5vw, 32px);
-  bottom: clamp(16px, 4vh, 32px);
+  left: 50%;
+  top: 12px;
+  translate: -50% -200%;
   z-index: 6;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 16px;
+  border-radius: 2px;
+  background: var(--ground);
+  box-shadow: 0 2px 10px rgb(58 48 30 / 0.24);
   font-size: var(--text-body-s);
   color: var(--ink);
-  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
   text-underline-offset: 4px;
+}
+
+.skip:focus-visible {
+  translate: -50% 0;
+  outline: 2px solid var(--sage-deep);
+  outline-offset: 2px;
 }
 
 /* --- The sequence --------------------------------------------------------- */
 
-.opening .doorLeft {
-  animation: door-left 3280ms var(--ease-break) 120ms both;
+.opening .frame {
+  animation: press 240ms var(--ease-press) both;
 }
 
-.opening .doorRight {
-  animation: door-right 3280ms var(--ease-break) 180ms both;
+.opening .flap {
+  animation: flap-open 2280ms var(--ease-break) 180ms both;
 }
 
-.opening .address,
-.opening .gleam {
-  animation: fade-out 480ms ease-out 220ms both;
+.opening .flapShade {
+  animation: shade-in 1500ms ease-out 300ms both;
+}
+
+/* The mouth opens out until it is the whole frame: same polygon, same point
+   count, lower boundary dropped past the foot of the picture. Without this the
+   card stayed shut inside the V until the very end and the crossfade had to do
+   all the work of becoming the page. */
+.opening .reveal {
+  visibility: visible;
+}
+
+.opening .mouth {
+  animation: mouth-open 1000ms var(--ease-flap) 1650ms both;
+}
+
+.opening .throat {
+  animation: throat 1500ms var(--ease-press) 850ms both;
 }
 
 .opening .reveal {
-  animation: reveal-in 1600ms var(--ease-rise) 1400ms both;
+  animation: card-rise 1400ms var(--ease-rise) 850ms both;
 }
 
-.opening .scrim {
-  animation: fade-out 1800ms var(--ease-rise) 1900ms both;
+.opening .type,
+.opening .gleam {
+  animation: fade-out 420ms ease-out both;
 }
 
 .opening {
-  animation: overlay-out 900ms ease-in 5300ms both;
+  animation: overlay-out 850ms ease-in 2750ms both;
 }
 
-/* Slow off the mark — the first movement is wax giving way, not a door
-   opening — then wide. */
-@keyframes door-left {
+/*
+ * Slow off the mark, then decisive: the first movement is wax giving way, not
+ * a flap opening. The last third is past 90 degrees, where the flap is facing
+ * away and only its edge is left, so it is taken out on opacity rather than
+ * held as a sliver.
+ */
+@keyframes flap-open {
   0% {
-    transform: translateX(0) rotateY(0deg);
+    transform: rotateX(0deg);
+    opacity: 1;
   }
-  18% {
-    transform: translateX(-1.2%) rotateY(-1deg);
+  22% {
+    transform: rotateX(-3deg);
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
   }
   100% {
-    transform: translateX(-102%) rotateY(-26deg);
+    transform: rotateX(-104deg);
+    opacity: 0;
   }
 }
 
-@keyframes door-right {
+@keyframes press {
   0% {
-    transform: translateX(0) rotateY(0deg);
+    transform: translate(-50%, -50%) scale(1);
   }
-  18% {
-    transform: translateX(1.2%) rotateY(1deg);
+  55% {
+    transform: translate(-50%, -50%) scale(0.994);
   }
   100% {
-    transform: translateX(102%) rotateY(26deg);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
-@keyframes reveal-in {
+@keyframes shade-in {
   from {
     opacity: 0;
-    transform: scale(0.955);
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Holds while the card is still inside, then lifts off it. Fading it straight
+   through left the card arriving onto bare paper: measured at 0.15 by 900ms. */
+@keyframes throat {
+  0% {
+    opacity: 1;
+  }
+  34% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Out of the dark, not up the screen: a short travel reads as a card leaving an
+   envelope, a long one reads as a panel sliding in. */
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(7%) scale(0.972);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 }
 
-.opening .reveal {
-  opacity: 1;
-  transform: none;
+@keyframes mouth-open {
+  from {
+    clip-path: var(--mouth-cut);
+  }
+  to {
+    clip-path: var(--opened-cut);
+  }
 }
 
 @keyframes overlay-out {
@@ -397,21 +492,24 @@
 
 /*
  * Reduced motion keeps the object and drops the choreography: the envelope is
- * there, sealed, and tapping crossfades to the card in 400ms.
+ * there, sealed, photographed, and tapping it crossfades to the card. Nothing
+ * turns, nothing rises, and the cover still looks like a sealed envelope rather
+ * than like a page with its animation switched off.
  */
 @media (prefers-reduced-motion: reduce) {
   .gleam,
-  .opening .doorLeft,
-  .opening .doorRight,
-  .opening .address,
-  .opening .gleam,
+  .opening .frame,
+  .opening .mouth,
+  .opening .flap,
+  .opening .flapShade,
+  .opening .throat,
   .opening .reveal,
-  .opening .scrim,
-  .opening .sealLabel {
+  .opening .type,
+  .opening .gleam {
     animation: none;
   }
 
   .opening {
-    animation: overlay-out 400ms ease-out both;
+    animation: overlay-out 420ms ease-out both;
   }
 }

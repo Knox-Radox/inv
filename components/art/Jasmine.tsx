@@ -19,7 +19,9 @@ import { Stitch } from "./Stitch";
  * rather than all at once.
  */
 export function Jasmine({ beat = 0, className }: { beat?: number; className?: string }) {
-  const STEM_MS = 1600;
+  // Shortened with the sequence in revision 5: the spray has to finish
+  // before the cover crossfades at 2.75s, and it starts at 1.25s.
+  const STEM_MS = 1100;
 
   // Where along the stem an element sits, as a fraction — used to delay it
   // until the needle has actually arrived there.

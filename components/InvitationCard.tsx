@@ -44,7 +44,7 @@ export function InvitationCard({
         />
 
         <div className={styles.content}>
-          <Jasmine className={styles.spray} />
+          <Jasmine className={styles.spray} beat={replica ? 1250 : 0} />
 
           <Names className={styles.names}>
             <span className={styles.name}>{couple.first}</span>

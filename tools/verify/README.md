@@ -43,3 +43,28 @@ Gotchas learned the hard way:
   filtering live again.
 - CSS-module keyframe names are hashed; the overlay's end detector matches
   `includes("overlay-out")` on the hashed name.
+
+## Added in revision 5
+
+```
+tools/verify/open.js   "$URL" /tmp/frames 430x932   # the opening, frame by frame, clock driven by hand
+tools/verify/probe.js  "$URL" 1440x900              # per-beat opacity/transform/rect of every layer
+tools/verify/clssrc.js "$URL"                       # which elements shift, when, and by how much
+tools/verify/fontdiff.js "$URL"                     # card geometry with fonts blocked vs loaded
+```
+
+`open.js` and `probe.js` pause every animation and set `currentTime` by hand
+rather than sleeping, so a screenshot's repaint cost cannot mistime a frame.
+They are how the two real bugs in the revision-5 opening were found: the flap
+turning about an axis half a frame above the picture (it left the viewport by
+254 px at 1.7 s instead of opening), and `--ease-rise` front-loading the throat
+so the envelope's dark was down to 0.15 by 900 ms and the card came up onto bare
+paper.
+
+`clssrc.js` prints each shift's source node, its before and after rects, and
+whether it is inside the envelope overlay or in the page. Revision 5's CLS
+regression — 0.0036 to 0.1032 — was a single element, and it was the card
+*replica* inside the sealed envelope resizing when the fonts landed, behind a
+cover no guest could see through. `fontdiff.js` is what ruled out the page's own
+card first, by showing every one of its blocks identical with fonts blocked and
+loaded.
