@@ -1,0 +1,107 @@
+import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { invitation } from "@/content/invitation";
+import { dataUri, korvaiSvg, latticeSvg, sealSvg } from "@/lib/sealSvg";
+
+/**
+ * The share card — docs/design-plan.md § The share card.
+ *
+ * The first thing most guests see, so it is designed rather than left to the
+ * build. It is the envelope **unopened**: the seal is intact and there is no
+ * jasmine, because the thread has not been stitched yet. Centred, matching the
+ * card — the left datum belongs to the editorial matter, none of which is here.
+ *
+ * Rendered through Satori, which supports neither CSS custom properties nor SVG
+ * filters. So the palette is inlined, the paper grain is absent by necessity —
+ * the lattice and the woven edge carry the texture instead — and the seal, the
+ * lattice and the korvai band are each embedded as a pre-composed data URI.
+ */
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+export const alt = invitation.share.imageAlt;
+
+/**
+ * Satori cannot read woff2, so the share card uses TTF subsets cut to just the
+ * glyphs it sets. They live outside /public because they are build-time assets
+ * and should never be served to a guest.
+ */
+async function font(file: string) {
+  return readFile(path.join(process.cwd(), "assets", "og-fonts", file));
+}
+
+export default async function Image() {
+  const { couple, day, share } = invitation;
+  const [gilda, garamond] = await Promise.all([
+    font("gilda-og.ttf"),
+    font("garamond-og.ttf"),
+  ]);
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#FBF7F0",
+          backgroundImage: `url("${dataUri(latticeSvg())}")`,
+          backgroundSize: "34px 34px",
+          position: "relative",
+          fontFamily: "EB Garamond",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={dataUri(sealSvg(132))} width={132} height={132} alt="" />
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginTop: 34,
+            fontFamily: "Gilda Display",
+            color: "#46543F",
+            lineHeight: 1.02,
+          }}
+        >
+          <div style={{ fontSize: 76 }}>{couple.first}</div>
+          <div style={{ fontSize: 32, lineHeight: 1.5 }}>{couple.conjunction}</div>
+          <div style={{ fontSize: 76 }}>{couple.second}</div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginTop: 36,
+            color: "#2E2A24",
+          }}
+        >
+          <div style={{ fontSize: 26, fontWeight: 500 }}>{day.fullDateDisplay}</div>
+          <div style={{ fontSize: 24, marginTop: 4 }}>
+            {`${day.venue.name}, ${day.venue.locality}`}
+          </div>
+        </div>
+
+        {/* The same woven edge as the card's, so the image reads as the card,
+            cropped — coarsened so it survives a 400px thumbnail. */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, display: "flex" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={dataUri(korvaiSvg(size.width))} width={size.width} height={14} alt="" />
+        </div>
+      </div>
+    ),
+    {
+      ...size,
+      fonts: [
+        { name: "Gilda Display", data: gilda, weight: 400, style: "normal" },
+        { name: "EB Garamond", data: garamond, weight: 400, style: "normal" },
+      ],
+    },
+  );
+}

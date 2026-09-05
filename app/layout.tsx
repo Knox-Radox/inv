@@ -32,10 +32,25 @@ const garamond = localFont({
 });
 
 export const metadata: Metadata = {
+  // 17 characters: truncates cleanly in a WhatsApp preview, which is where most
+  // of this audience will meet it first.
   title: invitation.share.title,
   description: invitation.share.description,
   // A family invitation should not be in a search index.
   robots: { index: false, follow: false },
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://advikaandsooraj.vercel.app",
+  ),
+  openGraph: {
+    type: "website",
+    title: invitation.share.title,
+    description: invitation.share.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: invitation.share.title,
+    description: invitation.share.description,
+  },
 };
 
 export const viewport: Viewport = {

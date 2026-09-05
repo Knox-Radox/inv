@@ -1,0 +1,59 @@
+/*
+ * Paper, not chrome. The page reserves this height at its foot, so the bar is
+ * persistent without ever covering content — which is the distinction the brief
+ * draws between "reachable one-handed" and "floating over the invitation".
+ */
+
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--bar-height);
+  padding: 0 clamp(16px, 5vw, 32px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: var(--ground);
+  border-top: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 4vw, 26px);
+  margin-left: auto;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Every target clears 44px, including on the shortest phone. */
+  min-height: 44px;
+  padding: 0 2px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-body-s);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ink) 30%, transparent);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 200ms ease-out;
+}
+
+.action:hover {
+  text-decoration-color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+.mark {
+  flex: none;
+  color: var(--ink);
+}

@@ -1,7 +1,7 @@
 .section {
   position: relative;
   margin-top: clamp(56px, 10vh, 104px);
-  padding-bottom: clamp(48px, 8vh, 88px);
+  padding-bottom: calc(clamp(48px, 8vh, 88px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
 }
 
 .note {

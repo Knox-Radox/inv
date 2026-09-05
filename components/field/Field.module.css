@@ -1,3 +1,4 @@
+/* The bar is reserved for at the foot of the page, never overlaid on it. */
 .field {
   background-color: var(--ground-deep);
   background-image: var(--lattice-image);
