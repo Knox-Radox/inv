@@ -25,13 +25,12 @@ was as much of the gap as the material was. Two faces, no third role.
 **The cover is a macro.** `tools/cover.py` crops into the photograph instead of
 compositing it onto a surface, and emits two frames — portrait for a phone,
 landscape for a desktop — plus `components/coverGeometry.ts`, which records
-where the flap's hinge, its two creases and the wax's break land in each.
+where the flap's hinge, its two creases and the wax land in each.
 
 **The opening is the envelope's own.** The flap is cut along the creases that
 are already in the photograph and turns on the hinge the real flap turns on. The
-wax shears between the two creases and each half goes with the paper it is stuck
-to. The card rises out of the dark, the mouth opens out until it is the whole
-frame, and the cover crossfades to the page beneath.
+whole seal goes up with it. The card rises out of the dark, the mouth opens out
+until it is the whole frame, and the cover crossfades to the page beneath.
 
 The whole cover is the target — no label, and the skip link appears on focus
 rather than sitting on the paper.
@@ -72,7 +71,10 @@ screenshot's repaint cost cannot mistime a frame):
    the card arrived onto bare paper. The dark holds now, and sits *over* the
    card as well as behind it, so the card comes out of it.
 3. The mouth's clip and the flap's clip were the same polygon, so their two
-   antialiased edges drew a hairline across the wax at rest. The mouth is inset.
+   antialiased edges drew a hairline across the wax at rest. That was fixed by
+   insetting the mouth, and the inset was later dropped again — see the second
+   pass below, where the replica became `visibility: hidden` and left nothing
+   behind the edge to bleed through.
 
 ## The CLS trap
 
@@ -89,7 +91,7 @@ visible — it was only ever laid out.
 
 Harness in `tools/verify/` (README there). Last run:
 
-- **LCP 1.71s, CLS 0.0165** on Slow 4G + 4x CPU.
+- **LCP 1.16s, CLS 0.0222** on Slow 4G + 4x CPU. Images 149 KB.
 - Frame pacing **p95 22.5 / 24.3 / 28.7 ms** at 1x / 4x / 6x CPU. Up from
   revision 4's 17.2 / 19.1 / 19.6 — the 3D flap and the clip-path animation cost
   that. It stays inside a two-frame budget; if it needs to come down, the
@@ -97,6 +99,53 @@ Harness in `tools/verify/` (README there). Last run:
 - Lockout 4/4. Audit clean 320–1920 including 400% reflow and 3x root type.
   Contrast AA on rendered pixels. Console clean in four states. **JS 142.6 KB
   gz** against a ~150 KB budget.
+
+## The second pass, and its dead ends
+
+Four things came back from the client against the first cut of revision 5, and
+the fixes are all in `tools/cover.py` and `components/Envelope.module.css`.
+
+**The wax looked translucent.** Measurably: mean (190,165,141) against the
+original's (168,133,106). The low-pass that erases the stock tree was reaching
+outside the disc and dragging the pale paper in. It is a normalised convolution
+now — weighted by the disc's own mask — and lands on (169,134,104).
+
+Two ways of restoring the surface failed and should not be retried. Tiling a
+high-passed patch of the *rim* across the face painted a damask repeat, because
+the rim's beading is structure, not grain. The disc's own 1px high-pass brought
+the tree's groove edges back with the speckle, because both live at the same
+frequency. What works is that high-pass attenuated by the local mid-frequency
+swing: full grain on flat wax, none along a former groove.
+
+**The seal must lift whole, not break.** It does. The consequence is the thing
+to know: the wax overhangs the flap's point onto the front of the envelope and
+the photograph has it printed there, so lifting the flap left a crescent of the
+old seal behind. `public/cover/seal-patch.webp` is that paper reconstructed —
+fitted as a plane from a ring of real paper, with the same grain and the same
+warm grade as everything else cut from the photograph. Anything cut from that
+photograph has to go through `warm()` or it will not match what it sits against;
+the patch skipped it once and read as a cool pale disc.
+
+The mouth is cut to the flap's *footprint*, the triangle down to where the
+creases meet, not to the flap's shape. Cutting it to the flap put a round bump
+of darkness below the V.
+
+**The end landed with the card scrolled down.** `.reveal` was `inset: 0` of a
+frame sized to *cover* the viewport, so on a 430px phone the card was laid out
+513px wide, sat at x=-41, and `min-height: 100lvh` re-centred it 37px down.
+`tools/verify/seam.js` measures the replica against the page's own card at
+scroll 0; every rect matches at both sizes now, and it is worth re-running after
+any change to the frame's sizing.
+
+**The names read as too small.** 91px on a phone and 156px on a desktop, and
+`--sage-deep` is the reference's own rgb(58,85,66).
+
+Checked and deliberately not changed: Parfumerie is **not** lighter than the
+reference's. Measured in a browser inside its own ink bounding box it is 6.70%
+against 6.52% (`tools/verify/ink.js`). An earlier comparison suggesting
+otherwise rendered ours in PIL against a browser screenshot of theirs and was
+not a like-for-like test. Do not add `-webkit-text-stroke` to the script — it
+would overshoot the benchmark.
 
 ## What remains
 
@@ -110,4 +159,11 @@ Harness in `tools/verify/` (README there). Last run:
   assumed. Settle it before this page goes anywhere beyond family.
 - **The countdown** still contributes ~0.009 CLS when it ticks. Small, and it
   predates revision 5, but it is the only shift left in the page.
+- **The wax cannot get much smaller on a desktop.** Its share of the frame is
+  `2R` over the crop's width, and the crop cannot be wider than the envelope is
+  in the source without showing the wall behind it. That pins it at 22.6% of the
+  frame, or ~325px on a 1440px screen. Going below that needs either a wider
+  photograph or extending the envelope's paper sideways the way `extend_paper`
+  already extends it downward — feasible, since the paper either side of the
+  creases is featureless, but it was not needed once the sharpness was fixed.
 - The JS budget has 7 KB of headroom. Anything new needs to earn it.
