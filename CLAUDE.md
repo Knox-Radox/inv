@@ -2,11 +2,14 @@
 
 ## Current state — read before anything else
 
-Revision 3 is in progress. The client rejected the first build against
-La Maison Dorée and their feedback supersedes parts of the brief below.
-**Start with `docs/handoff-revision-3.md`**, then `docs/design-plan.md`
-§ Revision 3. The verification harness is in `tools/verify/`; every number in
-the docs came from it and every change should go back through it.
+Revision 4 is in progress. The client rejected the first two builds against
+La Maison Dorée, both times as looking fake, and their feedback supersedes
+parts of the brief below. The cause both times was synthesising materials in
+code; the cover is now a photograph.
+
+**Start with `docs/handoff-revision-4.md`.** The verification harness is in
+`tools/verify/`; every number in the docs came from it and every change should
+go back through it.
 
 ## What this is
 
