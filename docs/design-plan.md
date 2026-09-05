@@ -1058,7 +1058,19 @@ a fill cannot be dashed. It is revealed instead by sweeping a thick stroked
 centreline through a `clipPath`. Same easing, same duration, same author-time
 length; only the mechanism differs.
 
-**4. The first map plate was scrapped, not patched.** It came out as a road
+**4. A hydration mismatch shipped, and the harness was why.** The pre-paint
+script adds `envelope-armed` to `<html>` before React hydrates, so the DOM
+carries a class the client render does not produce — the standard cost of a
+pre-paint script, fixed with `suppressHydrationWarning` on that one element.
+
+The bug is minor; missing it was not. Every check in phases 1–7 ran against a
+production build, where React reports this quietly, and the screenshot harness
+collected `pageerror` events while a hydration warning is a `console.error`. Two
+blind spots in the same place. The harness now fails on any console error, and
+runs against the dev server as well as the built site, in all four states
+(mobile and desktop, first visit and returning).
+
+**5. The first map plate was scrapped, not patched.** It came out as a road
 diagram with a pin: uniform strokes, no hatching, roads running off the copper.
 Per CLAUDE.md, it was rebuilt rather than tuned — roads became tapered outlines
 from the monogram's pen, land gained cut hatching, water became two banks with

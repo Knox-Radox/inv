@@ -65,7 +65,17 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${gilda.variable} ${garamond.variable}`}>
+    <html
+      lang="en"
+      className={`${gilda.variable} ${garamond.variable}`}
+      // The script below deliberately adds `envelope-armed` to this element
+      // before React hydrates, so the DOM carries a class the client render
+      // does not produce. That is the whole point of a pre-paint script, and
+      // it is the one place on this page where the server and client markup
+      // are expected to differ. Suppression applies to this element's own
+      // attributes only — it hides nothing about the tree beneath it.
+      suppressHydrationWarning
+    >
       <head>
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
