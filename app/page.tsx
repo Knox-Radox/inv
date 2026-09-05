@@ -2,7 +2,7 @@ import { Envelope } from "@/components/Envelope";
 import { Controls } from "@/components/Controls";
 import { MaterialDefs } from "@/components/material/MaterialDefs";
 import { Field } from "@/components/field/Field";
-import { Invitation } from "@/components/Invitation";
+import { Invitation, cardSheet } from "@/components/Invitation";
 
 /**
  * The invitation is first in the document and complete on the server. The
@@ -19,7 +19,7 @@ export default function Page() {
       <Invitation />
       <Field />
       <Controls />
-      <Envelope />
+      <Envelope cardSheet={cardSheet} />
     </>
   );
 }

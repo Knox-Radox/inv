@@ -81,7 +81,6 @@ export default function RootLayout({
             Measured: inlining the envelope sheet as a data URI did not move
             LCP and tripled the HTML, so they are preloaded instead. */}
         <link rel="preload" as="image" href="/paper/envelope-sheet.webp" fetchPriority="high" />
-        <link rel="preload" as="image" href="/paper/card-sheet.webp" />
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
          * it flash and a first-time guest never sees the invitation flash

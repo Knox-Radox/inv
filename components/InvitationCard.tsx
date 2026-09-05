@@ -16,7 +16,14 @@ import styles from "./InvitationCard.module.css";
  * the page beneath is pixel-identical and nothing appears to move. The replica
  * is hidden from assistive tech and inert.
  */
-export function InvitationCard({ replica = false }: { replica?: boolean }) {
+export function InvitationCard({
+  replica = false,
+  sheetSrc,
+}: {
+  replica?: boolean;
+  /** Inlined sheet, so the LCP element does not wait on a fetch. */
+  sheetSrc?: string;
+}) {
   const { couple, day, copy } = invitation;
   // The real card carries the page's one h1. The replica inside the envelope
   // is aria-hidden and inert, so it must not add a second.
@@ -30,7 +37,7 @@ export function InvitationCard({ replica = false }: { replica?: boolean }) {
       inert={replica ? "" : undefined}
     >
       <div className={styles.inner}>
-        <EmbossedPaper sheet="card" className={styles.paper} />
+        <EmbossedPaper sheet="card" src={sheetSrc} className={styles.paper} />
 
         <div className={styles.content}>
           <Jasmine className={styles.spray} />

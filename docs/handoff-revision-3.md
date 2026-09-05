@@ -96,14 +96,29 @@ the note), `Schedule`, `Place`, `Thread` unchanged in substance.
 Unsplash, mock-orange not jasmine — they read as white florals at the opacity
 used. `public/paper/*.webp` baked. All recorded in `ASSETS.md`.
 
-## Verified on the last build
+## Verified on the last build (commit after `5753c12`)
 
-Run the harness in `tools/verify/` (README there). Last results:
+Run the harness in `tools/verify/` (README there). Final results, all measured
+on the built site:
 
-- Frame pacing through the opening: 376–383 frames, p95 17.3 / 17.9 / 18.6 ms at 1× / 4× / 6× CPU.
-- Lockout 4/4. Console clean, dev and prod, four states. Contrast AA on rendered pixels.
-- JS 144 KB gz (budget 150). Photographs lazy below the fold.
-- LCP was 3.25 s after adding backgrounds; the sheets are now preloaded and the photographs lazy — **re-run `vitals.js` and confirm it is back under 2.5 s.** If not, the envelope sheet as LCP candidate is the thing to look at.
+- **Frame pacing through the opening:** 375–381 frames in six seconds, p95
+  19.0 / 18.3 / 21.8 ms at 1× / 4× / 6× CPU throttle. (Before the bake:
+  67–115 frames, p95 315–406 ms.)
+- **LCP 1.20 s, CLS 0.004** on Slow 4G with 4× CPU. LCP was 3.2 s for three
+  builds; the harness now prints the LCP element, and it was the *real card's
+  sheet under the overlay* — 295K px², larger than either door, queued behind
+  the JavaScript. Inlining the envelope sheet and deferring the backdrop photo
+  had both been tried on a guess and had done nothing. Inlining the **card**
+  sheet as a data URI (`components/Invitation.tsx`) fixed it in one step.
+  Lesson: `vitals.js` names the element now; do not guess again.
+- **Lockout 4/4. Console clean, dev and prod, four states. Audit clean
+  (320–1920, reflow, 2×/3× type, keyboard, one h1). Contrast AA on rendered
+  pixels. Lint 0, tsc clean.**
+- JS 144 KB gz (budget 150). HTML 55 KB gz — the inlined card sheet appears
+  twice (real card and replica). **Quick win:** move it to one CSS custom
+  property in the layout `<style>` and reference `var(--card-sheet)` from
+  both; saves ~11 KB gz.
+- Photographs lazy, `fetchpriority="low"`, below the first viewport.
 
 ## What remains — in priority order
 

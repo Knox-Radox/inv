@@ -1208,6 +1208,10 @@ skip is a real anchor that works with no script, `body` is never
 
 ## What was verified on this build
 
-Frame pacing above. Console clean in production across four states. Lockout
-4/4. Contrast, keyboard and reflow audits clean. Every one of these ran against
-the built site.
+Frame pacing above. LCP 1.20 s / CLS 0.004 on Slow 4G + 4× CPU, after the
+harness identified the real card's sheet — not the envelope's, not the
+backdrop — as the LCP element and it was inlined. Console clean in production
+across four states. Lockout 4/4. Contrast, keyboard and reflow audits clean.
+Every one of these ran against the built site. The full state, the remaining
+work in priority order, and the working method are in
+`docs/handoff-revision-3.md`.

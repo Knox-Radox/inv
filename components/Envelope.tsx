@@ -28,7 +28,7 @@ export const SEEN_KEY = "advika-sooraj-envelope-seen";
  * through CSS with no script, body is never given overflow:hidden, and a
  * nine-second failsafe resolves the sequence if it never reports done.
  */
-export function Envelope() {
+export function Envelope({ cardSheet }: { cardSheet?: string }) {
   const { couple, day, copy } = invitation;
   const [opening, setOpening] = useState(false);
   const [gone, setGone] = useState(false);
@@ -79,7 +79,7 @@ export function Envelope() {
         <div className={styles.box}>
           {/* What the doors part to reveal. The real card, again. */}
           <div className={`${styles.reveal} ${opening ? "stitching composing" : ""}`}>
-            <InvitationCard replica />
+            <InvitationCard replica sheetSrc={cardSheet} />
             {/* The dark of the inside of the envelope, lifting as the card
                 comes out. A scrim rather than a brightness filter, so the
                 card underneath is never re-rasterised mid-animation. */}
