@@ -1,0 +1,108 @@
+/* PHASE 1 SPECIMEN — temporary, replaced in phase 4. */
+
+.page {
+  min-height: 100svh;
+}
+
+.card {
+  background-color: var(--ground);
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+  padding: 56px 32px 64px;
+  text-align: center;
+}
+
+.field {
+  background-color: var(--ground-deep);
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+  padding: 56px var(--content-x) 96px;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+.tag {
+  font-size: var(--text-body-s);
+  color: color-mix(in srgb, var(--ink) 55%, var(--ground));
+  margin-bottom: 32px;
+}
+
+.displayXl {
+  font-size: var(--text-display-xl);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+.conjunction {
+  display: block;
+  font-size: 0.42em;
+  line-height: 1.4;
+}
+
+.displayM {
+  font-family: var(--font-gilda), Georgia, serif;
+  font-weight: 400;
+  color: var(--sage-deep);
+  font-size: var(--text-display-m);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin-top: 40px;
+}
+
+.displayL {
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.bodyL {
+  font-size: var(--text-body-l);
+  line-height: 1.62;
+  letter-spacing: 0.002em;
+  max-width: 34ch;
+  margin: 32px auto 0;
+}
+
+.body {
+  font-size: var(--text-body);
+  line-height: 1.7;
+  max-width: 62ch;
+  margin-top: 24px;
+}
+
+.bodyS {
+  font-size: var(--text-body-s);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  max-width: 46ch;
+}
+
+.venue {
+  font-size: var(--text-body);
+  margin-top: 32px;
+}
+
+.venueName {
+  font-weight: 500;
+}
+
+.numerals {
+  margin-top: 40px;
+}
+
+@media (min-width: 900px) {
+  .card,
+  .field {
+    max-width: var(--card-width);
+    margin-inline: auto;
+  }
+
+  .card {
+    padding-inline: 56px;
+  }
+
+  .field {
+    padding-inline: 56px;
+  }
+}

@@ -1,0 +1,195 @@
+/**
+ * The single source of truth for every fact and every guest-facing string.
+ *
+ * Nothing in this file may be duplicated elsewhere in the codebase. No literal
+ * date, time, address or copy string belongs in a component. Changing the
+ * reception time is a one-line edit here — see README.md.
+ *
+ * Instants are stored as fixed UTC strings. They are never derived by parsing a
+ * naive local date, so the countdown is simultaneously correct for a guest in
+ * Chennai and one in Dallas. 27 November 2026 falls after the first Sunday of
+ * November, so America/Chicago is CST (UTC-06:00) with no DST ambiguity.
+ */
+
+/** An ISO-8601 instant in UTC, e.g. "2026-11-27T14:30:00Z". */
+export type Instant = string;
+
+export interface Venue {
+  readonly name: string;
+  readonly street: string;
+  readonly city: string;
+  readonly stateCode: string;
+  readonly postalCode: string;
+  /** How the place is named in running copy, e.g. under the couple's names. */
+  readonly locality: string;
+}
+
+/**
+ * One moment within the day. Deliberately not called an "event": the two are
+ * moments in a single day at a single venue, and the venue lives on the day,
+ * not here, so it can never be printed twice.
+ */
+export interface Moment {
+  readonly id: "ceremony" | "reception";
+  readonly label: string;
+  readonly startsAt: Instant;
+  /** null where the moment has no announced end ("6:00 PM onwards"). */
+  readonly endsAt: Instant | null;
+  /** Printed start time, exactly as it should appear on the card. */
+  readonly startDisplay: string;
+  /** The qualifying line beneath the label, e.g. "until 10:30 AM". */
+  readonly qualifier: string;
+}
+
+export interface WeddingDay {
+  readonly timeZone: string;
+  /** UTC offset in effect on the day, for the .ics VTIMEZONE. */
+  readonly utcOffset: string;
+  readonly weekday: string;
+  readonly dateDisplay: string;
+  readonly fullDateDisplay: string;
+  readonly venue: Venue;
+  readonly moments: readonly [Moment, Moment];
+  /**
+   * The ceremony ends at 10:30 AM and the reception begins at 6:00 PM at the
+   * same venue. The design answers the shape of that gap by never breaking the
+   * thread. Whether a line of copy should also address it is the couple's to
+   * decide — see docs/open-questions.md #1. Until they supply one, none is
+   * invented and nothing renders here.
+   */
+  readonly gapNote: string | null;
+}
+
+export interface Countdown {
+  /** The instant the countdown runs to: the ceremony start. */
+  readonly target: Instant;
+  /** Midnight at the end of the wedding day, local. Ends the "Today" state. */
+  readonly dayEnds: Instant;
+}
+
+const venue: Venue = {
+  name: "Artistry Venue",
+  street: "9981 County Road 419",
+  city: "Anna",
+  stateCode: "TX",
+  postalCode: "75409",
+  locality: "Anna, Texas",
+};
+
+const day: WeddingDay = {
+  timeZone: "America/Chicago",
+  utcOffset: "-06:00",
+  weekday: "Friday",
+  dateDisplay: "27 November 2026",
+  fullDateDisplay: "Friday, 27 November 2026",
+  venue,
+  moments: [
+    {
+      id: "ceremony",
+      label: "Ceremony",
+      startsAt: "2026-11-27T14:30:00Z", // 8:30 AM CST
+      endsAt: "2026-11-27T16:30:00Z", // 10:30 AM CST
+      startDisplay: "8:30 AM",
+      qualifier: "until 10:30 AM",
+    },
+    {
+      id: "reception",
+      label: "Reception",
+      startsAt: "2026-11-28T00:00:00Z", // 6:00 PM CST
+      endsAt: null,
+      startDisplay: "6:00 PM",
+      qualifier: "onwards",
+    },
+  ],
+  gapNote: null,
+};
+
+const countdown: Countdown = {
+  target: day.moments[0].startsAt,
+  dayEnds: "2026-11-28T06:00:00Z", // midnight CST at the end of the day
+};
+
+export const invitation = {
+  couple: {
+    first: "Advika",
+    conjunction: "and",
+    second: "Sooraj",
+    /** Spelled out, never "A & S". The monogram is where the mark belongs. */
+    both: "Advika and Sooraj",
+  },
+
+  day,
+  countdown,
+
+  copy: {
+    /** The line that does the inviting. First person, plain, no exclamation. */
+    invitingLine: "Together with our families, we ask you to be with us as we marry.",
+
+    /** Said once. Never printed against each moment. */
+    sharedVenueLine: `Both at ${venue.name}.`,
+
+    closingNote: ["We are glad you are coming.", "See you in November."],
+
+    sectionTitles: {
+      schedule: "The day",
+      location: "The place",
+    },
+
+    countdown: {
+      /** State A: before the ceremony. */
+      until: "until the ceremony",
+      /** State B: on the day itself. */
+      todayLead: "Today",
+      /** State C: after the day, forever. The keepsake state. */
+      afterLead: "We were married",
+      afterTrail: `on ${day.fullDateDisplay}`,
+      /** Rendered on the server and with JS off. True in every era. */
+      staticLead: "8:30 in the morning",
+      staticTrail: day.fullDateDisplay,
+      units: { days: "days", hours: "hours", minutes: "minutes" },
+    },
+
+    controls: {
+      skip: "Skip to the invitation",
+      open: "Open the invitation",
+      replay: "Replay the opening",
+      calendar: "Add to calendar",
+      calendarDone: "Added",
+      sound: "Sound",
+      soundOn: "Turn sound off",
+      soundOff: "Turn sound on",
+    },
+
+    /** Alt text for the seal, which is the only meaningful illustration. */
+    sealAlt:
+      "A gold wax seal pressed with an interlocking A and S monogram, ringed by a fine woven border.",
+  },
+
+  share: {
+    title: "Advika and Sooraj",
+    description: `${day.fullDateDisplay}. ${venue.name}, ${venue.locality}.`,
+    imageAlt:
+      "A gold wax seal with an interlocking A and S monogram on ivory paper, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
+    themeColor: "#FBF7F0",
+  },
+
+  /**
+   * Background audio. null means no track is configured and the sound toggle is
+   * not rendered at all — see docs/open-questions.md #3. Supply a path under
+   * /public and a licence line in ASSETS.md to enable it.
+   */
+  audio: null as { readonly src: string; readonly title: string } | null,
+
+  /**
+   * The map plate is decorative only: no link, no embed, no deep link, no
+   * interactivity. `namedRoads` lists the roads lettered on the plate. Only
+   * County Road 419 is named, because it is the only road the address gives us.
+   * See docs/open-questions.md #2 before adding another.
+   */
+  map: {
+    namedRoads: ["County Road 419"] as const,
+    venueLabel: venue.name,
+  },
+} as const;
+
+export type Invitation = typeof invitation;

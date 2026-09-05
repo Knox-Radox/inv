@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Tokens — docs/design-plan.md § Palette
+   Seven values, unchanged from the brief's anchors. Every colour in this
+   codebase resolves to one of these; no component carries a hex literal.
+   ========================================================================== */
+
+:root {
+  --ground: #fbf7f0; /* warm ivory — the paper: envelope and card */
+  --ground-deep: #f0e9db; /* champagne — tissue lining, and the field */
+  --sage: #8a9a83; /* the botanical thread */
+  --sage-deep: #46543f; /* display type, section titles, focus rings */
+  --gold: #b08d57; /* wax, thread, korvai, hairlines. Never text. */
+  --gold-light: #cdae7a; /* sheen only. Never text. */
+  --ink: #2e2a24; /* warm bark brown — body copy, times, address */
+
+  /* Type scale — § Type. Hits the mobile size at exactly 390px and the
+     desktop size at exactly 1440px. The rem intercept dominates every step,
+     so doubling the base font size roughly doubles the rendered size. */
+  --text-display-xl: clamp(2.5rem, 1.664rem + 3.429vw, 4.75rem); /* 40 → 76 */
+  --text-display-m: clamp(2.125rem, 1.846rem + 1.143vw, 2.875rem); /* 34 → 46 */
+  --text-display-l: clamp(1.625rem, 1.346rem + 1.143vw, 2.375rem); /* 26 → 38 */
+  --text-body-l: clamp(1.1875rem, 1.118rem + 0.286vw, 1.375rem); /* 19 → 22 */
+  --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem); /* 17 → 18 */
+  --text-body-s: clamp(0.9375rem, 0.914rem + 0.095vw, 1rem); /* 15 → 16 */
+
+  /* Structure. One datum rule at every width: the thread sits 28px inside the
+     card's left edge, and content below starts 28px right of the thread. */
+  --card-width: 620px;
+  --card-inset: 28px;
+  --thread-x: var(--card-inset);
+  --content-x: calc(var(--card-inset) * 2);
+  --bar-height: 56px;
+
+  /* Easing — § Envelope choreography. Nothing linear, nothing bouncy. */
+  --ease-press: cubic-bezier(0.3, 0, 0.7, 1);
+  --ease-wax: cubic-bezier(0.16, 0.84, 0.44, 1);
+  --ease-flap: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --ease-rise: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-needle: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-press-in: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  color-scheme: light;
+}
+
+/* Expose the tokens to Tailwind utilities without duplicating the values.
+   `inline` makes a utility reference the custom property rather than baking
+   in the literal, so the tokens above stay the single definition. */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-ground-deep: var(--ground-deep);
+  --color-sage: var(--sage);
+  --color-sage-deep: var(--sage-deep);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-ink: var(--ink);
+
+  --font-display: var(--font-gilda);
+  --font-body: var(--font-garamond);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--ground-deep);
+    color: var(--ink);
+    font-family: var(--font-garamond), Georgia, "Times New Roman", serif;
+    font-size: var(--text-body);
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Deliberately no overflow clipping. docs/design-plan.md § The lockout,
+       guarantee 1: body must never be given `overflow: hidden`. Horizontal
+       overflow is prevented by correct layout and verified per breakpoint,
+       not hidden by clipping — clipping would mask the bug, not fix it. */
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  figure,
+  blockquote {
+    margin: 0;
+  }
+
+  ol,
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Display face. Used only at >= 1.5rem, never for body copy. */
+  h1,
+  h2,
+  .display {
+    font-family: var(--font-gilda), Georgia, serif;
+    font-weight: 400;
+    color: var(--sage-deep);
+  }
+
+  svg {
+    display: block;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  /* Visible keyboard focus everywhere. 7.6:1 on ivory, 6.7:1 on champagne —
+     both clear the 3:1 non-text requirement. Instant, never faded: a delay on
+     an accessibility affordance is a delay in an accessibility affordance. */
+  :focus-visible {
+    outline: 2px solid var(--sage-deep);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--gold-light) 45%, transparent);
+    color: var(--ink);
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — honoured globally, then re-designed per feature.
+   § Envelope choreography: the reduced version keeps the object and removes
+   the choreography. It must still look designed, never broken.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Kolam pulli lattice — § Illustration inventory, item 9.
+   The dot grid a sikku kolam is drawn around. Two CSS gradients, ~80 bytes,
+   in the offset (idukku pulli) arrangement rather than a square array.
+
+   Composed as custom properties rather than a standalone class, because a
+   ground surface paints an opaque colour and would cover a lattice sitting
+   behind it. Each surface therefore carries the lattice as its own background
+   layer over its own colour.
+
+   The lattice phase restarts at each paper edge. That is correct rather than a
+   compromise: two sheets of paper printed with the same lattice would not be in
+   phase either, and at the card's bottom edge the korvai band sits exactly on
+   the seam.
+
+   Purely decorative: where color-mix is unsupported the dots do not render and
+   nothing else is affected.
+   ========================================================================== */
+
+:root {
+  --lattice-dot: color-mix(in srgb, var(--sage) 5%, transparent);
+  --lattice-image:
+    radial-gradient(circle at 1px 1px, var(--lattice-dot) 1.2px, transparent 1.3px),
+    radial-gradient(circle at 1px 1px, var(--lattice-dot) 1.2px, transparent 1.3px);
+  --lattice-size: 34px 34px;
+  --lattice-position: 0 0, 17px 17px;
+}
+
+/* Applied to any surface that is a ground. Set background-color alongside. */
+.lattice {
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+  background-repeat: repeat;
+}
