@@ -3,7 +3,7 @@
 }
 
 .title {
-  font-size: var(--text-display-l);
+  font-size: var(--text-script-l);
   line-height: 1.15;
   letter-spacing: -0.005em;
 }

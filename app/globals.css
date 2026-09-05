@@ -33,6 +33,17 @@
   --text-display-xl: clamp(min(2.5rem, 12vw), 1.664rem + 3.429vw, min(4.75rem, 13vw)); /* 40 → 76 */
   --text-display-m: clamp(min(2.125rem, 10vw), 1.846rem + 1.143vw, min(2.875rem, 11vw)); /* 34 → 46 */
   --text-display-l: clamp(min(1.625rem, 8vw), 1.346rem + 1.143vw, min(2.375rem, 9.5vw)); /* 26 → 38 */
+  /* The script steps. Parfumerie sets about half the size of a roman at the
+     same font-size — next/font measures its size-adjust at 51.45% of Times
+     against Mrs Eaves' 94.89%, so 0.54 — and the display steps above were
+     calibrated for Gilda. Set at those sizes the names came out weaker than
+     the small-caps date beneath them and "The place" all but disappeared.
+     These are the same steps at 1.8x, with their own viewport caps rather than
+     a multiplier over the roman ones, so 400% reflow and 3x Dynamic Type stay
+     bounded. Only Parfumerie uses these. */
+  --text-script-xl: clamp(min(4.5rem, 21vw), 3rem + 6.2vw, min(8.5rem, 23vw)); /* 72 → 136 */
+  --text-script-l: clamp(min(2.9rem, 14vw), 2.4rem + 2.06vw, min(4.25rem, 17vw)); /* 46 → 68 */
+
   --text-body-l: clamp(1.1875rem, 1.118rem + 0.286vw, 1.375rem); /* 19 → 22 */
   --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem); /* 17 → 18 */
   --text-body-s: clamp(0.9375rem, 0.914rem + 0.095vw, 1rem); /* 15 → 16 */
@@ -71,9 +82,14 @@
   --color-gold-light: var(--gold-light);
   --color-ink: var(--ink);
 
-  --font-display: var(--font-gilda);
-  --font-body: var(--font-garamond);
-  --font-hand: var(--font-script);
+  /* The reference's two faces, and the only two here. Parfumerie carries every
+     display line; Mrs Eaves carries everything a guest has to read quickly.
+     There is no third role: the script that used to be --font-hand and the
+     display face that used to be --font-display were two different faces doing
+     one job, and collapsing them is what the reference does. */
+  --font-display: var(--font-parfumerie);
+  --font-body: var(--font-eaves);
+  --font-smallcaps: var(--font-eaves-sc);
 }
 
 /* ==========================================================================
@@ -96,7 +112,7 @@
     margin: 0;
     background-color: var(--ground-deep);
     color: var(--ink);
-    font-family: var(--font-garamond), Georgia, "Times New Roman", serif;
+    font-family: var(--font-eaves), Georgia, "Times New Roman", serif;
     font-size: var(--text-body);
     line-height: 1.7;
     font-variant-numeric: tabular-nums;
@@ -128,9 +144,13 @@
   h1,
   h2,
   .display {
-    font-family: var(--font-gilda), Georgia, serif;
+    font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
     font-weight: 400;
     color: var(--sage-deep);
+    /* A copperplate sets small for its point size and leans, so it needs less
+       leading and a hair of room on the right for the exit stroke. */
+    line-height: 1.08;
+    padding-right: 0.06em;
   }
 
   svg {

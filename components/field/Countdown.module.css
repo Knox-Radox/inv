@@ -41,7 +41,7 @@
 
 .figure {
   display: block;
-  font-family: var(--font-gilda), Georgia, serif;
+  font-family: var(--font-eaves), Georgia, serif;
   font-size: clamp(2.375rem, 1.9rem + 2.4vw, 3.75rem);
   line-height: 1;
   letter-spacing: -0.01em;
@@ -75,8 +75,8 @@
 }
 
 .lead {
-  font-family: var(--font-gilda), Georgia, serif;
-  font-size: var(--text-display-l);
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
+  font-size: var(--text-script-l);
   line-height: 1.15;
   color: var(--sage-deep);
 }

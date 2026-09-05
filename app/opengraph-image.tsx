@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { invitation } from "@/content/invitation";
-import { dataUri, korvaiSvg, latticeSvg, sealSvg } from "@/lib/sealSvg";
+import { dataUri, korvaiSvg, latticeSvg } from "@/lib/sealSvg";
 
 /**
  * The share card — docs/design-plan.md § The share card.
@@ -32,10 +32,16 @@ async function font(file: string) {
 
 export default async function Image() {
   const { couple, day, share } = invitation;
-  const [gilda, garamond] = await Promise.all([
-    font("gilda-og.ttf"),
-    font("garamond-og.ttf"),
+  const [parfumerie, eaves, eavesSmallCaps, seal] = await Promise.all([
+    font("parfumerie-og.ttf"),
+    font("eaves-og.ttf"),
+    font("eaves-sc-og.ttf"),
+    readFile(path.join(process.cwd(), "assets", "og", "seal.png")),
   ]);
+  // The photographed wax, cut by tools/cover.py from the same frame the cover
+  // uses. The drawn one this replaces was sage and synthetic, next to a page
+  // whose wax is bronze and real.
+  const sealUri = `data:image/png;base64,${seal.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -51,25 +57,25 @@ export default async function Image() {
           backgroundImage: `url("${dataUri(latticeSvg())}")`,
           backgroundSize: "34px 34px",
           position: "relative",
-          fontFamily: "EB Garamond",
+          fontFamily: "Mrs Eaves",
         }}
       >
-        <img src={dataUri(sealSvg(132))} width={132} height={132} alt="" />
+        <img src={sealUri} width={128} height={128} alt="" />
 
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginTop: 34,
-            fontFamily: "Gilda Display",
+            marginTop: 22,
+            fontFamily: "Parfumerie Script",
             color: "#46543F",
             lineHeight: 1.02,
           }}
         >
-          <div style={{ fontSize: 76 }}>{couple.first}</div>
-          <div style={{ fontSize: 32, lineHeight: 1.5 }}>{couple.conjunction}</div>
-          <div style={{ fontSize: 76 }}>{couple.second}</div>
+          <div style={{ fontSize: 112 }}>{couple.first}</div>
+          <div style={{ fontSize: 40, lineHeight: 1.5 }}>{couple.conjunction}</div>
+          <div style={{ fontSize: 112 }}>{couple.second}</div>
         </div>
 
         <div
@@ -77,11 +83,13 @@ export default async function Image() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginTop: 36,
+            marginTop: 24,
             color: "#2E2A24",
           }}
         >
-          <div style={{ fontSize: 26, fontWeight: 500 }}>{day.fullDateDisplay}</div>
+          <div style={{ fontSize: 28, fontFamily: "Mrs Eaves Small Caps", letterSpacing: 1.4 }}>
+            {day.fullDateDisplay}
+          </div>
           <div style={{ fontSize: 24, marginTop: 4 }}>
             {`${day.venue.name}, ${day.venue.locality}`}
           </div>
@@ -97,8 +105,9 @@ export default async function Image() {
     {
       ...size,
       fonts: [
-        { name: "Gilda Display", data: gilda, weight: 400, style: "normal" },
-        { name: "EB Garamond", data: garamond, weight: 400, style: "normal" },
+        { name: "Parfumerie Script", data: parfumerie, weight: 400, style: "normal" },
+        { name: "Mrs Eaves", data: eaves, weight: 400, style: "normal" },
+        { name: "Mrs Eaves Small Caps", data: eavesSmallCaps, weight: 400, style: "normal" },
       ],
     },
   );

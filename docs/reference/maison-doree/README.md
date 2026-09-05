@@ -32,14 +32,23 @@ things that make it work are worth writing down:
 
 ## What it actually uses
 
-**Type — both Adobe Fonts, licensed, not free.**
+**Type — both licensed desktop fonts, supplied by the client.**
 
 - **Parfumerie Script** — display: names at 60 px, section titles at 48 px.
 - **Mrs Eaves** — everything else, including its small-caps, petite-caps and
   lining-figure variants.
 
-We use Pinyon Script and EB Garamond, which are OFL and free. Parfumerie Script
-is the closer match to their display face if the couple ever wants to license it.
+**Done in revision 5.** Both are now the page's only two faces. The originals
+live in `assets/fonts/` — not `public/`, which serves what it holds — and
+`tools/fonts.sh` cuts the subsets. Gilda Display, EB Garamond and Pinyon Script
+are gone. See the licence note in `ASSETS.md`: a desktop licence is not a
+webfont licence, and that is the thing to settle before this page goes anywhere
+beyond family.
+
+One thing to know if you re-cut them: Parfumerie has no `calt`. Its joins are in
+`init`/`fina`/`fin2`/`fin3`, and cut without those it sets as detached letters.
+It also sets about half the size of a roman at the same font-size, which is why
+`app/globals.css` carries a separate `--text-script-*` scale.
 
 **Palette** — a deep green `rgb(58, 85, 66)` doing almost all the work (224
 occurrences), on an off-white ground `rgb(246, 244, 238)`. Our `--sage-deep`

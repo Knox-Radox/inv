@@ -6,45 +6,61 @@ import { SEEN_KEY } from "@/components/Envelope";
 import "./globals.css";
 
 /**
- * Display face — docs/design-plan.md § Type. Flared stems and fine incised,
- * tapering serifs: the same formal logic as the burin stroke in the botanical
- * plates. One weight, by design.
+ * The two faces the client's reference uses, and now the only two here —
+ * docs/reference/maison-doree/README.md. Revisions 1-4 set Gilda Display,
+ * EB Garamond and Pinyon Script, which is what made the page read as a
+ * different class of object next to the reference: the type was the gap as
+ * much as the material was.
+ *
+ * Display: names, the line that does the inviting, section titles. Parfumerie
+ * is a connecting copperplate, so the subset keeps init/fina/fin2/fin3 — the
+ * entry and exit strokes. Without them it sets as detached letters.
  */
-const gilda = localFont({
-  src: "../public/fonts/gilda-display-400.woff2",
+const parfumerie = localFont({
+  src: "../public/fonts/parfumerie-script-400.woff2",
   weight: "400",
   style: "normal",
   display: "swap",
-  variable: "--font-gilda",
-  fallback: ["Georgia", "Times New Roman", "serif"],
-  adjustFontFallback: false,
+  variable: "--font-parfumerie",
+  fallback: ["Snell Roundhand", "Apple Chancery", "cursive"],
+  adjustFontFallback: "Times New Roman",
 });
 
 /**
- * Copperplate script — revision 4. The reference's whole register is
- * calligraphic, and the client asked for something fancier and more royal for
- * the monogram. Used for the names, the line that does the inviting, and the
- * closing note; never for anything a guest has to read quickly.
+ * Everything else: body copy, dates, times, figures, labels.
+ *
+ * Roman only. The italic and the bold were cut here too and shipped, and both
+ * came back `unloaded` from every probe — nothing on the page sets either — but
+ * next/font preloads every face in a family, so they were taking ~17 KB of the
+ * critical path ahead of the faces that are actually drawn. On Slow 4G that
+ * pushed the swap out to 3.8 s and the reflow cost 0.076 of the CLS budget.
+ * Add a face back here when something needs it, not before.
  */
-const pinyon = localFont({
-  src: "../public/fonts/pinyon-script-400.woff2",
+const eaves = localFont({
+  src: "../public/fonts/mrs-eaves-roman.woff2",
   weight: "400",
   style: "normal",
   display: "swap",
-  variable: "--font-script",
-  fallback: ["Snell Roundhand", "Apple Chancery", "cursive"],
-  adjustFontFallback: false,
+  variable: "--font-eaves",
+  fallback: ["Georgia", "Times New Roman", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
-/** Body face. Variable, wght restricted to the 400–500 we actually ship. */
-const garamond = localFont({
-  src: "../public/fonts/eb-garamond-var.woff2",
-  weight: "400 500",
+/**
+ * Mrs Eaves' own small caps, as a separate family rather than
+ * `font-variant: small-caps`, which synthesises them by scaling the capitals
+ * and thins every stroke doing it. Used for the date and the venue, never as
+ * a tracked-out eyebrow label — CLAUDE.md bans those and the reference's use
+ * of them is one of the four things not to copy.
+ */
+const eavesSmallCaps = localFont({
+  src: "../public/fonts/mrs-eaves-smallcaps.woff2",
+  weight: "400",
   style: "normal",
   display: "swap",
-  variable: "--font-garamond",
+  variable: "--font-eaves-sc",
   fallback: ["Georgia", "Times New Roman", "serif"],
-  adjustFontFallback: false,
+  adjustFontFallback: "Times New Roman",
 });
 
 export const metadata: Metadata = {
@@ -83,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${gilda.variable} ${garamond.variable} ${pinyon.variable}`}
+      className={`${parfumerie.variable} ${eaves.variable} ${eavesSmallCaps.variable}`}
       // The script below deliberately adds `envelope-armed` to this element
       // before React hydrates, so the DOM carries a class the client render
       // does not produce. That is the whole point of a pre-paint script, and

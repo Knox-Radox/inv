@@ -8,18 +8,43 @@ or a glyph.
 
 ## Fonts
 
+**Revision 5: the two faces are the reference's own.**
+`docs/reference/maison-doree/README.md` records what La Maison Dorée uses —
+Parfumerie Script for display, Mrs Eaves for everything else — and the client
+supplied both. Gilda Display, EB Garamond and Pinyon Script are gone; the type
+was as much of the gap against the reference as the material was.
+
 | Font | Licence | Source | Shipped as |
 |---|---|---|---|
-| Gilda Display, Regular | SIL Open Font Licence 1.1 | [google/fonts `ofl/gildadisplay`](https://github.com/google/fonts/tree/main/ofl/gildadisplay) | `public/fonts/gilda-display-400.woff2` (16.4 KB) |
-| EB Garamond, variable | SIL Open Font Licence 1.1 | [google/fonts `ofl/ebgaramond`](https://github.com/google/fonts/tree/main/ofl/ebgaramond) | `public/fonts/eb-garamond-var.woff2` (32.1 KB), weight axis pinned to 400–500 |
+| Parfumerie Script, Regular | **Commercial desktop licence** (Adobe Fonts / Durotype) | Supplied by the client | `public/fonts/parfumerie-script-400.woff2` (59.4 KB) |
+| Mrs Eaves, Roman | **Commercial desktop licence** (Emigre) | Supplied by the client | `public/fonts/mrs-eaves-roman.woff2` (8.0 KB) |
+| Mrs Eaves, Small Caps | **Commercial desktop licence** (Emigre) | Supplied by the client | `public/fonts/mrs-eaves-smallcaps.woff2` (7.8 KB) |
 
-Both are subset with `pyftsubset` to basic Latin plus common typographic marks —
-a deliberate superset of the strings actually used, so editing
-`content/invitation.ts` cannot break the page by needing a glyph that was cut.
+**Read this before the page goes anywhere public.** These two are licensed
+fonts, not open ones, and a desktop licence is not a webfont licence. The client
+directed their use on this page and described it as a personal project, which is
+the basis for shipping them here; that is their call to make and it is recorded
+rather than assumed. If this page is ever served beyond family and friends, the
+webfont licences are the thing to settle first.
 
-`assets/og-fonts/*.ttf` are further subsets of the same two faces, cut to only
-the characters the share card sets. They are build-time inputs for `next/og`
-(Satori cannot read woff2) and are never served to a guest.
+`tools/fonts.sh` cuts every face from the originals in `assets/fonts/`. Those
+originals are deliberately **not** under `public/`: everything there is served at
+a public URL, and until revision 5 the complete unsubsetted families sat at
+`/fonts/MRSEAV~8.TTF` and friends. Only the subsets above are served.
+
+Each is cut to basic Latin plus common typographic marks — a deliberate superset
+of the strings actually used, so editing `content/invitation.ts` cannot break the
+page by needing a glyph that was cut. Parfumerie additionally keeps
+`init/fina/fin2/fin3`: it is a connecting copperplate with no `calt`, and those
+positional features are its joins. Without them it sets as detached letters.
+
+Mrs Eaves' italic and bold are cut only on request. `next/font` preloads every
+face in a declared family, and those two were spending ~17 KB of the critical
+path while nothing on the page set either.
+
+`assets/og-fonts/*.ttf` are harder subsets of the same faces, cut to only the
+characters the share card sets. They are build-time inputs for `next/og` (Satori
+cannot read woff2) and are never served to a guest.
 
 ## Reference material — studied, not shipped
 
@@ -49,13 +74,28 @@ with only the impression in the wax authored by us.
 |---|---|---|
 | `assets/source/envelope-photo.jpg` | Cream envelopes with bronze wax seals, flat-lay | [Unsplash photo-1646568779353](https://unsplash.com/photos/1646568779353-b9d2b903b3e1) |
 | `assets/source/card-paper.jpg` | White cotton cardstock, close up | [Unsplash photo-1601662528567](https://unsplash.com/photos/1601662528567-526cd06f6582) |
-| `assets/source/PinyonScript.ttf` | Copperplate script, for the monogram and the names | [google/fonts, SIL OFL 1.1](https://github.com/google/fonts/tree/main/ofl/pinyonscript) |
 
-`python3 tools/cover.py` rebuilds `public/cover/*.webp` from these: it erases
-the stock impression from the wax, presses Advika and Sooraj's monogram into it
-in Pinyon Script, and composites the envelope onto a paper surface at a portrait
-proportion. Unsplash's licence permits this use without attribution; the sources
-are recorded anyway.
+`python3 tools/cover.py` rebuilds every cover asset from the first of these.
+Unsplash's licence permits this use without attribution; the source is recorded
+anyway.
+
+**Revision 5** changed what it builds. Revision 4 composited the whole envelope
+onto a paper surface as an *object* on a page. The reference is a macro — paper
+to all four edges, the flap's V running down to the wax — so the script now crops
+into the photograph instead, twice:
+
+| Output | What |
+|---|---|
+| `public/cover/envelope-portrait.webp` | 1100×2000, 38 KB. The phone frame; cropped so the envelope's own top edge lands on the top of the picture, which is what lets the flap turn on its real hinge. |
+| `public/cover/envelope-landscape.webp` | 2000×1130, 33 KB. The desktop frame, same wax in the same place. |
+| `public/cover/card-paper.webp` | 640×896, 13 KB. Inlined into the HTML as the card's paper. |
+| `assets/og/seal.png` | 320×320. The wax, cropped and masked to the disc, for the share card. Never served; inlined at build. |
+| `components/coverGeometry.ts` | Where the hinge, the two creases and the wax's break land in each frame, as percentages. `components/Envelope.module.css` cuts along these, so the cut follows the crease that is already in the photograph. |
+
+Along the way it erases the stock tree impression from the wax and presses
+Advika and Sooraj's monogram in — Parfumerie Script, the same face the page
+sets. The measured constants at the top of the file belong to this photograph;
+swap it and every one of them has to be re-measured.
 
 The synthetic material system (`components/material/`, `tools/bake.js`,
 `public/paper/`) has been deleted.

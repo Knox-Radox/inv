@@ -69,10 +69,10 @@
 }
 
 .names {
-  font-family: var(--font-gilda), Georgia, serif;
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
   font-weight: 400;
   color: var(--sage-deep);
-  font-size: var(--text-display-xl);
+  font-size: var(--text-script-xl);
   line-height: 1.02;
   letter-spacing: -0.015em;
 }
@@ -97,7 +97,7 @@
 
 .date {
   margin-top: clamp(28px, 5vh, 48px);
-  font-family: var(--font-gilda), Georgia, serif;
+  font-family: var(--font-eaves-sc), Georgia, serif;
   color: var(--sage-deep);
   font-size: var(--text-display-m);
   line-height: 1.1;
@@ -149,40 +149,12 @@
   }
 }
 
-/*
- * Inside the envelope, as the doors part, the card composes itself: the type
- * rises into place in reading order. Only while `.composing` is on an ancestor
- * — the real card on the page never does this.
- */
-:global(.composing) .names {
-  animation: compose 1100ms var(--ease-rise) 3300ms both;
-}
-:global(.composing) .inviting {
-  animation: compose 1100ms var(--ease-rise) 3550ms both;
-}
-:global(.composing) .date {
-  animation: compose 1100ms var(--ease-rise) 3800ms both;
-}
-:global(.composing) .venue {
-  animation: compose 1100ms var(--ease-rise) 3950ms both;
-}
+/* Revision 5: the card no longer composes. It used to typeset itself line by
+   line as it left the envelope, which is a second orchestrated sequence on top
+   of the one the motion budget allows, and a real card comes out of an envelope
+   already printed. The jasmine still stitches — that is one of the two draw-ons
+   the budget permits — and everything else is simply there. */
 
-@keyframes compose {
-  from {
-    opacity: 0.45;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
-  :global(.composing) .names,
-  :global(.composing) .inviting,
-  :global(.composing) .date,
-  :global(.composing) .venue {
-    animation: none;
-  }
 }
