@@ -1,0 +1,25 @@
+.section {
+  position: relative;
+  margin-top: clamp(56px, 10vh, 104px);
+  padding-bottom: clamp(48px, 8vh, 88px);
+}
+
+.note {
+  font-size: var(--text-body-l);
+  line-height: 1.62;
+  letter-spacing: 0.002em;
+  max-width: 34ch;
+  display: grid;
+  gap: 2px;
+}
+
+.line {
+  display: block;
+}
+
+/* Sits on the datum, where the thread has been running all along. */
+.knot {
+  position: absolute;
+  left: calc(var(--thread-x) - var(--content-x) - 12px);
+  bottom: clamp(20px, 4vh, 44px);
+}

@@ -1,0 +1,57 @@
+/*
+ * A sentence, not a scoreboard — docs/design-plan.md § Layout.
+ *
+ * No boxes, no rules, no tracked-out unit labels, and all three numerals at the
+ * same size. That last part is what keeps it from being the "big number with a
+ * small label" every countdown reaches for: the days do not outrank the hours,
+ * they are simply first.
+ *
+ * On mobile it breaks deliberately after "days", because at 390px the editorial
+ * measure is 306px and the full line does not fit at a size a 70-year-old can
+ * read at arm's length.
+ */
+
+.block {
+  display: grid;
+  gap: 6px;
+}
+
+.lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.32em;
+  font-family: var(--font-gilda), Georgia, serif;
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  color: var(--sage-deep);
+}
+
+.figure {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Set in the body face at body size, riding the same baseline: the words are
+   words and the numbers are numbers. */
+.unit {
+  font-family: var(--font-garamond), Georgia, serif;
+  font-size: var(--text-body);
+  color: var(--ink);
+  letter-spacing: 0;
+}
+
+/* Keeps hours and minutes together so the line breaks after "days" and never
+   between a number and its unit. */
+.wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0 0.32em;
+  white-space: nowrap;
+}
+
+.trail {
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ink);
+}

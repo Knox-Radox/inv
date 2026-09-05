@@ -1,0 +1,24 @@
+.field {
+  background-color: var(--ground-deep);
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+}
+
+/*
+ * The same 620px box as the card, in the same place, so the whole page shares
+ * one vertical relationship. What changes at the korvai edge is not the
+ * column's position but where the type hangs inside it.
+ */
+.inner {
+  /* Shared so anything that bleeds out of the column can bleed by exactly the
+     right amount rather than by a guess. */
+  --field-pad-right: clamp(24px, 6vw, 56px);
+
+  position: relative;
+  max-width: var(--card-width);
+  margin-inline: auto;
+  padding-top: clamp(48px, 8vh, 88px);
+  padding-left: var(--content-x);
+  padding-right: var(--field-pad-right);
+}

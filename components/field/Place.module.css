@@ -1,0 +1,27 @@
+.section {
+  margin-top: clamp(56px, 10vh, 104px);
+}
+
+.title {
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+/* The thread branches right here and becomes County Road 419. The plate is
+   pulled back toward the datum so the branch reads as continuous. */
+.plate {
+  margin-top: clamp(24px, 4vh, 40px);
+  margin-left: calc(var(--thread-x) - var(--content-x));
+  margin-right: calc(var(--field-pad-right) * -1);
+}
+
+.address {
+  margin-top: clamp(20px, 3.5vh, 32px);
+  font-style: normal;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  /* Real, selectable text — the one thing on the plate a guest may need to
+     take away with them. */
+  user-select: text;
+}

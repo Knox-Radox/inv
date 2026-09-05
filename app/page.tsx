@@ -1,4 +1,5 @@
 import { Envelope } from "@/components/Envelope";
+import { Field } from "@/components/field/Field";
 import { Invitation } from "@/components/Invitation";
 
 /**
@@ -13,6 +14,7 @@ export default function Page() {
   return (
     <>
       <Invitation />
+      <Field />
       <Envelope />
     </>
   );

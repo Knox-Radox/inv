@@ -1,0 +1,52 @@
+.thread {
+  position: absolute;
+  left: var(--thread-x);
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  /* The glint of a twisted thread, at the period a real one catches light. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--gold) 0px,
+    var(--gold) 3px,
+    color-mix(in srgb, var(--gold) 82%, transparent) 4px,
+    var(--gold) 7px
+  );
+  /* The seam where it presses into the cloth. */
+  box-shadow: 0.5px 0 0 color-mix(in srgb, var(--sage-deep) 22%, transparent);
+  transform: rotate(var(--lean, 0.06deg));
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.dimple {
+  position: absolute;
+  left: calc(var(--thread-x) - 3px);
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 42% 38%,
+    color-mix(in srgb, var(--sage-deep) 16%, transparent) 0%,
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+/*
+ * A tack sits inside a moment, which is already indented to the content datum,
+ * so it has to reach back out to the thread — hence the negative offset. An
+ * earlier version measured from the thread as though it were a page-level
+ * element and laid a gold bar straight across the time.
+ */
+.tack {
+  position: absolute;
+  left: calc(var(--thread-x) - var(--content-x) - 5px);
+  top: 0.62em;
+  width: 12px;
+  height: 1.5px;
+  background: var(--gold);
+  transform: rotate(-1.4deg);
+  pointer-events: none;
+}

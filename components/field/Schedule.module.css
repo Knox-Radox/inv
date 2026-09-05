@@ -1,0 +1,51 @@
+.section {
+  margin-top: clamp(56px, 10vh, 104px);
+}
+
+.title {
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.list {
+  margin-top: clamp(28px, 5vh, 44px);
+}
+
+/* The gap between the two moments is the seven and a half hours. It is left
+   open on purpose, and the thread runs through it unbroken. */
+.moment {
+  position: relative;
+  padding-block: 2px;
+}
+
+.moment + .moment {
+  margin-top: clamp(72px, 14vh, 132px);
+}
+
+.time {
+  font-family: var(--font-gilda), Georgia, serif;
+  color: var(--sage-deep);
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.label {
+  margin-top: 4px;
+  font-size: var(--text-body);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.qualifier {
+  font-size: var(--text-body-s);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.shared {
+  margin-top: clamp(36px, 6vh, 56px);
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
