@@ -1,5 +1,13 @@
 # CLAUDE.md — Advika & Sooraj wedding invitation
 
+## Current state — read before anything else
+
+Revision 3 is in progress. The client rejected the first build against
+La Maison Dorée and their feedback supersedes parts of the brief below.
+**Start with `docs/handoff-revision-3.md`**, then `docs/design-plan.md`
+§ Revision 3. The verification harness is in `tools/verify/`; every number in
+the docs came from it and every change should go back through it.
+
 ## What this is
 
 A single-link digital wedding invitation. One page, opened on a phone from a

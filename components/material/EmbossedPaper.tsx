@@ -15,15 +15,19 @@ import styles from "./EmbossedPaper.module.css";
  */
 export function EmbossedPaper({
   sheet,
+  src,
   className,
 }: {
   sheet: "envelope" | "card";
+  /** An inlined data URI, when the sheet is on the LCP path and must arrive
+   *  with the HTML rather than queue behind scripts on a slow connection. */
+  src?: string;
   className?: string;
 }) {
   return (
     <div
       className={`${styles.sheet} ${className ?? ""}`}
-      style={{ backgroundImage: `url(/paper/${sheet}-sheet.webp)` }}
+      style={{ backgroundImage: `url(${src ?? `/paper/${sheet}-sheet.webp`})` }}
       aria-hidden="true"
     />
   );

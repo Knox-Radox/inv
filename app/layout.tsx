@@ -77,9 +77,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* The envelope and card sheets are the largest paint on first load.
-            As CSS backgrounds they would be discovered late; 21 KB between
-            them, they are worth fetching first. */}
+        {/* Both sheets are needed in the first seconds; 21 KB between them.
+            Measured: inlining the envelope sheet as a data URI did not move
+            LCP and tripled the HTML, so they are preloaded instead. */}
         <link rel="preload" as="image" href="/paper/envelope-sheet.webp" fetchPriority="high" />
         <link rel="preload" as="image" href="/paper/card-sheet.webp" />
         {/*

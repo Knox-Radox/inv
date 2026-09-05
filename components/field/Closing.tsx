@@ -22,6 +22,7 @@ export function Closing() {
         alt=""
         loading="lazy"
         decoding="async"
+        fetchPriority="low"
         aria-hidden="true"
       />
       <p className={styles.note}>
