@@ -3,6 +3,16 @@
 **Read this first**, then `docs/design-plan.md`, then CLAUDE.md. It supersedes
 `docs/handoff-revision-3.md`, which describes an approach that has been deleted.
 
+## The reference
+
+**`docs/reference/maison-doree/`** — the client's benchmark, captured and kept
+in the repo: the cover, the whole 8,051 px page in eleven frames, its complete
+type and colour census, and a README covering what it uses, how to re-capture
+it, where it conflicts with the original brief, and its four measured faults.
+Look at it before designing anything.
+
+Live: https://tdy-excellence-template.thedigitalyes.com
+
 ## The one thing that matters
 
 The client rejected revisions 1–3 twice. Both times the complaint was the same

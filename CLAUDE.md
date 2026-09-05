@@ -7,7 +7,8 @@ La Maison Dorée, both times as looking fake, and their feedback supersedes
 parts of the brief below. The cause both times was synthesising materials in
 code; the cover is now a photograph.
 
-**Start with `docs/handoff-revision-4.md`.** The verification harness is in
+**Start with `docs/handoff-revision-4.md`.** The client's benchmark is captured
+in **`docs/reference/maison-doree/`** — look at it before designing anything. The verification harness is in
 `tools/verify/`; every number in the docs came from it and every change should
 go back through it.
 

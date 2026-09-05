@@ -1,5 +1,8 @@
 # References
 
+> Screenshots, type census and palette for La Maison Dorée are kept in
+> `docs/reference/maison-doree/`. This file is the written analysis.
+
 ## The two client references
 
 Watched at 430×932. The `/demo/` URLs are product pages; the live templates are
