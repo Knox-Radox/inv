@@ -2,12 +2,14 @@
 
 ## Current state — read before anything else
 
-Revision 4 is in progress. The client rejected the first two builds against
-La Maison Dorée, both times as looking fake, and their feedback supersedes
-parts of the brief below. The cause both times was synthesising materials in
-code; the cover is now a photograph.
+Revision 5 is in progress. The client rejected the first builds against
+La Maison Dorée as looking fake, and their feedback supersedes parts of the
+brief below. The cause was synthesising materials in code; the cover is a
+photograph, and as of revision 5 it is a full-bleed macro of one rather than a
+picture of an envelope laid on a page. The type is the reference's own two
+faces, Parfumerie Script and Mrs Eaves.
 
-**Start with `docs/handoff-revision-4.md`.** The client's benchmark is captured
+**Start with `docs/handoff-revision-5.md`.** The client's benchmark is captured
 in **`docs/reference/maison-doree/`** — look at it before designing anything. The verification harness is in
 `tools/verify/`; every number in the docs came from it and every change should
 go back through it.
@@ -36,7 +38,8 @@ Invoke the `frontend-design` skill for all UI work.
 - Tailwind v4 with the palette exposed as CSS custom properties, not hard-coded
   hex values scattered through components
 - `motion/react` for orchestration; plain CSS for anything CSS can do alone
-- `next/font` with self-hosted, subset Google Fonts
+- `next/font` with self-hosted, subset faces. Cut by `tools/fonts.sh` from the
+  originals in `assets/fonts/` — never `public/`, which serves what it holds
 - `next/og` for the share card
 - Deployed to Vercel
 - No component library, no UI kit, no icon pack. Every mark on this page is drawn
@@ -66,8 +69,9 @@ Two client decisions that are settled and not to be revisited:
 - **The map is purely visual.** A hand-drawn illustration only. No Open in Maps
   button, no embed, no iframe, no deep link, no tile provider, no interactivity.
 
-The only interactive elements on the entire page are: the envelope seal, the
-sound toggle, and add-to-calendar. If you are building a fourth, stop and ask.
+The only interactive elements on the entire page are: the cover itself (the
+whole of it opens the envelope — there is no label and no visible skip link),
+the sound toggle, and add-to-calendar. If you are building a fourth, stop and ask.
 
 ## Motion budget
 
@@ -96,7 +100,8 @@ Enforced, not aspirational:
 - Numbered markers on anything that is not genuinely a sequence (the schedule is;
   nothing else is)
 - Playfair Display, Cormorant Garamond, Great Vibes, Inter, Montserrat, Poppins,
-  system font stacks
+  system font stacks. The page's two faces are Parfumerie Script (display) and
+  Mrs Eaves (everything else) and there is no third role
 - Christian or church iconography of any kind
 - Any copyrighted or unlicensed third-party asset
 
