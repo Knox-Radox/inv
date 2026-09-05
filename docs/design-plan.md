@@ -1025,6 +1025,41 @@ megabytes of photographs.
 
 ---
 
+## Build deviations
+
+Recorded as they happen, so nothing diverges quietly. Each is a change the plan
+did not authorise, made because building it proved the plan wrong.
+
+**1. `vector-effect: non-scaling-stroke` — removed.** § The stitch idiom said all
+paths would carry it "so weights hold at any render size". Rendered, that is
+wrong for a thread: it pins stroke width to screen pixels, so the desktop
+oversized crop came out wiry — a bigger *drawing* of stitching rather than a
+close-up *of* it. A thread scales with its cloth. Weights are now authored in the
+same units as the geometry and scale with it. Verified at 90, 150 and 300px.
+
+**2. The map's lettering is set, not drawn.** § Illustration inventory asked for
+"the venue named in drawn lettering". Drawing ten unique glyphs would have
+produced something worse than Gilda Display, which is already this piece's
+engraved letter. The cartouche, its double rule and every other mark on the plate
+are drawn; the words inside are `<text>` in Gilda. The seal's monogram remains
+outlined paths, which is where the requirement actually mattered — it is small,
+and a font swap there would shift the most looked-at object on the page.
+
+**3. The map road draws on by clip, not by dash.** The plan assumed
+`stroke-dasharray` everywhere. County Road 419 is a *filled tapered outline*
+rather than a stroke — that is what stopped the plate reading as a diagram — and
+a fill cannot be dashed. It is revealed instead by sweeping a thick stroked
+centreline through a `clipPath`. Same easing, same duration, same author-time
+length; only the mechanism differs.
+
+**4. The first map plate was scrapped, not patched.** It came out as a road
+diagram with a pin: uniform strokes, no hatching, roads running off the copper.
+Per CLAUDE.md, it was rebuilt rather than tuned — roads became tapered outlines
+from the monogram's pen, land gained cut hatching, water became two banks with
+cross-strokes, and everything is clipped inside the plate rule.
+
+---
+
 ## Build notes carried forward
 
 - Content: `content/invitation.ts` is the single typed source. No literal date,

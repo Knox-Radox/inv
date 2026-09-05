@@ -1,0 +1,197 @@
+/*
+ * The engraved plate — docs/design-plan.md § Illustration inventory, item 7.
+ *
+ * Every weight here is deliberate and none of them match. The roads are filled
+ * tapered outlines, not strokes, because a burin never lays a uniform line;
+ * uniform line is what makes a vector map read as a diagram.
+ */
+
+.plate {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.borderOuter,
+.borderInner {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linejoin: miter;
+}
+
+.borderOuter {
+  stroke-width: 0.55;
+  opacity: 0.7;
+}
+
+.borderInner {
+  stroke-width: 0.22;
+  opacity: 0.5;
+}
+
+/* Land tone. The density is the drawing. */
+.hatch {
+  fill: none;
+  stroke: var(--sage);
+  stroke-width: 0.16;
+  stroke-linecap: round;
+  opacity: 0.4;
+}
+
+.creekBank {
+  fill: var(--sage);
+  fill-opacity: 0.5;
+}
+
+.creekTicks {
+  fill: none;
+  stroke: var(--sage);
+  stroke-width: 0.14;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+
+.approach {
+  fill: var(--sage);
+  fill-opacity: 0.72;
+}
+
+.trees {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-width: 0.2;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+/* County Road 419: the thread's branch, and the heaviest line on the plate. */
+.road {
+  fill: var(--gold);
+  fill-opacity: 0.92;
+}
+
+.drive {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.35;
+  opacity: 0.7;
+}
+
+.venueBody {
+  fill: var(--ground);
+  fill-opacity: 0.9;
+  stroke: var(--sage-deep);
+  opacity: 0.88;
+  stroke-width: 0.28;
+  stroke-linejoin: round;
+}
+
+.venueRoof {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-width: 0.38;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.venueDoor {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-width: 0.26;
+}
+
+.compass circle {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.22;
+  opacity: 0.6;
+}
+
+/* Alternating filled and open halves: the engraved convention for north. */
+.starFilled {
+  fill: var(--gold);
+  fill-opacity: 0.78;
+}
+
+.starOpen {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.22;
+  opacity: 0.75;
+}
+
+.cartOuter {
+  fill: var(--ground);
+  fill-opacity: 0.62;
+  stroke: var(--gold);
+  stroke-width: 0.4;
+  opacity: 0.9;
+}
+
+.cartInner {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.18;
+  opacity: 0.7;
+}
+
+.north,
+.venueName,
+.roadName {
+  font-family: var(--font-gilda), Georgia, serif;
+  stroke: none;
+}
+
+.north {
+  font-size: 3.6px;
+  text-anchor: middle;
+  fill: var(--sage-deep);
+}
+
+.venueName {
+  font-size: 5px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  letter-spacing: 0.03em;
+  fill: var(--sage-deep);
+}
+
+.roadName {
+  font-size: 3.2px;
+  letter-spacing: 0.05em;
+  fill: var(--ink);
+  opacity: 0.7;
+}
+
+/*
+ * The draw-on. The road is a filled outline, so it is revealed by sweeping a
+ * thick stroked centreline through a clip path rather than by dashing a fill.
+ * Resting state is fully revealed; the keyframe supplies only the *from*.
+ */
+.revealPath {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+:global(.map-drawing) .revealPath {
+  animation: reveal-road 1600ms var(--ease-needle) backwards;
+}
+
+@keyframes reveal-road {
+  from {
+    stroke-dasharray: var(--road-len);
+    stroke-dashoffset: var(--road-len);
+  }
+  to {
+    stroke-dasharray: var(--road-len);
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.map-drawing) .revealPath {
+    animation: none;
+  }
+}

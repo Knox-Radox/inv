@@ -1,0 +1,59 @@
+/*
+ * docs/design-plan.md § The stitch idiom.
+ *
+ * The resting state below is the finished line: fully drawn, no dash. The
+ * keyframe supplies only the starting offset, and `backwards` fill applies it
+ * during the delay. Cancel the animation at any moment and the line snaps to
+ * complete — the guarantee behind lockout test T2.
+ */
+
+.line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Deliberately NOT non-scaling-stroke. Weights are authored in the same
+     units as the geometry, so the thread thickens when the cloth is shown
+     larger — which is what the desktop crop is: a close-up of the same
+     stitching, not a bigger drawing of it. See the deviation note in
+     docs/design-plan.md § The stitch idiom. */
+}
+
+.sage {
+  stroke: var(--sage);
+}
+
+.gold {
+  stroke: var(--gold);
+}
+
+.shadow {
+  stroke: var(--sage-deep);
+  opacity: 0.18;
+  /* The seat in the cloth: the thread presses down and a little forward. */
+  transform: translateY(0.4px);
+}
+
+/* Only inside a sequence that has started. Absent this class the line is
+   simply present, which is what a guest with no JS sees. */
+:global(.stitching) .line {
+  animation: draw-on var(--stitch-duration, 900ms) var(--ease-needle)
+    var(--stitch-delay, 0ms) backwards;
+}
+
+@keyframes draw-on {
+  from {
+    stroke-dasharray: var(--stitch-len);
+    stroke-dashoffset: var(--stitch-len);
+  }
+  to {
+    stroke-dasharray: var(--stitch-len);
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Reduced motion: the thread is already stitched. No needle, no waiting. */
+@media (prefers-reduced-motion: reduce) {
+  :global(.stitching) .line {
+    animation: none;
+  }
+}

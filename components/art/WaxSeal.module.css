@@ -1,0 +1,76 @@
+/*
+ * Crack choreography — docs/design-plan.md § Envelope choreography, beat 1.
+ *
+ * The resting state IS the intact seal: the transforms below are the *from*
+ * values, applied only while `.cracked` is set. Cancel every animation on this
+ * page and the seal snaps back to whole — the structural guarantee behind
+ * lockout test T2.
+ *
+ * Wax is heavy: each half rotates, translates outward, and drops. The two
+ * halves do not match, because a break never does.
+ */
+
+.seal {
+  display: block;
+  overflow: visible;
+}
+
+.halfLeft,
+.halfRight,
+.face {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cracked .halfLeft {
+  animation: crack-left 760ms var(--ease-wax) 90ms both;
+}
+
+.cracked .halfRight {
+  animation: crack-right 760ms var(--ease-wax) 150ms both;
+}
+
+/* The impression was pressed into the wax, not part of it — so when the wax
+   goes, it goes with it rather than breaking along the same line. */
+.cracked .face {
+  animation: crack-face 520ms ease-out 90ms both;
+}
+
+@keyframes crack-left {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translate(-3px, 2px) rotate(-4deg);
+    opacity: 0.92;
+  }
+}
+
+@keyframes crack-right {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translate(4px, 2px) rotate(5.5deg);
+    opacity: 0.92;
+  }
+}
+
+@keyframes crack-face {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: the seal simply stays whole. The envelope keeps its object
+   and loses only the choreography. */
+@media (prefers-reduced-motion: reduce) {
+  .cracked .halfLeft,
+  .cracked .halfRight,
+  .cracked .face {
+    animation: none;
+  }
+}
