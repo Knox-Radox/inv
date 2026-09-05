@@ -3,6 +3,16 @@
 Playwright scripts that produce every number quoted in `docs/`. None of them
 trust the code; they run the built site and measure.
 
+Use `serve.sh`, which builds, serves on a free port, runs your command and
+**always stops the server**:
+
+```
+tools/verify/serve.sh 'node tools/verify/audit.js "$URL"'
+tools/verify/serve.sh 'node tools/verify/lockout.js "$URL" /tmp/shots'
+```
+
+Or by hand, remembering to stop it:
+
 ```
 npm run build && npx next start -p 3400 &
 node tools/verify/lockout.js  http://localhost:3400/ /tmp/shots   # JS off, animations cancelled, reduced motion, body overflow
@@ -20,6 +30,9 @@ Needs `playwright` (`npm i -D playwright@1.63.0`) and a Chromium; set `CHROME`
 to its executable if it is not at the default path.
 
 Gotchas learned the hard way:
+- **Always stop the server.** One session started a fresh `next start` per
+  verification run and stopped none: 39 leaked processes, ~8 GB of RSS, and the
+  machine ran out of memory. `serve.sh` exists so this cannot recur.
 - Never `pkill -f "next start"` from the same shell — the pattern matches the
   shell's own command line and kills it (exit 144).
 - `Date.now()` can jump backwards under WSL2 mid-run. The beat harness uses
