@@ -1,4 +1,5 @@
 import { Closing } from "./Closing";
+import { Jasmine } from "../art/Jasmine";
 import { Countdown } from "./Countdown";
 import { Place } from "./Place";
 import { Schedule } from "./Schedule";
@@ -25,6 +26,14 @@ import styles from "./Field.module.css";
 export function Field() {
   return (
     <div className={styles.field}>
+      {/*
+       * One oversized crop, at 340% and 22%, bleeding off the right edge —
+       * beside the editorial matter only, where the composition is deliberately
+       * asymmetric. It is the same stitching seen very close, not a second
+       * drawing. Hidden below 900px, where there is no field to put it in.
+       */}
+      <Jasmine className={styles.crop} />
+
       <div className={styles.inner}>
         {/* Where the thread comes back through the woven edge. */}
         <Dimple />

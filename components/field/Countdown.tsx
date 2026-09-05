@@ -75,11 +75,15 @@ export function Countdown() {
   return (
     <p className={styles.block}>
       <span className={styles.lead}>
-        <span className={styles.figure}>{state.days}</span>
-        <span className={styles.unit}>{c.units.days}</span>
-        <span className={styles.wrap}>
+        <span className={styles.pair}>
+          <span className={styles.figure}>{state.days}</span>
+          <span className={styles.unit}>{c.units.days}</span>
+        </span>
+        <span className={styles.pair}>
           <span className={styles.figure}>{state.hours}</span>
           <span className={styles.unit}>{c.units.hours}</span>
+        </span>
+        <span className={styles.pair}>
           <span className={styles.figure}>{state.minutes}</span>
           <span className={styles.unit}>{c.units.minutes}</span>
         </span>

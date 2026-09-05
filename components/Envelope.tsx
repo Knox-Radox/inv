@@ -86,7 +86,13 @@ export function Envelope() {
         <div className={styles.flap} aria-hidden="true">
           <div className={styles.flapFront} />
           <div className={styles.flapBack} />
-          <svg className={styles.flapEdge} viewBox="0 0 100 20" preserveAspectRatio="none">
+          <svg
+            className={styles.flapEdge}
+            viewBox="0 0 100 20"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            focusable="false"
+          >
             <path
               d="M0 0.6 L50 18.4 L100 0.6"
               fill="none"

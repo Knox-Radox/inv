@@ -1,122 +1,99 @@
-# Advika & Sooraj — Claude Code prompt pack
+# Advika and Sooraj
 
-Four prompts, two context files, one running order.
+A single-link digital wedding invitation. One page, opened on a phone from a
+WhatsApp message.
 
-```
-CLAUDE.md                        → project root
-docs/design-brief.md             → docs/
-prompts/00-kickoff-and-plan.md   → paste as message 1
-prompts/01-build.md              → paste after you approve the plan
-prompts/02-design-audit.md       → paste in a FRESH session after v1
-```
+- **The brief** — `docs/design-brief.md` (the client's word; it outranks
+  everything else here)
+- **The plan** — `docs/design-plan.md` (what was designed, and every deviation
+  made while building it)
+- **Still open** — `docs/open-questions.md` (three things the couple needs to
+  answer; none of them block the build)
 
-## Before you start
+## Changing a fact
 
-**1. Content is complete.** Every fact is confirmed — nothing to fill in before
-you start.
+**Everything a guest reads lives in one file: `content/invitation.ts`.** Nothing
+else in the codebase contains a date, a time, an address or a sentence of copy.
 
-One thing worth deciding early: the ceremony ends at 10:30 AM and the reception
-starts at 6:00 PM at the same venue. Guests will wonder what happens in between
-and whether they should leave and return. If the couple wants a line of copy
-addressing that, get it from them — Claude is instructed to ask rather than
-invent one.
+To change the reception time, edit one line:
 
-**2. Set up the project.**
-
-```bash
-mkdir advika-sooraj && cd advika-sooraj && git init
-mkdir docs prompts
-# copy CLAUDE.md to the root, design-brief.md into docs/
-claude
+```ts
+{
+  id: "reception",
+  label: "Reception",
+  startsAt: "2026-11-28T00:00:00Z", // <- 6:00 PM CST, as a UTC instant
+  startDisplay: "6:00 PM",          // <- and what the card prints
+  ...
+}
 ```
 
-**3. Install the frontend-design plugin.** This is the highest-leverage thing in
-the whole pack. In a controlled comparison, raw Claude Code produced "a perfectly
-competent page" with safe choices while Claude web — which has the skill built in
-— used intentional font pairings, staggered reveals, noise texture and vignette.
-Claude Code *with* the plugin matched web and made a bolder palette choice than
-either. Same model, same prompt.
+Two things to know when editing times:
+
+1. **`startsAt` is UTC, not local.** America/Chicago is six hours behind UTC on
+   this date, so 6:00 PM there is `T00:00:00Z` the following day. This is
+   deliberate: it is what makes the countdown correct for a guest in Chennai and
+   one in Dallas at the same moment.
+2. **`startDisplay` is what a guest sees.** Change both, or the card and the
+   calendar file will disagree.
+
+Everything downstream — the countdown, the schedule, the `.ics`, the Google
+Calendar link, the share card — reads from this file. Nothing needs updating
+twice.
+
+To add a line of copy about the gap between the ceremony and the reception, set
+`day.gapNote`. To enable the sound toggle, set `audio` to a track and add a row
+to `ASSETS.md`. Both are `null` on purpose.
+
+## Running it
 
 ```
-/plugin marketplace add anthropics/claude-code
-/plugin
+npm install
+npm run dev        # localhost:3000
+npm run build      # must pass clean before any commit
+npm run lint
+npx tsc --noEmit
 ```
 
-Install `frontend-design` from the list. If the marketplace command differs in
-your version, run `/plugin` on its own and browse — or fall back to cloning the
-skill directly:
+### Regenerating the illustrations
 
-```bash
-git clone https://github.com/anthropics/claude-code.git /tmp/cc
-mkdir -p ~/.claude/skills
-cp -r /tmp/cc/plugins/frontend-design/skills/frontend-design ~/.claude/skills/
-```
-
-Confirm with `/skills` before you start.
-
-**4. Give it eyes.** Non-negotiable for this project. Claude needs to open the
-two reference demos (client-rendered, so fetching HTML returns nothing) and needs
-to screenshot its own work. Add Chrome DevTools MCP or Playwright MCP. Without
-this, prompt 00 step 1 and every verification gate in prompt 01 silently become
-guesswork.
-
-**5. Model and effort.** "Opus Max" isn't a model — Opus 5 is the model, and
-`max` is one of the effort levels (`high` / `xhigh` / `max`).
+The SVG geometry is generated, not hand-written. After editing anything in
+`tools/`:
 
 ```
-/model opus
-/effort max
+cd tools && python3 emit_art.py
 ```
 
-Max effort is the right call here: this is a one-shot quality-critical build, not
-a long agentic loop where token burn compounds.
+This rewrites `components/art/paths.ts`. Requires Python 3 with `fonttools`
+and `brotli` only if you are also re-subsetting fonts.
 
-## Running order
+## Deploying to Vercel
 
-| Step | What | Gate |
-|---|---|---|
-| 1 | Paste `00-kickoff-and-plan.md` | Claude writes `docs/design-plan.md` and stops |
-| 2 | **You read the plan** | Edit the file directly if you want changes |
-| 3 | Paste `01-build.md` | Seven phases, each with a screenshot-and-commit gate |
-| 4 | `/clear`, then paste `02-design-audit.md` | Fresh eyes; expect real findings |
-| 5 | "Fix all P0 and P1 from the audit" | Then re-audit if the list was long |
+1. Push the repository to GitHub.
+2. In Vercel, **Add New → Project**, import the repository. The framework is
+   detected as Next.js; no build settings need changing.
+3. Set one environment variable, **`NEXT_PUBLIC_SITE_URL`**, to the final public
+   URL (for example `https://advikaandsooraj.com`). The share card's `og:image`
+   must be an absolute URL, and WhatsApp will not follow a relative one.
+4. Deploy, then attach the custom domain under **Settings → Domains**.
+5. **Check the share card in a real WhatsApp message**, not in a preview tool.
+   WhatsApp caches aggressively; if you change the card afterwards you will need
+   a fresh URL or a cache-busting query to see the update.
 
-Step 2 is the one people skip and the one that decides the outcome. A reviewed
-plan usually means the implementation lands in one pass; an unreviewed one means
-three rebuilds. Read `docs/design-plan.md` properly, and if the type scale or the
-envelope choreography is not what you pictured, **edit the file** rather than
-saying so in chat. Claude follows the file.
+## What has been verified
 
-## Why it's built this way
+Measured on the built site, not asserted:
 
-- **The brief is a separate file, not part of the prompt.** It stays in context
-  across compactions and Claude re-reads it. A brief pasted into message one is
-  gone by phase 4.
-- **Plan gate before code.** The `frontend-design` skill itself mandates a
-  two-pass process — token system and wireframes, self-review against the brief,
-  then code. Prompt 00 makes that reviewable by you rather than internal.
-- **Anti-slop instructions are specific, not vibes.** "Don't be generic" does
-  nothing. Named hex bans, named font bans, and a listed set of typographic tells
-  do. These come from the skill's own calibration list.
-- **The palette conflict is addressed head-on.** The skill names warm cream plus
-  a high-contrast serif as generated-design tell number one, and your brief asks
-  for exactly that. Left unaddressed, Opus drifts off the palette or
-  over-corrects. §6 of the brief tells it the client mandate wins and redirects
-  the distinctiveness into ornament, texture and choreography instead.
-- **Illustration before layout.** Building sections first makes the layout
-  redesign the art to fit. Phase 2 comes before phase 4 for that reason.
-- **Fresh-session audit.** A model that just spent two hours building something
-  is the worst possible reviewer of it.
-
-## Two things to watch for
-
-**The envelope is the whole project.** If it stutters on a mid-range phone or the
-wax seal reads like a flat sticker, nothing else rescues the piece. If the first
-version is merely fine, throw it out — "knowing everything you know now, scrap
-this and implement the elegant solution" is a genuinely effective follow-up.
-
-**Verify the boring correctness yourself.** Countdown timezone, `.ics` importing
-into both Apple and Google Calendar with the right 8:30 AM start, the address as
-printed on the card, the spelling of both names, and the OG preview in a real
-WhatsApp message. These are the failures that are embarrassing rather than merely
-imperfect, and they are the ones a model will report as done without checking.
+- **Lockout** — four tests: JavaScript disabled, every animation cancelled
+  mid-sequence, `prefers-reduced-motion`, and `body` overflow sampled across the
+  whole opening. The invitation is reachable and readable in all four.
+- **Responsive** — no horizontal scroll at 320, 360, 390, 414, 430, 768, 1024,
+  1280, 1440 or 1920px; nor at 400% reflow; nor at 2× and 3× root font size.
+- **Contrast** — every rendered text/background pair sampled from the live page
+  meets WCAG AA; most reach AAA. Gold is 2.9:1 and therefore carries no
+  information anywhere: every gold mark is `aria-hidden`.
+- **Keyboard** — every stop has a visible focus ring and a target of at least
+  44px.
+- **Performance** — on Slow 4G with 4× CPU throttling: LCP 1.11s, CLS 0.004,
+  140 KB of JavaScript over the wire, 214 KB total, and zero image bytes.
+- **Calendar** — the `.ics` parses with a real iCalendar library and resolves to
+  08:30 America/Chicago at UTC−06:00.

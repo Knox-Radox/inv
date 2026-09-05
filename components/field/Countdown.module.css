@@ -41,9 +41,14 @@
   letter-spacing: 0;
 }
 
-/* Keeps hours and minutes together so the line breaks after "days" and never
-   between a number and its unit. */
+/* Hours and minutes may break apart from each other, but a number is never
+   separated from its unit. Holding the whole pair on one unbreakable line
+   overflowed the column by 5px at twice the base font size. */
 .wrap {
+  display: contents;
+}
+
+.pair {
   display: inline-flex;
   align-items: baseline;
   gap: 0 0.32em;

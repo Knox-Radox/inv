@@ -8,7 +8,7 @@
   font-size: var(--text-body-l);
   line-height: 1.62;
   letter-spacing: 0.002em;
-  max-width: 34ch;
+  max-width: min(34ch, 100%);
   display: grid;
   gap: 2px;
 }

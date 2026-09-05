@@ -18,9 +18,15 @@
   /* Type scale — § Type. Hits the mobile size at exactly 390px and the
      desktop size at exactly 1440px. The rem intercept dominates every step,
      so doubling the base font size roughly doubles the rendered size. */
-  --text-display-xl: clamp(2.5rem, 1.664rem + 3.429vw, 4.75rem); /* 40 → 76 */
-  --text-display-m: clamp(2.125rem, 1.846rem + 1.143vw, 2.875rem); /* 34 → 46 */
-  --text-display-l: clamp(1.625rem, 1.346rem + 1.143vw, 2.375rem); /* 26 → 38 */
+  /* The display steps carry a viewport cap at BOTH ends of the clamp. Without
+     it, a guest at 3x Dynamic Type gets a 120px name in a 334px column and the
+     card overflows by 139px — measured. Body text below scales with the root
+     without a cap, which is what WCAG 1.4.4 is actually about; display type
+     that is already 40px does not need to become 120px to stay readable, and
+     breaking the layout is the worse failure. */
+  --text-display-xl: clamp(min(2.5rem, 12vw), 1.664rem + 3.429vw, min(4.75rem, 13vw)); /* 40 → 76 */
+  --text-display-m: clamp(min(2.125rem, 10vw), 1.846rem + 1.143vw, min(2.875rem, 11vw)); /* 34 → 46 */
+  --text-display-l: clamp(min(1.625rem, 8vw), 1.346rem + 1.143vw, min(2.375rem, 9.5vw)); /* 26 → 38 */
   --text-body-l: clamp(1.1875rem, 1.118rem + 0.286vw, 1.375rem); /* 19 → 22 */
   --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem); /* 17 → 18 */
   --text-body-s: clamp(0.9375rem, 0.914rem + 0.095vw, 1rem); /* 15 → 16 */

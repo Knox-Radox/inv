@@ -21,6 +21,7 @@
 }
 
 .inner {
+  position: relative;
   width: 100%;
   max-width: var(--card-width);
   margin-inline: auto;
@@ -56,7 +57,7 @@
 
 .inviting {
   margin: clamp(24px, 4vh, 40px) auto 0;
-  max-width: 34ch;
+  max-width: min(34ch, 100%);
   font-size: var(--text-body-l);
   line-height: 1.62;
   letter-spacing: 0.002em;
@@ -94,4 +95,29 @@
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+/*
+ * Above 900px the card becomes an object on a surface: the ivory and its woven
+ * edge stop at the 620px box and the champagne field surrounds it. Below that
+ * the card is the viewport and the field only begins beneath its edge.
+ *
+ * The fields either side of the card are deliberately empty and equal. You do
+ * not put ornament next to a ceremonial object; the one oversized crop lives
+ * beside the editorial matter, where the composition is meant to be asymmetric.
+ */
+@media (min-width: 900px) {
+  .card {
+    background-color: var(--ground-deep);
+    padding-top: clamp(48px, 7vh, 96px);
+    padding-bottom: 0;
+  }
+
+  .inner {
+    background-color: var(--ground);
+    background-image: var(--lattice-image);
+    background-size: var(--lattice-size);
+    background-position: var(--lattice-position);
+    padding-top: clamp(48px, 8vh, 88px);
+  }
 }

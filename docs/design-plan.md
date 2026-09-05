@@ -35,7 +35,8 @@ Measured, at 430×932, loading and opening each reference in full:
 |---|---|---|---|
 | Bellagio | **37.7 MB** | 33.0 MB | 5.1 MB |
 | La Maison Dorée | **47.9 MB** | 33.4 MB | 15.1 MB |
-| **This invitation (target)** | **180 KB** | **0** | **0** |
+| **This invitation — projected** | 180 KB | 0 | 0 |
+| **This invitation — measured** | **214 KB** | **0** | **0** |
 
 Their luxury is photographed and streamed. Ours is drawn. **This page ships no
 image file of any kind** — no JPEG, no PNG, no WebP, no video, no raster texture.
@@ -45,11 +46,16 @@ Every mark is an SVG path, a CSS gradient, or a glyph.
 |---|---|
 | HTML, including all inline SVG and critical CSS (gzipped) | 16 KB |
 | CSS (gzipped) | 6 KB |
-| JS: React 19 + Next App Router baseline, plus ~2 KB of ours (gzipped) | 92 KB |
-| Fonts: Gilda 400 + EB Garamond 400/500, subset woff2 | 66 KB |
-| **First load** | **180 KB** |
+| JS: React 19 + Next App Router baseline, plus ~2 KB of ours (gzipped) | 92 KB projected — **140 KB measured** |
+| Fonts: Gilda 400 + EB Garamond 400/500, subset woff2 | 66 KB projected — **47 KB measured** |
+| **First load** | 180 KB projected — **214 KB measured** |
 
-That is **214× lighter than Bellagio and 272× lighter than La Maison Dorée**. On
+Measured on the built site at 390px: 140 KB of JavaScript over the wire, 47 KB
+of fonts, 19 KB of document including every inline SVG, 7 KB of CSS. The 180 KB
+projection was optimistic about Next 16's client runtime by roughly 34 KB; the
+JavaScript budget of 150 KB still holds, with 10 KB to spare.
+
+That is **180× lighter than Bellagio and 229× lighter than La Maison Dorée**. On
 the congested venue LTE this audience will actually be holding, that is not a
 technical nicety — it is the difference between an invitation and a wait, and it
 is the single most defensible claim this piece can make.

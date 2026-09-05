@@ -40,12 +40,14 @@ export function Invitation() {
           <span className={styles.venueName}>{day.venue.name}</span>
           <span>{day.venue.locality}</span>
         </p>
-      </div>
 
-      {/* The card is cloth, so its edge is a korvai — the woven border where
-          the body of a Kanjivaram meets its border. It marks the one
-          structural boundary in the piece, and the thread surfaces through it. */}
-      <KorvaiEdge className={styles.edge} />
+        {/* The card is cloth, so its edge is a korvai — the woven border where
+            the body of a Kanjivaram meets its border. It marks the one
+            structural boundary in the piece, and the thread surfaces through
+            it. It belongs to the card, not to the page, which is why it sits
+            inside the 620px box and stops at its edges on desktop. */}
+        <KorvaiEdge className={styles.edge} />
+      </div>
     </article>
   );
 }
