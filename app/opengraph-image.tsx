@@ -54,7 +54,6 @@ export default async function Image() {
           fontFamily: "EB Garamond",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={dataUri(sealSvg(132))} width={132} height={132} alt="" />
 
         <div
@@ -91,8 +90,7 @@ export default async function Image() {
         {/* The same woven edge as the card's, so the image reads as the card,
             cropped — coarsened so it survives a 400px thumbnail. */}
         <div style={{ position: "absolute", bottom: 0, left: 0, display: "flex" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={dataUri(korvaiSvg(size.width))} width={size.width} height={14} alt="" />
+            <img src={dataUri(korvaiSvg(size.width))} width={size.width} height={14} alt="" />
         </div>
       </div>
     ),
