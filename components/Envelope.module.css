@@ -12,8 +12,12 @@
  *  2750 - 3600   the cover crossfades to the page beneath, which is the same
  *                component in the same place, so nothing moves
  *
- * The wax is part of the photograph, so the flap's share of it travels with the
- * flap. Nothing here is linear.
+ * The wax is part of the photograph and the whole of it travels with the flap.
+ * An earlier pass sheared it along a chord between the two creases and let each
+ * half go with the paper it was stuck to, which is what a real seal does and
+ * what it looked like: damage. The reference lifts the flap with the seal whole
+ * on it, so the cut runs around the outside of the disc. Nothing here is
+ * linear.
  *
  * Every geometric number comes from tools/cover.py, which measures the creases
  * on the photograph itself: --p-* for the portrait crop, --l-* for the
@@ -34,8 +38,10 @@
      cover look cheap on a laptop. */
   --ar: var(--p-ar);
   --hinge: var(--p-hinge);
+  --seal-x: var(--p-seal-x);
   --seal-y: var(--p-seal-y);
   --seal-ry: var(--p-seal-ry);
+  --patch-r: var(--p-patch-r);
   --flap-cut: var(--p-flap);
   --mouth-cut: var(--p-mouth);
   --opened-cut: var(--p-opened);
@@ -45,8 +51,10 @@
   .overlay {
     --ar: var(--l-ar);
     --hinge: var(--l-hinge);
+    --seal-x: var(--l-seal-x);
     --seal-y: var(--l-seal-y);
     --seal-ry: var(--l-seal-ry);
+    --patch-r: var(--l-patch-r);
     --flap-cut: var(--l-flap);
     --mouth-cut: var(--l-mouth);
     --opened-cut: var(--l-opened);
@@ -95,6 +103,20 @@
   object-fit: fill;
 }
 
+/* The reconstructed front face under the wax. Sized and placed from the same
+   generated geometry as everything else, so it lands on exactly the paper it
+   was cut from. Under the mouth and under the flap: covered while the envelope
+   is shut, and uncovered at the moment the seal leaves with the flap. */
+.sealPatch {
+  position: absolute;
+  left: calc(var(--seal-x) - var(--patch-r));
+  top: calc(var(--seal-y) - var(--patch-r) * var(--ar));
+  width: calc(var(--patch-r) * 2);
+  height: auto;
+  aspect-ratio: 1;
+  z-index: 0;
+}
+
 /* --- Inside the envelope -------------------------------------------------- */
 
 /*
@@ -122,13 +144,24 @@
 }
 
 /*
- * The card, at the size and place the page's own card occupies, so the
- * dissolve at the end has nothing to move. `min-height: 100lvh` matches the
- * page's first screen.
+ * The card, at exactly the size and place the page's own card occupies, so the
+ * dissolve at the end has nothing left to move.
+ *
+ * This is a viewport-sized box, not `inset: 0`. The frame is sized to *cover*
+ * the viewport, so on a phone it is wider than the screen — 513px on a 430px
+ * one — and a card laid out inside it wrapped its lines to 513px and sat 41px
+ * off to the left. `min-height: 100lvh` then re-centred it inside 932px when
+ * its natural height is 859, dropping it another 37px. Both were measured, and
+ * together they are what made the end of the opening land with the card
+ * apparently scrolled down. The frame is centred on the viewport, so a
+ * viewport-sized box centred in the frame is the viewport exactly.
  */
 .reveal {
   position: absolute;
-  inset: 0;
+  width: 100vw;
+  height: 100lvh;
+  left: calc(50% - 50vw);
+  top: calc(50% - 50lvh);
   overflow: hidden;
   opacity: 1;
   /* Not painted until the envelope is opening. The card is behind the flap and
@@ -144,22 +177,11 @@
   background: var(--ground-deep);
 }
 
-.reveal > * {
-  min-height: 100lvh;
-}
-
-@media (min-width: 900px) {
-  .reveal > * {
-    max-width: var(--card-width);
-    margin-inline: auto;
-  }
-}
-
 /* --- The flap ------------------------------------------------------------- */
 
 /*
  * The flap is the same photograph, cut to the triangle above its own two
- * creases plus its share of the wax, turning about the top of the frame.
+ * creases plus the whole of the wax, turning about the top of the frame.
  *
  * On the portrait crop that is the real hinge: cover.py crops so the envelope's
  * top edge lands there, and coverGeometry reports it at -0.3%. On the landscape

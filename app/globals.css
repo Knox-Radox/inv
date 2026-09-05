@@ -10,7 +10,10 @@
   --ground: #fbf7f0; /* warm ivory — the paper: envelope and card */
   --ground-deep: #f0e9db; /* champagne — tissue lining, and the field */
   --sage: #8a9a83; /* the botanical thread */
-  --sage-deep: #46543f; /* display type, section titles, focus rings */
+  /* The reference's own green, rgb(58,85,66). Ours was #46543F, a few points
+     lighter and warmer, and against a hairline copperplate that was enough to
+     make the names read as thin. */
+  --sage-deep: #3a5542; /* display type, section titles, focus rings */
   --gold: #b08d57; /* wax, thread, korvai, hairlines. Never text. */
   --gold-light: #cdae7a; /* sheen only. Never text. */
   --ink: #2e2a24; /* warm bark brown — body copy, times, address */
@@ -41,8 +44,8 @@
      These are the same steps at 1.8x, with their own viewport caps rather than
      a multiplier over the roman ones, so 400% reflow and 3x Dynamic Type stay
      bounded. Only Parfumerie uses these. */
-  --text-script-xl: clamp(min(4.5rem, 21vw), 3rem + 6.2vw, min(8.5rem, 23vw)); /* 72 → 136 */
-  --text-script-l: clamp(min(2.9rem, 14vw), 2.4rem + 2.06vw, min(4.25rem, 17vw)); /* 46 → 68 */
+  --text-script-xl: clamp(min(5.5rem, 24vw), 3.6rem + 7.8vw, min(9.75rem, 25vw)); /* 91 → 156 */
+  --text-script-l: clamp(min(3.4rem, 16vw), 2.7rem + 2.6vw, min(5rem, 19vw)); /* 54 → 80 */
 
   --text-body-l: clamp(1.1875rem, 1.118rem + 0.286vw, 1.375rem); /* 19 → 22 */
   --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem); /* 17 → 18 */
@@ -50,7 +53,9 @@
 
   /* Structure. One datum rule at every width: the thread sits 28px inside the
      card's left edge, and content below starts 28px right of the thread. */
-  --card-width: 620px;
+  /* Widened with the script steps: the names are the widest thing on the
+     card and at 620px they were running to its edges. */
+  --card-width: 700px;
   --card-inset: 28px;
   --thread-x: var(--card-inset);
   --content-x: calc(var(--card-inset) * 2);

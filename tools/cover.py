@@ -60,10 +60,6 @@ FLAP_RIGHT = (1378, 200, -0.9767)
 #: envelope in the flat-lay and must never appear.
 EXTEND_FROM = 945
 
-#: The wax does not break on a clean chord. This is the amplitude of the
-#: irregularity in the break, as a fraction of R.
-BREAK_WOBBLE = 0.16
-
 
 def fit(font_path: Path, text: str, w: float, h: float) -> ImageFont.FreeTypeFont:
     lo, hi = 20, 900
@@ -93,21 +89,68 @@ def press_monogram(im: Image.Image, face: str, text: str) -> Image.Image:
         (cx - r * 0.90, cy - r * 0.90, cx + r * 0.90, cy + r * 0.90), fill=255
     )
     interior = interior.filter(ImageFilter.GaussianBlur(r * 0.10))
-    lowfreq = disc.filter(ImageFilter.GaussianBlur(r * 0.55))
-    # At r*0.42 a ghost of the stock trunk was still legible under the
-    # monogram: the tree lives in the mid frequencies, so the blur that erases
-    # it has to be wider than its grooves. The grain added back is high-passed
-    # tighter than those grooves in turn — 1.0px keeps the wax's own speckle
-    # and leaves anything groove-width behind.
-    fine = ImageChops.subtract(
-        disc, disc.filter(ImageFilter.GaussianBlur(1.0)), scale=1, offset=128
+
+    # Normalised convolution, not a plain blur. A blur wide enough to erase the
+    # stock impression (0.55r) also reaches well outside the disc and drags the
+    # pale paper in, and the wax came out lighter and greyer than it really is:
+    # measured mean (190,165,141) against the original's (168,133,106), and
+    # stddev 20 against 51. That is what "translucent" was. Weighting by the
+    # disc's own mask and dividing by the blurred mask means only wax
+    # contributes, so the level and the colour survive the smoothing.
+    import numpy as np
+
+    wax_mask = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(wax_mask).ellipse(
+        (cx - r * 0.97, cy - r * 0.97, cx + r * 0.97, cy + r * 0.97), fill=255
     )
-    # ImageChops.add is (a+b)/scale + offset; fine is centred on 128, so the
-    # offset must cancel that or the whole disc washes out.
-    grain = ImageChops.add(
-        lowfreq, Image.eval(fine, lambda v: int((v - 128) * 0.26 + 128)), scale=1, offset=-128
+    mf = np.asarray(wax_mask.filter(ImageFilter.GaussianBlur(2))).astype(np.float32) / 255.0
+    da = np.asarray(disc).astype(np.float32)
+    blur = lambda arr: np.asarray(
+        Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(r * 0.70)
+        )
+    ).astype(np.float32)
+    num = blur(da * mf[..., None])
+    den = blur(np.repeat(mf[..., None], 3, axis=2) * 255.0) / 255.0
+    dome = num / np.maximum(den, 1e-3)
+
+    # The stock tree covers most of the face, so it is smoothed out of the
+    # low-pass entirely and the surface put back from the disc's own speckle.
+    #
+    # Two approaches were tried and abandoned before this one. Blurring at 0.55r
+    # left a ghost of the canopy and trunk legible under the monogram. Tiling a
+    # high-passed patch of the rim across the face painted a visible damask
+    # repeat, because the rim's beading is structure, not grain. What works is
+    # the plainest thing: a 1px high-pass of the wax itself. The tree's grooves
+    # are ten to thirty pixels wide and do not survive that cut, while the
+    # speckle that makes wax look like wax does — and it is this wax's own,
+    # which is the whole point after revisions 1-3.
+    tooth = da - np.asarray(
+        Image.fromarray(np.clip(da, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(1.0)
+        )
+    ).astype(np.float32)
+    # One catch: a groove's wall is a sharp 1-2px transition, so the tree's
+    # edges live at the same frequency as the speckle and came back with it.
+    # They are separable by *where* they are, though — the speckle is spread
+    # evenly and the tree's edges sit exactly where the mid frequencies swing.
+    # So the tooth is attenuated in proportion to that swing: full grain on
+    # flat wax, none along what used to be a groove.
+    mid = np.asarray(
+        Image.fromarray(np.clip(da, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(1.0)
+        )
+    ).astype(np.float32) - np.asarray(
+        Image.fromarray(np.clip(da, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(8.0)
+        )
+    ).astype(np.float32)
+    swing = np.abs(mid).mean(axis=2, keepdims=True)
+    keep = 1.0 / (1.0 + (swing / 5.0) ** 2)
+    grain_a = dome + tooth * 1.25 * keep * mf[..., None]
+    base = Image.composite(
+        Image.fromarray(np.clip(grain_a, 0, 255).astype(np.uint8)), disc, interior
     )
-    base = Image.composite(grain, disc, interior)
 
     # The impression is cut at 3x and downsampled. A copperplate script is
     # mostly hairline, and rasterising those strokes straight into the relief
@@ -145,20 +188,124 @@ def press_monogram(im: Image.Image, face: str, text: str) -> Image.Image:
 
     out = base.convert("RGB")
     out = Image.composite(
-        Image.eval(out, lambda v: int(v * 0.74)), out, floor.point(lambda v: int(v * 0.78))
+        Image.eval(out, lambda v: int(v * 0.62)), out, floor.point(lambda v: int(v * 0.86))
     )
     out = Image.composite(
-        Image.eval(out, lambda v: int(v * 0.52)), out, shadow.point(lambda v: min(255, int(v * 1.9)))
+        Image.eval(out, lambda v: int(v * 0.34)), out, shadow.point(lambda v: min(255, int(v * 2.3)))
     )
     out = Image.composite(
-        Image.eval(out, lambda v: min(255, int(v * 1.16 + 12))),
+        Image.eval(out, lambda v: min(255, int(v * 1.30 + 20))),
         out,
-        light.point(lambda v: min(255, int(v * 1.25))),
+        light.point(lambda v: min(255, int(v * 1.45))),
     )
 
     sealed = im.copy()
     sealed.paste(out.resize((box[2] - box[0], box[3] - box[1]), Image.LANCZOS), box)
     return sealed
+
+
+#: Where the two creases actually meet — the flap's point. It sits inside the
+#: wax, 100px below the disc's centre, which is why the seal reads as stuck to
+#: the point of the flap.
+def warm(im: Image.Image) -> Image.Image:
+    """Warmed a shade toward the invitation's ivory, so the paper on screen and
+    the paper in the photograph are the same paper. Everything cut from the
+    photograph has to go through this or it will not match what it sits next
+    to: the seal patch skipped it and read as a cool, pale disc against the
+    graded envelope."""
+    bands = im.split()
+    rgb = Image.merge("RGB", (
+        bands[0].point(lambda v: min(255, int(v * 1.02))),
+        bands[1].point(lambda v: min(255, int(v * 1.005))),
+        bands[2].point(lambda v: int(v * 0.958)),
+    ))
+    if im.mode == "RGBA":
+        rgb = rgb.convert("RGBA")
+        rgb.putalpha(bands[3])
+    return rgb
+
+
+def flap_vertex() -> tuple[float, float]:
+    (ax, ay, am), (bx, by, bm) = FLAP_LEFT, FLAP_RIGHT
+    y = ((bx - ax) + am * ay - bm * by) / (am - bm)
+    return ax + am * (y - ay), y
+
+
+def seal_patch(im: Image.Image) -> Image.Image:
+    """The envelope's front face with the wax taken off it.
+
+    The seal lifts with the flap, whole, because that is what the client asked
+    for and what the reference does. But the wax overhangs the flap's point onto
+    the front of the envelope, and the photograph has it printed there: lift the
+    flap and a crescent of the old seal stayed behind, which is the broken look
+    all over again. This is that area of paper, reconstructed, to sit under the
+    seal and be uncovered when it goes.
+
+    The fill is extrapolated inward from a ring of real paper just outside the
+    wax. The ring's colour is smoothed hard around the circle first, because the
+    two creases cross it and an unsmoothed extrapolation dragged them into the
+    middle as spokes — and the creases belong to the flap, so once it has lifted
+    they are not there to draw.
+    """
+    import numpy as np
+
+    P = int(R * 1.34)
+    box = (int(CX - P), int(CY - P), int(CX + P), int(CY + P))
+    src = np.asarray(im.crop(box)).astype(np.float32)
+    n = 2 * P
+    yy, xx = np.mgrid[0:n, 0:n]
+    dy, dx = yy - P, xx - P
+    rad = np.hypot(dx, dy)
+    ang = np.arctan2(dy, dx)
+
+    # Fit the surrounding paper as a plane and carry it across the gap.
+    #
+    # The first version averaged a ring of paper by angle and smoothed that hard
+    # around the circle. It killed the creases, which is what it was for, but it
+    # also collapsed the tone: the paper just above the wax is lighter than the
+    # body below it, and a single angular average came out lighter than the
+    # paper it had to sit against, so the patch read as a pale disc. Paper this
+    # close to flat is a plane in x and y, and a plane keeps that gradient.
+    ring = (rad > R * 1.12) & (rad < R * 1.30)
+    A = np.stack([np.ones(ring.sum(), np.float32), dx[ring], dy[ring]], 1)
+    fill = np.empty((n, n, 3), np.float32)
+    G = np.stack([np.ones(n * n, np.float32), dx.ravel(), dy.ravel()], 1)
+    for c in range(3):
+        v = src[..., c][ring]
+        coef, *_ = np.linalg.lstsq(A, v, rcond=None)
+        # One robust pass: the creases and the wax's own shadow cross the ring
+        # and would otherwise tilt the plane toward them.
+        resid = np.abs(v - A @ coef)
+        keep_px = resid < 2.0 * np.median(resid)
+        coef, *_ = np.linalg.lstsq(A[keep_px], v[keep_px], rcond=None)
+        fill[..., c] = (G @ coef).reshape(n, n)
+
+    # The paper's own speckle. Taken from beside the wax, left of the crease and
+    # well inside the envelope: the first sample sat directly below it and ran
+    # off the envelope's bottom edge into the next one in the flat-lay, which
+    # tiled a band of that edge straight across the patch.
+    g = int(R * 0.8)
+    gx, gy = int(CX - R * 3.2), int(CY + R * 0.2)
+    patch = np.asarray(
+        im.crop((gx - g, gy - g, gx + g, gy + g))
+    ).astype(np.float32)
+    tooth = patch - np.asarray(
+        Image.fromarray(np.clip(patch, 0, 255).astype(np.uint8)).filter(
+            ImageFilter.GaussianBlur(1.2))
+    ).astype(np.float32)
+    reps = n // (2 * g) + 2
+    tile = np.concatenate([tooth, tooth[::-1]], 0)
+    tile = np.concatenate([tile, tile[:, ::-1]], 1)
+    fill = fill + np.tile(tile, (reps, reps, 1))[:n, :n]
+
+    # Opaque over everything the photograph has wax in — the disc and its
+    # shadow, out to about 1.18R — and faded to nothing by 1.30R, inside the
+    # 1.31R the flap's cut carries away. Any of it outside that cut is not
+    # covered when the envelope is shut, and haloed around the seal.
+    a = np.clip((R * 1.30 - rad) / (R * 0.12), 0, 1)
+    out = Image.fromarray(np.clip(fill, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+    out.putalpha(Image.fromarray((a * 255).astype(np.uint8), "L"))
+    return warm(out)
 
 
 def extend_paper(im: Image.Image, to_y: int) -> Image.Image:
@@ -245,29 +392,29 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
     lx, ly = meet(FLAP_LEFT, -1)
     rx, ry = meet(FLAP_RIGHT, +1)
 
-    # The wax is stuck to the flap's point and to the body underneath, so when
-    # the flap lifts it shears along the line between the two places the creases
-    # run into it: the flap keeps the segment above that line, the body keeps
-    # the crescent below. The line is a chord, not an arc around the disc —
-    # modelling it as an arc gave a polygon that crossed itself.
-    #
-    # Wax does not shear straight, so the chord bulges a little into the lower
-    # half and carries a fixed, reproducible irregularity. This is the one
-    # authored thing on the cover, and it is a break, not a material.
-    N = 26
-    dx, dy = lx - rx, ly - ry
-    length = math.hypot(dx, dy)
-    # Perpendicular, pointing down the frame.
-    px, py = -dy / length, dx / length
-    if py < 0:
-        px, py = -px, -py
-    break_pts = []
-    for i in range(N + 1):
-        t = i / N
-        # Zero at both ends, so the break meets each crease exactly.
-        envelope_ = math.sin(math.pi * t)
-        off = R * envelope_ * (0.34 + BREAK_WOBBLE * math.sin(t * 11.0 + 0.6))
-        break_pts.append((rx + dx * t + px * off, ry + dy * t + py * off))
+    # The seal does not break. Earlier revisions sheared it along a chord
+    # between the two creases and let each half travel with the paper it was
+    # stuck to, which is what a wax seal really does — and it read as damage.
+    # The reference lifts the whole flap with the seal whole on it, so the cut
+    # runs around the outside of the disc instead of across it, and the wax
+    # goes up in one piece.
+    def arc(mul: float, n: int = 22) -> list[tuple[float, float]]:
+        a_r = math.atan2(ry - CY, rx - CX)
+        a_l = math.atan2(ly - CY, lx - CX)
+        # Sweep from the right crease the long way round, under the disc, to
+        # the left one: those two meet the circle above its centre, so the path
+        # that keeps the whole seal is the one through the bottom.
+        while a_l < a_r:
+            a_l += 2 * math.pi
+        return [
+            (
+                CX + R * mul * math.cos(a_r + (a_l - a_r) * i / n),
+                CY + R * mul * math.sin(a_r + (a_l - a_r) * i / n),
+            )
+            for i in range(n + 1)
+        ]
+
+    break_pts = arc(1.31)
 
     # The flap: along its hinge, down the right crease, across the wax, back up
     # the left crease. The hinge runs the full width of the envelope, which is
@@ -288,21 +435,36 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
     # result was a hairline drawn across the wax and out along both creases at
     # rest. Inset, the flap's solid interior covers the mouth's edge, and the
     # flap's own edge has nothing behind it but the same photograph.
-    inset = 0.9
-    # Decimated, because unlike the flap's cut this one is *animated*: the mouth
-    # opens out over a second, and clip-path is not composited, so every point
-    # is repaint work on every frame. At the flap's full 31 points the opening
-    # measured p95 26.2ms at 6x CPU against revision 4's 19.6. The mouth is
-    # inset behind the flap's edge and never has to line up with it exactly, so
-    # the break can be carried by a handful of points instead of twenty-seven.
-    keep = [p for i, p in enumerate(flap) if i < 3 or i == len(flap) - 1 or (i - 3) % 6 == 0]
-    mouth = [(x, y if y <= fy(TOP) else y - inset) for x, y in keep]
+    # The mouth is the flap's own cut, not an inset copy of it.
+    #
+    # It used to be pulled 0.9% clear so the flap's solid interior would cover
+    # the mouth's antialiased edge — necessary back when the card inside was
+    # painted at rest and bled a hairline through. It is `visibility: hidden`
+    # until the envelope opens now, so there is nothing behind the edge to
+    # bleed and nothing to inset for. Worse, once the cut wrapped the whole
+    # seal, an inset arc no longer followed the disc: it cut a boxy notch
+    # around it, and in the gap between the two the body photograph's own seal
+    # showed through as a second, ghosted one.
+    # The mouth is the flap's *footprint* — the triangle between the creases,
+    # down to the point where they meet — and not the flap's cut. The two differ
+    # by the wax's overhang: the seal travels with the flap, but the paper it was
+    # sitting on is the front of the envelope, not a hole into it. Cutting the
+    # mouth to the flap's shape put a round bump of darkness below the V.
+    vx, vy = flap_vertex()
+    NC = 7
+    mouth = [(-40.0, fy(TOP)), (140.0, fy(TOP))]
+    for i in range(NC + 1):
+        y = TOP + (vy - TOP) * i / NC
+        mouth.append((fx(edge(FLAP_RIGHT, y)), fy(y)))
+    for i in range(NC + 1):
+        y = vy - (vy - TOP) * i / NC
+        mouth.append((fx(edge(FLAP_LEFT, y)), fy(y)))
 
     # The same cut with its lower boundary dropped past the foot of the frame:
     # the envelope's mouth, opened out until it is the whole picture. Same point
-    # count as `mouth`, in the same order, which is what lets CSS interpolate
-    # between the two — so the opening widens into the page instead of the page
-    # being crossfaded in over a card still trapped in a triangle.
+    # count and order as `mouth`, which is what lets CSS interpolate between the
+    # two — so the opening widens into the page instead of the page being
+    # crossfaded in over a card still trapped behind the flap.
     opened = [(x, y) if y <= fy(TOP) else (x, 130.0) for x, y in mouth]
 
     return {
@@ -320,6 +482,9 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
         "mouth": [[round(x, 2), round(y, 2)] for x, y in mouth],
         "opened": [[round(x, 2), round(y, 2)] for x, y in opened],
         "throatTop": fy(TOP),
+        #: Half-width of public/cover/seal-patch.webp against the frame, so the
+        #: component can place it over exactly the paper it reconstructs.
+        "patchR": round(R * 1.34 / sw * 100, 3),
     }
 
 
@@ -333,17 +498,40 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
 #: sits above the frame and hingeY comes out negative — a rotation about an
 #: off-frame axis, which is what opening a letter held close to you looks like.
 FRAMES = {
-    "portrait": {"size": (1100, 2000), "sealAt": 0.478, "quality": 78},
-    "landscape": {"size": (2000, 1130), "sealAt": 0.400, "quality": 76},
+    # Portrait is cropped so the flap's hinge lands on the top of the frame,
+    # which is the axis the real flap turns on.
+    # The wax reads at 38% of the frame's width, near the reference's own 42%.
+    "portrait": {"size": (1060, 1930), "sealAt": 0.478, "sealFrac": 0.384, "quality": 84},
+    # 16:10, so on a desktop the frame's width is the viewport's width and
+    # nothing overflows sideways. At 2000x1130 it overflowed to 1593px on a
+    # 1440px screen and the seal rendered 360px across; at this aspect the same
+    # crop lands at 325px, and the file carries a 1.36x upscale instead of 1.71.
+    # Zoomed out as far as the envelope allows — sealFrac is clamped to the
+    # envelope's width, which lands it at 22.6%.
+    "landscape": {"size": (1600, 1000), "sealAt": 0.400, "sealFrac": 0.10, "quality": 88},
 }
 
 
-def build(photo: Image.Image, size: tuple[int, int], seal_at: float) -> tuple[Image.Image, dict]:
+def build(
+    photo: Image.Image, size: tuple[int, int], seal_at: float, seal_frac: float
+) -> tuple[Image.Image, dict]:
     W, H = size
-    # Zoom is set by the widest crop the envelope can actually fill.
+    # Zoom is set by the widest crop the envelope can actually fill: the seal's
+    # share of the frame is 2R over that width and there is no way to make it
+    # smaller without showing the wall behind the envelope.
+    #
+    # There was a `max(..., 1.60)` floor here, which on a landscape frame forced
+    # a *tighter* crop than the envelope allowed and baked a 1.71x upscale into
+    # the file — most of why the wax looked soft. Gone: the frames are sized so
+    # the upscale is small and the browser does the rest.
     max_sw = (RIGHT - LEFT) - 40
-    scale = max(W / max_sw, 1.60)
-    sw, sh = W / scale, H / scale
+    # The seal's share of the frame is the thing being chosen; the crop width
+    # follows from it. It cannot exceed the envelope's own width without
+    # showing the wall behind it, which is the hard limit on how small the wax
+    # can be made to read.
+    sw = min(2 * R / seal_frac, max_sw)
+    scale = W / sw
+    sh = H / scale
     x0 = CX - sw / 2
     # Never start above the envelope's own top edge: a few rows of the linen
     # wall at the top of frame is the one thing that gives away that this is a
@@ -355,13 +543,7 @@ def build(photo: Image.Image, size: tuple[int, int], seal_at: float) -> tuple[Im
     src = extend_paper(photo, int(math.ceil(box[3])) + 4)
     im = src.crop(tuple(int(round(v)) for v in box)).resize((W, H), Image.LANCZOS)
 
-    # Warmed a shade toward the invitation's ivory, so the paper on screen and
-    # the paper in the photograph are the same paper.
-    im = Image.merge("RGB", (
-        im.getchannel("R").point(lambda v: min(255, int(v * 1.02))),
-        im.getchannel("G").point(lambda v: min(255, int(v * 1.005))),
-        im.getchannel("B").point(lambda v: int(v * 0.958)),
-    ))
+    im = warm(im)
     return im, crop_geometry(tuple(int(round(v)) for v in box), size)
 
 
@@ -373,12 +555,17 @@ def main() -> None:
 
     geo = {}
     for name, spec in FRAMES.items():
-        im, g = build(sealed, spec["size"], spec["sealAt"])
+        im, g = build(sealed, spec["size"], spec["sealAt"], spec["sealFrac"])
         p = OUT / f"envelope-{name}.webp"
         im.save(p, "WEBP", quality=spec["quality"], method=6)
         geo[name] = g
         print(f"  {p.name:26s} {im.size}  {p.stat().st_size // 1024} KB"
               f"  seal {g['sealX']:.0f}% x {g['sealY']:.0f}%  hinge {g['hingeY']:.1f}%")
+
+    patch = seal_patch(photo)
+    patch.save(OUT / "seal-patch.webp", "WEBP", quality=88, method=6)
+    print(f"  seal-patch.webp            {patch.size}  "
+          f"{(OUT / 'seal-patch.webp').stat().st_size // 1024} KB")
 
     card = Image.open(SRC / "card-paper.jpg").convert("RGB")
     # A subtle, near-uniform texture: it is scaled to cover, so it does not

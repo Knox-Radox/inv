@@ -86,15 +86,19 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
   const vars = {
     "--p-ar": p.aspect,
     "--p-hinge": `${p.hingeY}%`,
+    "--p-seal-x": `${p.sealX}%`,
     "--p-seal-y": `${p.sealY}%`,
     "--p-seal-ry": `${p.sealRy}%`,
+    "--p-patch-r": `${p.patchR}%`,
     "--p-flap": poly(p.flap),
     "--p-mouth": poly(p.mouth),
     "--p-opened": poly(p.opened),
     "--l-ar": l.aspect,
     "--l-hinge": `${l.hingeY}%`,
+    "--l-seal-x": `${l.sealX}%`,
     "--l-seal-y": `${l.sealY}%`,
     "--l-seal-ry": `${l.sealRy}%`,
+    "--l-patch-r": `${l.patchR}%`,
     "--l-flap": poly(l.flap),
     "--l-mouth": poly(l.mouth),
     "--l-opened": poly(l.opened),
@@ -115,6 +119,16 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
           <source media="(min-aspect-ratio: 1/1)" srcSet="/cover/envelope-landscape.webp" />
           <img className={styles.photo} src="/cover/envelope-portrait.webp" alt="" />
         </picture>
+
+        {/* The front of the envelope where the wax is sitting, reconstructed
+            without it. The seal lifts with the flap — whole — and the paper it
+            was stuck to is the front of the envelope, not a hole into it. The
+            flap covers this until it goes. */}
+        {/* Not next/image: this is a 5 KB asset that has to land on exact
+            coordinates generated from the photograph, and an optimiser that is
+            free to resize or re-encode it would move it off them. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={styles.sealPatch} src="/cover/seal-patch.webp" alt="" aria-hidden="true" />
 
         {/* Inside: the dark, then the card, then the mouth that shows them.
             The card sits where the page's own card sits, so when the mouth
