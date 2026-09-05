@@ -1,48 +1,51 @@
 import { Closing } from "./Closing";
-import { Jasmine } from "../art/Jasmine";
 import { Countdown } from "./Countdown";
 import { Place } from "./Place";
+import { Reveal } from "./Reveal";
 import { Schedule } from "./Schedule";
 import { Dimple, Thread } from "./Thread";
 import styles from "./Field.module.css";
 
 /**
- * The field — docs/design-plan.md § Layout, "ceremonial object, then editorial
- * matter".
+ * The field — revision 3.
  *
- * Everything below the card's woven edge: the practical matter of the day, hung
- * off the thread's left datum where it is easiest to read at arm's length.
- *
- * The card above is a fixed symmetrical rectangle and its type is centred,
- * because that is where the genre expectation of a centred invitation actually
- * attaches. A scrolling page is a ribbon, and centred text on a ribbon reflows
- * to a new optical centre on every line — measurably harder for an older reader
- * to scan, and half this audience is over sixty.
- *
- * The thread is never centred with content on both sides. Above the korvai edge
- * it is behind the cloth; below it, it is a left margin with content on one
- * side only.
+ * Everything below the card's woven edge, hung off the thread's left datum,
+ * each section rising into view as the guest reaches it. Behind it, on wide
+ * screens, a soft photograph of a jasmine branch drifts very slowly — the
+ * ornament the client asked for, kept far enough back that the type stays
+ * quiet on top of it.
  */
 export function Field() {
   return (
     <div className={styles.field}>
-      {/*
-       * One oversized crop, at 340% and 22%, bleeding off the right edge —
-       * beside the editorial matter only, where the composition is deliberately
-       * asymmetric. It is the same stitching seen very close, not a second
-       * drawing. Hidden below 900px, where there is no field to put it in.
-       */}
-      <Jasmine className={styles.crop} />
+      {/* eslint-disable-next-line @next/next/no-img-element -- a decorative
+          backdrop; next/image's layout machinery buys nothing here. */}
+      <img
+        className={styles.backdrop}
+        src="/photos/jasmine-branch.jpg"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
+      <div className={styles.veil} aria-hidden="true" />
 
       <div className={styles.inner}>
-        {/* Where the thread comes back through the woven edge. */}
         <Dimple />
         <Thread lean={1} />
 
-        <Countdown />
-        <Schedule />
-        <Place />
-        <Closing />
+        <Reveal>
+          <Countdown />
+        </Reveal>
+        <Reveal delay={80}>
+          <Schedule />
+        </Reveal>
+        <Reveal delay={80}>
+          <Place />
+        </Reveal>
+        <Reveal delay={80}>
+          <Closing />
+        </Reveal>
       </div>
     </div>
   );

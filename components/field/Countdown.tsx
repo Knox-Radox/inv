@@ -8,7 +8,7 @@ const TARGET = Date.parse(invitation.countdown.target);
 const DAY_ENDS = Date.parse(invitation.countdown.dayEnds);
 
 type State =
-  | { kind: "before"; days: number; hours: number; minutes: number }
+  | { kind: "before"; days: number; hours: number; minutes: number; seconds: number }
   | { kind: "today" }
   | { kind: "after" };
 
@@ -21,29 +21,22 @@ function stateAt(now: number): State {
     days: Math.floor(ms / 86_400_000),
     hours: Math.floor(ms / 3_600_000) % 24,
     minutes: Math.floor(ms / 60_000) % 60,
+    seconds: Math.floor(ms / 1000) % 60,
   };
 }
 
 /**
- * The countdown, and the two states it becomes — docs/design-plan.md
- * § The three time states.
+ * The countdown — revision 3.
  *
- * Nobody designed the reference sites for the invitation outliving the event;
- * one of them currently reads `00 DAYS 00 HOURS 00 MINUTES`. This link will be
- * opened in 2030 by someone who wants to look at it again, and that guest is
- * designed for here. It never renders a zero and never renders a negative.
+ * Four columns with presence: large display numerals over their units, ruled
+ * apart by fine gold hairlines, ticking every second. Each numeral is keyed by
+ * its value so a change remounts it and it settles in with a short rise.
  *
- * The governing principle: a kept invitation does not change its words. The
- * inviting line stays in the invitational tense forever. Exactly one live
- * element — the thing that was counting — resolves.
- *
- * Both boundaries are fixed UTC constants, so the state machine carries no
- * timezone risk and the value is identical for a guest in Chennai and one in
- * Dallas. Days, hours, minutes; no seconds, which for a fourteen-month
- * countdown are noise, a 1Hz repaint and a battery cost.
- *
- * Rendered on the server as the JS-off line, which is true in every era and is
- * the same two-line shape, so replacing it on mount shifts nothing.
+ * Still computed against fixed UTC instants — identical for a guest in Chennai
+ * and one in Dallas — and still three states: before, "Today", and, from
+ * midnight on the 28th and forever after, "We were married on Friday, 27
+ * November 2026." It never renders a zero row. The server renders the
+ * ceremony time, true in every era.
  */
 export function Countdown() {
   const c = invitation.copy.countdown;
@@ -52,55 +45,46 @@ export function Countdown() {
   useEffect(() => {
     const tick = () => setState(stateAt(Date.now()));
     tick();
-    const id = window.setInterval(tick, 30_000);
+    const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  // Server render, and every render before hydration. Adds the ceremony time,
-  // which the card does not carry, so it is information rather than filler.
-  if (state === null) {
-    return (
-      <Shape lead={c.staticLead} trail={c.staticTrail} />
-    );
-  }
+  if (state === null) return <Shape lead={c.staticLead} trail={c.staticTrail} />;
+  if (state.kind === "after") return <Shape lead={c.afterLead} trail={c.afterTrail} />;
+  if (state.kind === "today") return <Shape lead={c.todayLead} trail={invitation.day.fullDateDisplay} />;
 
-  if (state.kind === "after") {
-    return <Shape lead={c.afterLead} trail={c.afterTrail} />;
-  }
-
-  if (state.kind === "today") {
-    return <Shape lead={c.todayLead} trail={invitation.day.fullDateDisplay} />;
-  }
+  const cells: [number, string][] = [
+    [state.days, c.units.days],
+    [state.hours, c.units.hours],
+    [state.minutes, c.units.minutes],
+    [state.seconds, c.units.seconds],
+  ];
 
   return (
-    <p className={styles.block}>
-      <span className={styles.lead}>
-        <span className={styles.pair}>
-          <span className={styles.figure}>{state.days}</span>
-          <span className={styles.unit}>{c.units.days}</span>
-        </span>
-        <span className={styles.pair}>
-          <span className={styles.figure}>{state.hours}</span>
-          <span className={styles.unit}>{c.units.hours}</span>
-        </span>
-        <span className={styles.pair}>
-          <span className={styles.figure}>{state.minutes}</span>
-          <span className={styles.unit}>{c.units.minutes}</span>
-        </span>
-      </span>
-      <span className={styles.trail}>{c.until}</span>
-    </p>
+    <div className={styles.block}>
+      <div className={styles.row} role="timer" aria-live="off">
+        {cells.map(([value, unit], i) => (
+          <div key={unit} className={styles.cell}>
+            {i > 0 && <span className={styles.rule} aria-hidden="true" />}
+            <span className={styles.figure}>
+              <span key={value} className={styles.digit}>
+                {i === 0 ? value : String(value).padStart(2, "0")}
+              </span>
+            </span>
+            <span className={styles.unit}>{unit}</span>
+          </div>
+        ))}
+      </div>
+      <p className={styles.trail}>{c.until}</p>
+    </div>
   );
 }
 
-/** One shape for all four states, so switching between them shifts nothing. */
 function Shape({ lead, trail }: { lead: string; trail: string }) {
   return (
-    <p className={styles.block}>
-      <span className={styles.lead}>
-        <span className={styles.figure}>{lead}</span>
-      </span>
-      <span className={styles.trail}>{trail}</span>
-    </p>
+    <div className={styles.block}>
+      <p className={styles.lead}>{lead}</p>
+      <p className={styles.trail}>{trail}</p>
+    </div>
   );
 }

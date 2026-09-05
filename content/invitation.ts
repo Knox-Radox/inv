@@ -146,7 +146,7 @@ export const invitation = {
       /** Rendered on the server and with JS off. True in every era. */
       staticLead: "8:30 in the morning",
       staticTrail: day.fullDateDisplay,
-      units: { days: "days", hours: "hours", minutes: "minutes" },
+      units: { days: "days", hours: "hours", minutes: "minutes", seconds: "seconds" },
     },
 
     controls: {
@@ -162,14 +162,14 @@ export const invitation = {
 
     /** Alt text for the seal, which is the only meaningful illustration. */
     sealAlt:
-      "A gold wax seal pressed with an interlocking A and S monogram, ringed by a fine woven border.",
+      "A sage-green wax seal pressed with an interlocking A and S monogram, ringed by a fine woven border.",
   },
 
   share: {
     title: "Advika and Sooraj",
     description: `${day.fullDateDisplay}. ${venue.name}, ${venue.locality}.`,
     imageAlt:
-      "A gold wax seal with an interlocking A and S monogram on ivory paper, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
+      "A sage-green wax seal with an interlocking A and S monogram on embossed ivory paper, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
     themeColor: "#FBF7F0",
   },
 

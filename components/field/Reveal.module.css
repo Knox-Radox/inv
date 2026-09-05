@@ -1,0 +1,37 @@
+/* Hidden only when a script exists to reveal it. */
+:global(html.js) .reveal:not(.in) {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.in {
+  animation: reveal-rise 1000ms var(--ease-needle) var(--reveal-delay, 0ms) both;
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .reveal:not(.in) {
+    transform: none;
+  }
+  .in {
+    animation: reveal-fade 300ms ease-out both;
+  }
+  @keyframes reveal-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

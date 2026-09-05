@@ -14,6 +14,10 @@
   --gold: #b08d57; /* wax, thread, korvai, hairlines. Never text. */
   --gold-light: #cdae7a; /* sheen only. Never text. */
   --ink: #2e2a24; /* warm bark brown — body copy, times, address */
+  /* Revision 3: the wax is sage, as in the client's reference. Gold wax on
+     ivory read as a coin; sage reads as wax. A lighter tint than --sage because
+     the lighting filter darkens it. */
+  --wax: #9aa892;
 
   /* Type scale — § Type. Hits the mobile size at exactly 390px and the
      desktop size at exactly 1440px. The rem intercept dominates every step,
@@ -43,6 +47,7 @@
   --ease-press: cubic-bezier(0.3, 0, 0.7, 1);
   --ease-wax: cubic-bezier(0.16, 0.84, 0.44, 1);
   --ease-flap: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --ease-door: cubic-bezier(0.5, 0.05, 0.3, 1);
   --ease-rise: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-needle: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-press-in: cubic-bezier(0.2, 0.7, 0.3, 1);

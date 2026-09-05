@@ -12,6 +12,8 @@
    pulled back toward the datum so the branch reads as continuous. */
 .plate {
   margin-top: clamp(24px, 4vh, 40px);
+  /* A plate lies on the surface: a sheet's soft shadow, not a card's. */
+  filter: drop-shadow(0 10px 22px rgb(58 48 30 / 0.16));
   margin-left: calc(var(--thread-x) - var(--content-x));
   margin-right: calc(var(--field-pad-right) * -1);
 }

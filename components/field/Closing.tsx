@@ -15,6 +15,15 @@ export function Closing() {
 
   return (
     <section className={styles.section}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- decorative */}
+      <img
+        className={styles.blossoms}
+        src="/photos/jasmine-cluster.jpg"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
       <p className={styles.note}>
         {copy.closingNote.map((line) => (
           <span key={line} className={styles.line}>

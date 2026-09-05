@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import jasmine as jm  # noqa: E402
 import mapplate as mp  # noqa: E402
+import relief as rl  # noqa: E402
 import monogram as mg  # noqa: E402
 import thread as th  # noqa: E402
 import wax as wx  # noqa: E402
@@ -164,6 +165,17 @@ def main() -> None:
         lines.append("")
     lines.append(jasmine_block())
     lines.append(map_block())
+    lines += [
+        "/** Blind-embossed floral relief for the envelope, as SVG markup drawn in",
+        " *  white on transparent: a height map for the lighting filter. 440x700. */",
+        "export const RELIEF_ENVELOPE =",
+        "  " + __import__("json").dumps(rl.ENVELOPE) + ";",
+        "",
+        "/** The card's relief: corners only, so the type has room. 620x900. */",
+        "export const RELIEF_CARD =",
+        "  " + __import__("json").dumps(rl.CARD) + ";",
+        "",
+    ]
     lines += [
         "/** The one knot on the page, where the thread ties off. */",
         f'export const KNOT =\n  "{th.KNOT}";',

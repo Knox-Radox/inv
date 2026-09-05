@@ -1,10 +1,25 @@
 .section {
   position: relative;
+  padding-top: clamp(40px, 8vh, 72px);
+  overflow: hidden;
   margin-top: clamp(56px, 10vh, 104px);
   padding-bottom: calc(clamp(48px, 8vh, 88px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
 }
 
+/* White blossoms behind the last words, softened and pulled to the right. */
+.blossoms {
+  position: absolute;
+  right: -18%;
+  top: -10%;
+  width: 120%;
+  height: auto;
+  opacity: 0.2;
+  filter: sepia(0.3) saturate(0.6) blur(1px);
+  pointer-events: none;
+}
+
 .note {
+  position: relative;
   font-size: var(--text-body-l);
   line-height: 1.62;
   letter-spacing: 0.002em;
@@ -20,6 +35,7 @@
 /* Sits on the datum, where the thread has been running all along. */
 .knot {
   position: absolute;
+  z-index: 1;
   left: calc(var(--thread-x) - var(--content-x) - 12px);
   bottom: clamp(20px, 4vh, 44px);
 }

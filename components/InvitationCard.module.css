@@ -1,0 +1,183 @@
+/*
+ * The invitation card — revision 3. Embossed paper, centred type.
+ */
+
+.card {
+  position: relative;
+  min-height: calc(100svh - 88px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--ground);
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--card-width);
+  margin-inline: auto;
+  min-height: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* The sheet itself, behind the type. */
+.paper {
+  z-index: 0;
+}
+
+.content,
+.edge {
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  padding: clamp(48px, 9vh, 96px) clamp(28px, 7vw, 56px) clamp(56px, 9vh, 88px);
+  text-align: center;
+}
+
+.spray {
+  display: block;
+  width: clamp(96px, 26vw, 140px);
+  height: auto;
+  margin: 0 auto clamp(14px, 3vh, 28px);
+  transform-origin: 50% 0;
+  animation: sway 7.5s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    transform: rotate(-0.9deg);
+  }
+  to {
+    transform: rotate(0.9deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spray {
+    animation: none;
+  }
+}
+
+.names {
+  font-family: var(--font-gilda), Georgia, serif;
+  font-weight: 400;
+  color: var(--sage-deep);
+  font-size: var(--text-display-xl);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+.name {
+  display: block;
+}
+
+.conjunction {
+  display: block;
+  font-size: 0.42em;
+  line-height: 1.5;
+}
+
+.inviting {
+  margin: clamp(24px, 4vh, 40px) auto 0;
+  max-width: min(34ch, 100%);
+  font-size: var(--text-body-l);
+  line-height: 1.62;
+  letter-spacing: 0.002em;
+}
+
+.date {
+  margin-top: clamp(28px, 5vh, 48px);
+  font-family: var(--font-gilda), Georgia, serif;
+  color: var(--sage-deep);
+  font-size: var(--text-display-m);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  display: grid;
+  gap: 2px;
+}
+
+.weekday {
+  display: block;
+}
+
+.venue {
+  margin-top: clamp(20px, 3.5vh, 34px);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  display: grid;
+  gap: 2px;
+}
+
+.venueName {
+  font-weight: 500;
+}
+
+.edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.replica {
+  pointer-events: none;
+}
+
+/* Above 900px the card is an object on the field: the sheet stops at the
+   620px box and the champagne surrounds it. */
+@media (min-width: 900px) {
+  .card {
+    background-color: var(--ground-deep);
+    padding-top: clamp(40px, 6vh, 80px);
+  }
+
+  .inner {
+    /* A sheet has thickness: a soft shadow on the surface it lies on. */
+    box-shadow:
+      0 1px 2px rgb(58 48 30 / 0.06),
+      0 18px 48px -18px rgb(58 48 30 / 0.28);
+  }
+}
+
+/*
+ * Inside the envelope, as the doors part, the card composes itself: the type
+ * rises into place in reading order. Only while `.composing` is on an ancestor
+ * — the real card on the page never does this.
+ */
+:global(.composing) .names {
+  animation: compose 1100ms var(--ease-rise) 3300ms both;
+}
+:global(.composing) .inviting {
+  animation: compose 1100ms var(--ease-rise) 3550ms both;
+}
+:global(.composing) .date {
+  animation: compose 1100ms var(--ease-rise) 3800ms both;
+}
+:global(.composing) .venue {
+  animation: compose 1100ms var(--ease-rise) 3950ms both;
+}
+
+@keyframes compose {
+  from {
+    opacity: 0.45;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.composing) .names,
+  :global(.composing) .inviting,
+  :global(.composing) .date,
+  :global(.composing) .venue {
+    animation: none;
+  }
+}

@@ -19,7 +19,7 @@ import {
  * deboss is approximated by a light offset copy beneath the dark monogram
  * rather than by the feGaussianBlur/feComposite filter the page uses.
  *
- * The seal on the share card is **intact**. This is the envelope as it arrives,
+ * Sage wax, as on the page. The seal on the share card is **intact**. This is the envelope as it arrives,
  * before anyone has opened it, which is also why there is no jasmine on the
  * card: the thread has not been stitched yet.
  */
@@ -27,11 +27,11 @@ export function sealSvg(size: number): string {
   // --gold-light / --gold / derived #846B46, from app/globals.css.
   const grad = `
     <radialGradient id="b" gradientUnits="userSpaceOnUse" cx="33" cy="28" r="82">
-      <stop offset="0%" stop-color="#D8BC8C"/>
-      <stop offset="30%" stop-color="#CDAE7A"/>
-      <stop offset="62%" stop-color="#B08D57"/>
-      <stop offset="90%" stop-color="#9A7A4A"/>
-      <stop offset="100%" stop-color="#846B46"/>
+      <stop offset="0%" stop-color="#C3CDBB"/>
+      <stop offset="30%" stop-color="#AEBBA6"/>
+      <stop offset="62%" stop-color="#9AA892"/>
+      <stop offset="90%" stop-color="#7E8C77"/>
+      <stop offset="100%" stop-color="#66745F"/>
     </radialGradient>
     <radialGradient id="s" gradientUnits="userSpaceOnUse" cx="31" cy="25" r="18">
       <stop offset="0%" stop-color="#FFF4E0" stop-opacity="0.30"/>
@@ -52,9 +52,9 @@ export function sealSvg(size: number): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="-3 -3 106 106">
     <defs>${grad}</defs>
     <path d="${WAX_WHOLE}" fill="url(#b)"/>
-    <path d="${WAX_RIM}" fill="#6E5734" fill-opacity="0.4"/>
-    ${impression("#EBD3A6", -0.7, -0.8, 0.55)}
-    ${impression("#7A6140")}
+    <path d="${WAX_RIM}" fill="#55634F" fill-opacity="0.4"/>
+    ${impression("#E4EBDE", -0.7, -0.8, 0.6)}
+    ${impression("#6F7E68")}
     <ellipse cx="31" cy="25" rx="17" ry="10" fill="url(#s)" transform="rotate(-30 31 25)"/>
   </svg>`;
 }

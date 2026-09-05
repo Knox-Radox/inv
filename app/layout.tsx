@@ -77,6 +77,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* The envelope and card sheets are the largest paint on first load.
+            As CSS backgrounds they would be discovered late; 21 KB between
+            them, they are worth fetching first. */}
+        <link rel="preload" as="image" href="/paper/envelope-sheet.webp" fetchPriority="high" />
+        <link rel="preload" as="image" href="/paper/card-sheet.webp" />
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
          * it flash and a first-time guest never sees the invitation flash
@@ -89,7 +94,7 @@ export default function RootLayout({
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem(${JSON.stringify(SEEN_KEY)})!=="1"&&location.hash!=="#invitation")document.documentElement.classList.add("envelope-armed")}catch(e){}`,
+            __html: `document.documentElement.classList.add("js");try{if(localStorage.getItem(${JSON.stringify(SEEN_KEY)})!=="1"&&location.hash!=="#invitation")document.documentElement.classList.add("envelope-armed")}catch(e){}`,
           }}
         />
       </head>

@@ -3,6 +3,32 @@
 Read `docs/design-brief.md` first. This document is the build contract: every
 colour, size, duration and curve here is the value that ships.
 
+**Revision 3 — client review of the built site.** The client saw revision 2
+built and rejected it as plain, cheap and underwhelming against La Maison Dorée:
+the envelope flat, the wax seal a coded coin, the opening dead in its middle, the
+countdown too simple, the whole thing too sparse. That verdict is accepted, and it
+supersedes the brief wherever the two conflict. Specifically it overrides:
+
+- **§8 asset policy.** The client has waived the CC0/public-domain-only rule for
+  this private, family-only page. Photographic assets may be used where they earn
+  their place; sources are still recorded in `ASSETS.md`.
+- **§5 motion budget.** "One hero sequence, at most two draw-ons, no ambient
+  loops, no section entrances" is withdrawn. The client wants the page to move —
+  scroll reveals, ambient motion, continuous elements — in the manner of the
+  reference.
+- **§6 ornament restraint.** "Spend your boldness in one place; everything else
+  still" is withdrawn. Richer ornament throughout.
+- **§3 "do not copy their layout."** Read now as: match their *material quality*
+  — photographic paper, blind embossing, real wax, real shadow — around Advika
+  and Sooraj's own names, monogram and content. Not a clone of a commercial
+  template.
+
+What does **not** change: `content/invitation.ts` as the single source of truth,
+the timezone-correct countdown, the `.ics`, the no-lockout guarantees, the
+accessibility floor, and the palette. Everything below this note describes
+revision 2 and stands as history; the revision 3 build is documented in
+`§ Revision 3 — the material rebuild` at the end of this file.
+
 **Revision 2** — incorporates the client's alignment ruling (ceremonial object,
 then editorial matter), a real job for korvai, performance as a stated position,
 the three time states, the lockout test plan, and the share card design.
@@ -1099,3 +1125,89 @@ cross-strokes, and everything is clipped inside the plate rule.
 - Verification at every phase gate: screenshots at 390, 430, 768 and 1440px, read
   critically rather than confirmed; `npm run build` and `npx tsc --noEmit` clean;
   the four lockout tests before the envelope is called done.
+
+---
+
+# Revision 3 — the material rebuild
+
+The client saw revision 2 built and rejected it: plain, cheap, underwhelming
+against La Maison Dorée. The verdict was right. The difference was *material* —
+theirs is photographic depth, embossing, gloss and shadow; revision 2 was line
+and type. This section records what replaced it.
+
+## Materials, as lighting
+
+The reference is premium because of a specific stack: visible cotton-paper
+fibre, blind-embossed relief lit from the top-left, real fold shadows, and wax
+with thickness, a satin gloss and a shadow on the paper. None of that is
+drawing; all of it is lighting. SVG has genuine lighting filters, so the
+materials are built as such in `components/material/MaterialDefs.tsx`:
+
+| Filter | What it makes |
+|---|---|
+| `mat-paper` | Cotton fibre: long fibres at one frequency, tooth at another, multiplied onto the sheet and composited into its own alpha |
+| `mat-emboss` | Blind embossing: the floral drawn in white is the height map; lit from 225°, with the flat baseline subtracted so lit slopes add light and shaded slopes subtract it — tone on tone |
+| `mat-wax` | The wax dome: diffuse form, a little ambient, a low-exponent specular for satin rather than mirror |
+| `mat-wax-shadow` | The shadow the wax casts on the paper |
+| `mat-deboss` | The impression pressed in: shadow on the inner upper-left wall, light on the lower-right |
+
+The wax is **sage**, as in the reference. Gold wax on ivory reads as a coin;
+sage reads as wax. That is one of the three things the client named, and they
+were right.
+
+## Baked, because live was too slow
+
+Five full-size sheets through live lighting filters at 2× DPR cost **p95 315–406
+ms per frame** during the opening on a throttled CPU — 67–115 frames captured
+in six seconds. Measured, then fixed: the sheets are static, so
+`tools/bake.js` renders them once from exactly the same filters and relief and
+the page ships them as WebP (13 KB and 8 KB — the soft texture compresses
+extraordinarily well). Live filters remain only on the wax seal, which is
+small. After the bake: **376–383 frames, p95 17–19 ms, zero jank at 1×**.
+
+The `brightness()` filter on the revealed card was replaced by an
+opacity-animated scrim for the same reason: a CSS filter on a layer re-rasters
+every frame; opacity composites.
+
+## The envelope, rebuilt
+
+An embossed cotton envelope the size of the card — full-bleed on a phone, a
+centred 620 px object on a desk — its flap sealed with sage wax over one
+continuous relief. Tap the seal:
+
+| ms | Beat |
+|---|---|
+| 0–90 | pressed |
+| 90–950 | the wax cracks; the halves tumble off the flap and fade, the monogram breaking with them |
+| 450–1800 | the flap lifts on its champagne lining |
+| 1300–3500 | the two doors part — on `--ease-door`, a curve that spends its whole two seconds moving; `--ease-flap` reached 85 % of its travel at the halfway mark and collapsed the whole phase into one second, which put the dead middle back |
+| 1600–3200 | the card inside comes up out of the dark |
+| 2000–3800 | the dark of the envelope lifts off it |
+| 2800–5200 | the jasmine is stitched on it |
+| 3300–5000 | the card composes: names, then the line, the date, the venue rise into place |
+| 4300–5300 | a sweep of light across the card |
+| 5300–6100 | the envelope fades; the page beneath is the same component and nothing appears to move |
+
+At rest, a light sweeps the paper every nine seconds. The lockout guarantees
+are unchanged and re-verified: the invitation is first in the document, the
+skip is a real anchor that works with no script, `body` is never
+`overflow:hidden`, and every animation supplies only its *from* state.
+
+## The field
+
+- **Countdown** — four columns with presence: large display numerals over
+  their units, ruled apart by fine gold hairlines, ticking every second, each
+  change settling in with a short rise. Still three time states, still fixed
+  UTC boundaries.
+- **Scroll reveals** — each section rises into view once. Hidden initial state
+  applies only under `html.js`, set by the pre-paint script, so with scripts
+  off every section is simply present.
+- **Backdrops** — a mock-orange branch, warmed, blurred and drifting over half
+  a minute, behind the field; white blossoms behind the closing note.
+- **Ambient** — the jasmine on the card sways ±0.9° over 7.5 s.
+
+## What was verified on this build
+
+Frame pacing above. Console clean in production across four states. Lockout
+4/4. Contrast, keyboard and reflow audits clean. Every one of these ran against
+the built site.

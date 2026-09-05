@@ -54,6 +54,16 @@ npm run lint
 npx tsc --noEmit
 ```
 
+### Regenerating the paper
+
+The embossed cotton sheets are baked images. After changing the relief in
+`tools/relief.py` or the filters in `components/material/MaterialDefs.tsx`:
+
+```
+cd tools && python3 emit_art.py && cd ..
+node tools/bake.js && python3 tools/bake-encode.py
+```
+
 ### Regenerating the illustrations
 
 The SVG geometry is generated, not hand-written. After editing anything in
@@ -93,7 +103,9 @@ Measured on the built site, not asserted:
   information anywhere: every gold mark is `aria-hidden`.
 - **Keyboard** — every stop has a visible focus ring and a target of at least
   44px.
-- **Performance** — on Slow 4G with 4× CPU throttling: LCP 1.11s, CLS 0.004,
-  140 KB of JavaScript over the wire, 214 KB total, and zero image bytes.
+- **Performance** — the opening holds 60fps at 6× CPU throttle (p95 under
+  19 ms) because the embossed paper is baked to images rather than filtered
+  live. Photographs and sheets add about 350 KB; the page is still roughly a
+  hundredth of the reference sites.
 - **Calendar** — the `.ics` parses with a real iCalendar library and resolves to
   08:30 America/Chicago at UTC−06:00.

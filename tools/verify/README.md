@@ -1,0 +1,32 @@
+# Verification harness
+
+Playwright scripts that produce every number quoted in `docs/`. None of them
+trust the code; they run the built site and measure.
+
+```
+npm run build && npx next start -p 3400 &
+node tools/verify/lockout.js  http://localhost:3400/ /tmp/shots   # JS off, animations cancelled, reduced motion, body overflow
+node tools/verify/audit.js    http://localhost:3400/              # 320-1920, reflow, 2x/3x type, keyboard, semantics
+node tools/verify/contrast.js http://localhost:3400/              # WCAG AA on rendered pixels
+node tools/verify/console.js  http://localhost:3400/ "label"      # any console/page error, 4 states, dev AND prod
+node tools/verify/perf.js     http://localhost:3400/              # frame pacing through the opening at 1x/4x/6x CPU
+node tools/verify/vitals.js   http://localhost:3400/              # LCP/CLS on Slow 4G + 4x CPU
+node tools/verify/weight.js   http://localhost:3400/              # bytes over the wire by type
+node tools/verify/beats3.js   http://localhost:3400/ /tmp/beats   # the opening, frame by frame, monotonic clock
+node tools/verify/viewport.js "http://localhost:3400/#invitation" '[[390,844,0,"m"],[1440,900,0,"d"]]' /tmp/shots
+```
+
+Needs `playwright` (`npm i -D playwright@1.63.0`) and a Chromium; set `CHROME`
+to its executable if it is not at the default path.
+
+Gotchas learned the hard way:
+- Never `pkill -f "next start"` from the same shell — the pattern matches the
+  shell's own command line and kills it (exit 144).
+- `Date.now()` can jump backwards under WSL2 mid-run. The beat harness uses
+  `performance.now()`; if frames ever look out of order, that is why.
+- A screenshot forces a full repaint. With live SVG lighting filters each one
+  took 1.3–7.3 s and mistimed every frame, which is how the baked sheets came
+  about. Screenshot cost is printed per frame; if it climbs, something is
+  filtering live again.
+- CSS-module keyframe names are hashed; the overlay's end detector matches
+  `includes("overlay-out")` on the hashed name.

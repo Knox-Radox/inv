@@ -9,150 +9,62 @@ import {
   RING_OUTER,
   WAX_LEFT,
   WAX_RIGHT,
-  WAX_RIM,
+  WAX_WHOLE,
 } from "./paths";
 import styles from "./WaxSeal.module.css";
 
 /**
- * The wax seal — docs/design-plan.md § The A/S monogram.
+ * The wax seal — revision 3.
  *
- * The most looked-at object on the page, so every part of it is drawn rather
- * than approximated. The body is a perturbed perimeter with two squeeze-out
- * lobes; the rim is an arc present only where the light is not; the monogram is
- * debossed by an SVG filter that puts shadow on the inner upper-left wall and a
- * light catch on the lower-right, which is what an impression lit from the
- * upper left actually looks like.
+ * The first version was gradients over a shape and it read as a coin. This one
+ * is *lit*: the wax body's softened alpha is a dome, `#mat-wax` gives it
+ * diffuse form and a satin specular, `#mat-wax-shadow` casts it onto the
+ * paper, and the impression is pressed in with `#mat-deboss`. Sage rather than
+ * gold, as in the client's reference — gold on ivory reads as metal, sage
+ * reads as wax.
  *
- * There is deliberately no `box-shadow` and no `drop-shadow` anywhere in here.
- * A flat circle with a shadow under it reads as a sticker.
+ * The body ships whole for the resting state and as two lit halves for the
+ * crack. Both are always in the DOM; `.cracked` swaps which is visible and
+ * sends the halves apart, down, and away. The impression is defined once and
+ * worn by every piece, clipped to it, so the monogram breaks with the wax.
  *
- * The body ships as two halves either side of an irregular fault so beat 1 of
- * the opening can rotate and drop them apart. Intact, the halves sit edge to
- * edge and the seam is invisible.
+ * Requires <MaterialDefs/> once on the page.
  */
 export function WaxSeal({
-  size = 96,
+  size = 132,
   cracked = false,
   className,
 }: {
   size?: number;
-  /** Drives the CSS that separates the halves. Purely presentational. */
   cracked?: boolean;
   className?: string;
 }) {
-  // Scoped so a second seal on the page cannot capture the first one's paint
-  // servers — the share card renders one too.
   const uid = useId().replace(/:/g, "");
-  const body = `b${uid}`;
-  const spec = `s${uid}`;
-  const deboss = `d${uid}`;
   const face = `f${uid}`;
   const clipL = `cl${uid}`;
   const clipR = `cr${uid}`;
 
   return (
     <svg
-      className={[styles.seal, cracked ? styles.cracked : "", className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[styles.seal, cracked ? styles.cracked : "", className].filter(Boolean).join(" ")}
       width={size}
       height={size}
-      viewBox="-3 -3 106 106"
+      viewBox="-10 -8 120 122"
       fill="none"
       aria-hidden="true"
       focusable="false"
     >
       <defs>
-        <radialGradient
-          id={body}
-          gradientUnits="userSpaceOnUse"
-          cx="33"
-          cy="28"
-          r="82"
-        >
-          <stop offset="0%" stopColor="#D8BC8C" />
-          <stop offset="30%" stopColor="var(--gold-light)" />
-          <stop offset="62%" stopColor="var(--gold)" />
-          <stop offset="90%" stopColor="#9A7A4A" />
-          <stop offset="100%" stopColor="#846B46" />
-        </radialGradient>
-
-        <radialGradient id={spec} gradientUnits="userSpaceOnUse" cx="31" cy="25" r="18">
-          <stop offset="0%" stopColor="#FFF4E0" stopOpacity="0.3" />
-          <stop offset="60%" stopColor="#FFF4E0" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#FFF4E0" stopOpacity="0" />
-        </radialGradient>
-
-        {/* Deboss: shadow banked against the inner upper-left wall, a light
-            catch on the lower-right. Light comes from the upper left, once,
-            for the whole page. */}
-        <filter
-          id={deboss}
-          x="-25%"
-          y="-25%"
-          width="150%"
-          height="150%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feGaussianBlur in="SourceAlpha" stdDeviation="0.75" result="blur" />
-          <feOffset in="blur" dx="0.75" dy="0.85" result="offDark" />
-          <feComposite in="offDark" in2="SourceAlpha" operator="out" result="maskDark" />
-          <feFlood floodColor="#5A4526" floodOpacity="0.62" result="colDark" />
-          <feComposite in="colDark" in2="maskDark" operator="in" result="shadeDark" />
-          <feOffset in="blur" dx="-0.7" dy="-0.8" result="offLite" />
-          <feComposite in="offLite" in2="SourceAlpha" operator="out" result="maskLite" />
-          <feFlood floodColor="#EBD3A6" floodOpacity="0.55" result="colLite" />
-          <feComposite in="colLite" in2="maskLite" operator="in" result="shadeLite" />
-          <feMerge>
-            <feMergeNode in="SourceGraphic" />
-            <feMergeNode in="shadeLite" />
-            <feMergeNode in="shadeDark" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <defs>
-        {/* The impression, defined once and worn by both halves. It is pressed
-            into the wax, so when the wax parts the monogram parts with it —
-            half the A goes left, half goes right. Fading it out instead, as an
-            earlier version did, left two blank gold discs. */}
         <g id={face}>
-          <path d={WAX_RIM} fill="#6E5734" fillOpacity="0.4" />
-          <g filter={`url(#${deboss})`}>
-            <path d={KORVAI_REKU} fill="#7A6140" opacity="0.9" />
-            <circle
-              cx="50"
-              cy="50"
-              r={RING_OUTER}
-              fill="none"
-              stroke="#7A6140"
-              strokeWidth="0.45"
-              opacity="0.75"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r={RING_INNER}
-              fill="none"
-              stroke="#7A6140"
-              strokeWidth="0.45"
-              opacity="0.75"
-            />
-            <g
-              transform={`translate(50 ${50 + MARK_LIFT}) scale(${MARK_SCALE}) translate(-50 -50)`}
-            >
-              <path d={MONO_A} fill="#7A6140" />
-              <path d={MONO_S} fill="#7A6140" />
+          <g filter="url(#mat-deboss)">
+            <path d={KORVAI_REKU} fill="#7b8a74" opacity="0.85" />
+            <circle cx="50" cy="50" r={RING_OUTER} fill="none" stroke="#7b8a74" strokeWidth="0.55" opacity="0.8" />
+            <circle cx="50" cy="50" r={RING_INNER} fill="none" stroke="#7b8a74" strokeWidth="0.55" opacity="0.8" />
+            <g transform={`translate(50 ${50 + MARK_LIFT}) scale(${MARK_SCALE}) translate(-50 -50)`}>
+              <path d={MONO_A} fill="#76856f" />
+              <path d={MONO_S} fill="#76856f" />
             </g>
           </g>
-          <ellipse
-            cx="31"
-            cy="25"
-            rx="17"
-            ry="10"
-            fill={`url(#${spec})`}
-            transform="rotate(-30 31 25)"
-          />
         </g>
         <clipPath id={clipL}>
           <path d={WAX_LEFT} />
@@ -162,14 +74,22 @@ export function WaxSeal({
         </clipPath>
       </defs>
 
+      <g className={styles.whole}>
+        <path d={WAX_WHOLE} fill="#000" filter="url(#mat-wax-shadow)" />
+        <path d={WAX_WHOLE} fill="var(--wax)" filter="url(#mat-wax)" />
+        <use href={`#${face}`} />
+      </g>
+
       <g className={styles.halfLeft}>
-        <path d={WAX_LEFT} fill={`url(#${body})`} />
+        <path d={WAX_LEFT} fill="#000" filter="url(#mat-wax-shadow)" />
+        <path d={WAX_LEFT} fill="var(--wax)" filter="url(#mat-wax)" />
         <g clipPath={`url(#${clipL})`}>
           <use href={`#${face}`} />
         </g>
       </g>
       <g className={styles.halfRight}>
-        <path d={WAX_RIGHT} fill={`url(#${body})`} />
+        <path d={WAX_RIGHT} fill="#000" filter="url(#mat-wax-shadow)" />
+        <path d={WAX_RIGHT} fill="var(--wax)" filter="url(#mat-wax)" />
         <g clipPath={`url(#${clipR})`}>
           <use href={`#${face}`} />
         </g>
