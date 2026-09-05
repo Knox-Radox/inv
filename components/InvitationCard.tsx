@@ -1,14 +1,14 @@
 import { invitation } from "@/content/invitation";
 import { Jasmine } from "./art/Jasmine";
 import { KorvaiEdge } from "./art/KorvaiEdge";
-import { EmbossedPaper } from "./material/EmbossedPaper";
 import styles from "./InvitationCard.module.css";
 
 /**
  * The invitation card — revision 3.
  *
- * Embossed cotton paper with a blind floral relief in its corners, the jasmine
- * stitched centred above the names, and the woven korvai edge at its foot.
+ * A photograph of real cotton cardstock, the jasmine stitched centred above the
+ * names, and the woven korvai edge at its foot. Revisions 1-3 synthesised the
+ * paper with SVG lighting filters and it read as synthetic; the client saw it.
  *
  * Rendered twice: once as the real, server-rendered card the page is built on,
  * and once inside the envelope as the thing the doors part to reveal. The two
@@ -37,7 +37,11 @@ export function InvitationCard({
       inert={replica ? "" : undefined}
     >
       <div className={styles.inner}>
-        <EmbossedPaper sheet="card" src={sheetSrc} className={styles.paper} />
+        <div
+          className={styles.paper}
+          style={{ backgroundImage: `url(${sheetSrc ?? "/cover/card-paper.webp"})` }}
+          aria-hidden="true"
+        />
 
         <div className={styles.content}>
           <Jasmine className={styles.spray} />

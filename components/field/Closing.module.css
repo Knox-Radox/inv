@@ -7,14 +7,25 @@
 }
 
 /* White blossoms behind the last words, softened and pulled to the right. */
+/*
+ * The blossoms behind the last words. Masked to nothing on every side: as a
+ * plain image it read as a photograph pasted into the corner, which is the
+ * "one image out of place at the bottom" the client saw.
+ */
 .blossoms {
   position: absolute;
-  right: -18%;
-  top: -10%;
-  width: 120%;
+  right: -26%;
+  top: -22%;
+  width: 132%;
   height: auto;
-  opacity: 0.2;
-  filter: sepia(0.3) saturate(0.6) blur(1px);
+  opacity: 0.26;
+  filter: sepia(0.28) saturate(0.62) blur(1.5px);
+  mask-image: radial-gradient(
+    ellipse 62% 62% at 62% 46%,
+    #000 0%,
+    rgb(0 0 0 / 0.55) 52%,
+    transparent 80%
+  );
   pointer-events: none;
 }
 

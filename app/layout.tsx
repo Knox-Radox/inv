@@ -20,6 +20,22 @@ const gilda = localFont({
   adjustFontFallback: false,
 });
 
+/**
+ * Copperplate script — revision 4. The reference's whole register is
+ * calligraphic, and the client asked for something fancier and more royal for
+ * the monogram. Used for the names, the line that does the inviting, and the
+ * closing note; never for anything a guest has to read quickly.
+ */
+const pinyon = localFont({
+  src: "../public/fonts/pinyon-script-400.woff2",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  variable: "--font-script",
+  fallback: ["Snell Roundhand", "Apple Chancery", "cursive"],
+  adjustFontFallback: false,
+});
+
 /** Body face. Variable, wght restricted to the 400–500 we actually ship. */
 const garamond = localFont({
   src: "../public/fonts/eb-garamond-var.woff2",
@@ -67,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${gilda.variable} ${garamond.variable}`}
+      className={`${gilda.variable} ${garamond.variable} ${pinyon.variable}`}
       // The script below deliberately adds `envelope-armed` to this element
       // before React hydrates, so the DOM carries a class the client render
       // does not produce. That is the whole point of a pre-paint script, and
@@ -80,7 +96,7 @@ export default function RootLayout({
         {/* Both sheets are needed in the first seconds; 21 KB between them.
             Measured: inlining the envelope sheet as a data URI did not move
             LCP and tripled the HTML, so they are preloaded instead. */}
-        <link rel="preload" as="image" href="/paper/envelope-sheet.webp" fetchPriority="high" />
+        <link rel="preload" as="image" href="/cover/envelope.webp" fetchPriority="high" />
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
          * it flash and a first-time guest never sees the invitation flash

@@ -2,31 +2,31 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invitation } from "@/content/invitation";
-import { WaxSeal } from "./art/WaxSeal";
 import { InvitationCard } from "./InvitationCard";
-import { EmbossedPaper } from "./material/EmbossedPaper";
 import styles from "./Envelope.module.css";
 
 /** Set once the opening has been seen on this device. */
 export const SEEN_KEY = "advika-sooraj-envelope-seen";
 
 /**
- * The envelope — revision 3.
+ * The envelope — revision 4.
  *
- * An embossed cotton envelope the size of the card, its flap sealed with sage
- * wax. Tap the seal: the wax breaks and falls, the flap lifts on its champagne
- * lining, the two halves of the envelope part like doors, and the card inside is
- * revealed — the same component as the real card beneath, at the same size, so
- * when the envelope finally fades nothing appears to move.
+ * Revisions 1–3 synthesised the paper and the wax with SVG lighting filters,
+ * and the client's verdict was that it looked fake. It did. The reference's
+ * quality comes from photography, not from code, so the cover is now a
+ * photograph of a real sealed envelope with Advika and Sooraj's monogram
+ * pressed into the real wax (`tools/cover.py`).
  *
- * Six seconds, continuously in motion: seal, flap, doors, the card's relief
- * pressing in, the jasmine stitching, the names settling, and a sweep of light
- * across the paper at the end. Nothing here is linear and nothing bounces.
+ * The photograph is cut down the middle of the seal into two doors. Tapping
+ * the seal parts them — slowly at first, which reads as the wax giving way,
+ * then wide — and the two halves of the seal go with the halves of the
+ * envelope they are stuck to. Behind them is the card, which is the same
+ * component as the page beneath, so when the cover fades nothing moves.
  *
- * Still not a gate. The invitation is server-rendered and first in the
- * document; this overlay follows it, the skip link is a real anchor that works
- * through CSS with no script, body is never given overflow:hidden, and a
- * nine-second failsafe resolves the sequence if it never reports done.
+ * Still not a gate: the invitation is server-rendered and first in the
+ * document, the skip link is a real anchor that works with no script, `body`
+ * is never `overflow:hidden`, every animation supplies only its *from* state,
+ * and a nine-second failsafe resolves the sequence if it never reports done.
  */
 export function Envelope({ cardSheet }: { cardSheet?: string }) {
   const { couple, day, copy } = invitation;
@@ -41,8 +41,8 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
     try {
       window.localStorage.setItem(SEEN_KEY, "1");
     } catch {
-      // Private mode. The guest sees the opening again next time — a far
-      // better failure than being stuck.
+      // Private mode. The guest sees the opening again next time, which is a
+      // far better failure than being stuck.
     }
   }, []);
 
@@ -72,53 +72,38 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
         if (e.animationName.includes("overlay-out")) finish();
       }}
     >
-      {/* The stage is the card's own box: full-bleed on a phone, a centred
-          620px object on a desk above 900px. The envelope fills it exactly, so
-          the card it reveals is 1:1 with the page beneath. */}
       <div className={styles.stage}>
         <div className={styles.box}>
-          {/* What the doors part to reveal. The real card, again. */}
+          {/* What the doors part to reveal: the real card, again. */}
           <div className={`${styles.reveal} ${opening ? "stitching composing" : ""}`}>
             <InvitationCard replica sheetSrc={cardSheet} />
-            {/* The dark of the inside of the envelope, lifting as the card
-                comes out. A scrim rather than a brightness filter, so the
-                card underneath is never re-rasterised mid-animation. */}
             <div className={styles.scrim} aria-hidden="true" />
           </div>
 
-          {/* The envelope body, as two doors cut from one sheet. */}
+          {/* One photograph, cut down the middle of the seal. Each door holds a
+              full-width copy pinned to its own edge, so the two together are
+              seamless until they move. */}
           <div className={`${styles.door} ${styles.doorLeft}`} aria-hidden="true">
-            <div className={styles.sheetLeft}>
-              <EmbossedPaper sheet="envelope" />
+            <div className={styles.leaf}>
+              <div className={styles.photo} />
             </div>
           </div>
           <div className={`${styles.door} ${styles.doorRight}`} aria-hidden="true">
-            <div className={styles.sheetRight}>
-              <EmbossedPaper sheet="envelope" />
+            <div className={styles.leaf}>
+              <div className={styles.photo} />
             </div>
           </div>
 
-          {/* The flap: the same sheet, cut to a V, on a 3D hinge with the
-              champagne lining on its back. */}
-          <div className={styles.flap} aria-hidden="true">
-            <div className={styles.flapFront}>
-              <EmbossedPaper sheet="envelope" />
-            </div>
-            <div className={styles.flapBack} />
-          </div>
+          {/* Light moving across the paper: once every nine seconds at rest. */}
+          <div className={styles.gleam} aria-hidden="true" />
 
-          {/* The fold: a hairline of light on the crease, a soft shadow under it. */}
-          <svg className={styles.fold} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 38 L50 56 L100 38" className={styles.foldShadow} />
-            <path d="M0 38 L50 56 L100 38" className={styles.foldLight} />
-          </svg>
-
-          {/* Addressed, in the couple's hand. Readable before anything moves. */}
-          <div className={styles.address} aria-hidden={opening || undefined}>
+          {/* The addressed face, over a soft wash so it stays legible on the
+              photograph. */}
+          <div className={styles.address}>
             <p className={styles.names}>
-              <span className={styles.name}>{couple.first}</span>
-              <span className={styles.conjunction}>{couple.conjunction}</span>
-              <span className={styles.name}>{couple.second}</span>
+              {couple.first}
+              <span className={styles.amp}>{couple.conjunction}</span>
+              {couple.second}
             </p>
             <p className={styles.meta}>
               <span className={styles.metaStrong}>{day.fullDateDisplay}</span>
@@ -127,13 +112,8 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
           </div>
 
           <button type="button" className={styles.sealButton} onClick={open}>
-            <WaxSeal size={132} cracked={opening} />
             <span className={styles.sealLabel}>{copy.controls.open}</span>
           </button>
-
-          {/* Light moving over the paper: once every nine seconds at rest, and
-              once across the card at the end of the opening. */}
-          <div className={styles.gleam} aria-hidden="true" />
         </div>
       </div>
 

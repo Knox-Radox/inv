@@ -38,7 +38,29 @@ None. `invitation.audio` is `null` in `content/invitation.ts` and the sound
 toggle does not render. If a track is added it must be either owned by the
 couple or released CC0 / public domain, and it gets a row in this table.
 
-## Revision 3 — photographs and baked materials
+## Revision 4 — the cover is a photograph
+
+The client rejected revisions 1–3 as fake-looking. They were: the paper and the
+wax were synthesised with SVG lighting filters. The reference's quality comes
+from photography, so the cover is now a photograph of a real sealed envelope,
+with only the impression in the wax authored by us.
+
+| File | What | Source |
+|---|---|---|
+| `assets/source/envelope-photo.jpg` | Cream envelopes with bronze wax seals, flat-lay | [Unsplash photo-1646568779353](https://unsplash.com/photos/1646568779353-b9d2b903b3e1) |
+| `assets/source/card-paper.jpg` | White cotton cardstock, close up | [Unsplash photo-1601662528567](https://unsplash.com/photos/1601662528567-526cd06f6582) |
+| `assets/source/PinyonScript.ttf` | Copperplate script, for the monogram and the names | [google/fonts, SIL OFL 1.1](https://github.com/google/fonts/tree/main/ofl/pinyonscript) |
+
+`python3 tools/cover.py` rebuilds `public/cover/*.webp` from these: it erases
+the stock impression from the wax, presses Advika and Sooraj's monogram into it
+in Pinyon Script, and composites the envelope onto a paper surface at a portrait
+proportion. Unsplash's licence permits this use without attribution; the sources
+are recorded anyway.
+
+The synthetic material system (`components/material/`, `tools/bake.js`,
+`public/paper/`) has been deleted.
+
+## Revision 3 — photographs and baked materials (superseded)
 
 The client waived the CC0-only rule for this private, family-only page and
 asked for photographic richness. Everything below is under the

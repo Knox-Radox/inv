@@ -1,6 +1,5 @@
 import { Envelope } from "@/components/Envelope";
 import { Controls } from "@/components/Controls";
-import { MaterialDefs } from "@/components/material/MaterialDefs";
 import { Field } from "@/components/field/Field";
 import { Invitation, cardSheet } from "@/components/Invitation";
 
@@ -15,7 +14,6 @@ import { Invitation, cardSheet } from "@/components/Invitation";
 export default function Page() {
   return (
     <>
-      <MaterialDefs />
       <Invitation />
       <Field />
       <Controls />
