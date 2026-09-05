@@ -46,6 +46,9 @@ export function WaxSeal({
   const body = `b${uid}`;
   const spec = `s${uid}`;
   const deboss = `d${uid}`;
+  const face = `f${uid}`;
+  const clipL = `cl${uid}`;
+  const clipR = `cr${uid}`;
 
   return (
     <svg
@@ -108,54 +111,68 @@ export function WaxSeal({
         </filter>
       </defs>
 
+      <defs>
+        {/* The impression, defined once and worn by both halves. It is pressed
+            into the wax, so when the wax parts the monogram parts with it —
+            half the A goes left, half goes right. Fading it out instead, as an
+            earlier version did, left two blank gold discs. */}
+        <g id={face}>
+          <path d={WAX_RIM} fill="#6E5734" fillOpacity="0.4" />
+          <g filter={`url(#${deboss})`}>
+            <path d={KORVAI_REKU} fill="#7A6140" opacity="0.9" />
+            <circle
+              cx="50"
+              cy="50"
+              r={RING_OUTER}
+              fill="none"
+              stroke="#7A6140"
+              strokeWidth="0.45"
+              opacity="0.75"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={RING_INNER}
+              fill="none"
+              stroke="#7A6140"
+              strokeWidth="0.45"
+              opacity="0.75"
+            />
+            <g
+              transform={`translate(50 ${50 + MARK_LIFT}) scale(${MARK_SCALE}) translate(-50 -50)`}
+            >
+              <path d={MONO_A} fill="#7A6140" />
+              <path d={MONO_S} fill="#7A6140" />
+            </g>
+          </g>
+          <ellipse
+            cx="31"
+            cy="25"
+            rx="17"
+            ry="10"
+            fill={`url(#${spec})`}
+            transform="rotate(-30 31 25)"
+          />
+        </g>
+        <clipPath id={clipL}>
+          <path d={WAX_LEFT} />
+        </clipPath>
+        <clipPath id={clipR}>
+          <path d={WAX_RIGHT} />
+        </clipPath>
+      </defs>
+
       <g className={styles.halfLeft}>
         <path d={WAX_LEFT} fill={`url(#${body})`} />
+        <g clipPath={`url(#${clipL})`}>
+          <use href={`#${face}`} />
+        </g>
       </g>
       <g className={styles.halfRight}>
         <path d={WAX_RIGHT} fill={`url(#${body})`} />
-      </g>
-
-      {/* Impression and rim ride on the intact face and leave with the crack. */}
-      <g className={styles.face}>
-        {/* The pooled lip: a filled sliver tapering to nothing at both ends,
-            present only on the shaded side, because a rim shows where the
-            light is not. */}
-        <path d={WAX_RIM} fill="#6E5734" fillOpacity="0.4" />
-        <g filter={`url(#${deboss})`}>
-          <path d={KORVAI_REKU} fill="#7A6140" opacity="0.9" />
-          <circle
-            cx="50"
-            cy="50"
-            r={RING_OUTER}
-            fill="none"
-            stroke="#7A6140"
-            strokeWidth="0.45"
-            opacity="0.75"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r={RING_INNER}
-            fill="none"
-            stroke="#7A6140"
-            strokeWidth="0.45"
-            opacity="0.75"
-          />
-          <g
-            transform={`translate(50 ${50 + MARK_LIFT}) scale(${MARK_SCALE}) translate(-50 -50)`}
-          >
-            <path d={MONO_A} fill="#7A6140" />
-            <path d={MONO_S} fill="#7A6140" />
-          </g>
+        <g clipPath={`url(#${clipR})`}>
+          <use href={`#${face}`} />
         </g>
-        <ellipse
-          cx="31"
-          cy="25"
-          rx="17"
-          ry="10"
-          fill={`url(#${spec})`}
-          transform="rotate(-30 31 25)"
-        />
       </g>
     </svg>
   );

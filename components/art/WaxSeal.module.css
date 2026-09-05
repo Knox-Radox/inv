@@ -16,8 +16,7 @@
 }
 
 .halfLeft,
-.halfRight,
-.face {
+.halfRight {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -28,12 +27,6 @@
 
 .cracked .halfRight {
   animation: crack-right 760ms var(--ease-wax) 150ms both;
-}
-
-/* The impression was pressed into the wax, not part of it — so when the wax
-   goes, it goes with it rather than breaking along the same line. */
-.cracked .face {
-  animation: crack-face 520ms ease-out 90ms both;
 }
 
 @keyframes crack-left {
@@ -56,21 +49,11 @@
   }
 }
 
-@keyframes crack-face {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
 /* Reduced motion: the seal simply stays whole. The envelope keeps its object
    and loses only the choreography. */
 @media (prefers-reduced-motion: reduce) {
   .cracked .halfLeft,
-  .cracked .halfRight,
-  .cracked .face {
+  .cracked .halfRight {
     animation: none;
   }
 }

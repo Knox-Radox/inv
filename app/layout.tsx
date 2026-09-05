@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { invitation } from "@/content/invitation";
 import { PaperGrain } from "@/components/PaperGrain";
+import { SEEN_KEY } from "@/components/Envelope";
 import "./globals.css";
 
 /**
@@ -50,6 +51,23 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${gilda.variable} ${garamond.variable}`}>
+      <head>
+        {/*
+         * Arms the envelope before first paint, so a returning guest never sees
+         * it flash and a first-time guest never sees the invitation flash
+         * behind it. Deliberately blocking and deliberately tiny.
+         *
+         * If this script does not run — JavaScript off, a parse error, a
+         * blocked inline script — the class is never set, the overlay stays
+         * hidden by CSS, and the guest simply lands on the invitation. That is
+         * the right direction to fail in.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem(${JSON.stringify(SEEN_KEY)})!=="1"&&location.hash!=="#invitation")document.documentElement.classList.add("envelope-armed")}catch(e){}`,
+          }}
+        />
+      </head>
       <body>
         {children}
         <PaperGrain />

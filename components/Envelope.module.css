@@ -1,0 +1,285 @@
+/*
+ * The opening — docs/design-plan.md § Envelope choreography.
+ *
+ * Beat sheet, as shipped:
+ *   0     0 -   90ms  tap acknowledged: the seal depresses and darkens
+ *   1    90 -  850ms  the seal cracks (in WaxSeal.module.css)
+ *   2   600 - 1900ms  the flap lifts
+ *   3  1500 - 3100ms  the card rises
+ *   4  2400 - 4900ms  the jasmine is stitched (in Jasmine.tsx)
+ *   5  3400 - 4600ms  the names settle
+ *   6  5000 - 5900ms  the thread comes back through the woven edge
+ *
+ * Nothing here is linear and nothing bounces. Bounce reads playful, and this
+ * is not playful.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--ground-deep);
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+  /* Deliberately no `overflow: hidden` on this element or on body. */
+  padding: clamp(20px, 5vh, 56px) clamp(16px, 5vw, 56px);
+}
+
+/* Hidden unless the pre-paint script arms it. With JavaScript off it never
+   appears, and the guest simply lands on the invitation. */
+.overlay {
+  display: none;
+}
+
+:global(.envelope-armed) .overlay {
+  display: flex;
+}
+
+/* The skip anchor, working with no script at all: the invitation is first in
+   the document and this overlay is its sibling. */
+:global(#invitation:target) ~ .overlay {
+  display: none !important;
+}
+
+.envelope {
+  position: relative;
+  width: 100%;
+  max-width: var(--card-width);
+  flex: 1;
+  max-height: 780px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1400px;
+  /* The paper. Without this the envelope was ivory on ivory and there was no
+     object on the screen at all — only two stray diagonal hairlines. */
+  background-color: var(--ground);
+}
+
+/* --- The flap ------------------------------------------------------------ */
+
+.flap {
+  position: relative;
+  width: 100%;
+  height: clamp(150px, 30vh, 260px);
+  transform-origin: top center;
+  transform-style: preserve-3d;
+}
+
+.flapFront,
+.flapBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  /* The shallow V a flap folds down to, with the seal at its point. */
+  clip-path: polygon(0 0, 100% 0, 100% 8%, 50% 100%, 0 8%);
+}
+
+.flapFront {
+  background: color-mix(in srgb, var(--ground) 88%, var(--ground-deep));
+}
+
+/* The tissue lining, seen only once the flap is past vertical. Its clip is the
+   vertical mirror of the front's, because the face itself is mirrored. */
+.flapBack {
+  background: var(--ground-deep);
+  transform: rotateX(180deg);
+  clip-path: polygon(0 100%, 100% 100%, 100% 92%, 50% 0, 0 92%);
+}
+
+.flapEdge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8%;
+  height: 92%;
+  width: 100%;
+  overflow: visible;
+}
+
+/* --- The seal ------------------------------------------------------------ */
+
+.sealButton {
+  position: relative;
+  z-index: 2;
+  margin-top: -60px;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--ink);
+  border-radius: 50%;
+  /* Beat 0: the tap has to be acknowledged instantly on a slow phone. */
+  transition: transform 90ms var(--ease-press);
+}
+
+.sealButton:active {
+  transform: translateY(1.5px) scale(0.985);
+}
+
+.sealLabel {
+  font-size: var(--text-body-s);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.opening .sealButton {
+  pointer-events: none;
+}
+
+.opening .sealLabel {
+  animation: fade-away 240ms ease-out both;
+}
+
+/* --- The addressed face -------------------------------------------------- */
+
+.face {
+  margin-top: clamp(28px, 6vh, 56px);
+  text-align: center;
+}
+
+.names {
+  font-family: var(--font-gilda), Georgia, serif;
+  color: var(--sage-deep);
+  font-size: var(--text-display-xl);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+.name {
+  display: block;
+}
+
+/* Same face, same weight, same colour — a scale relationship, which is how a
+   set invitation has handled a conjunction for two hundred years. */
+.conjunction {
+  display: block;
+  font-size: 0.42em;
+  line-height: 1.5;
+}
+
+.meta {
+  margin-top: clamp(18px, 3vh, 28px);
+  font-size: var(--text-body-s);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  display: grid;
+  gap: 2px;
+}
+
+.metaStrong {
+  font-weight: 500;
+}
+
+.skip {
+  position: absolute;
+  right: clamp(16px, 5vw, 32px);
+  bottom: clamp(16px, 4vh, 32px);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: var(--text-body-s);
+  color: var(--ink);
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  text-underline-offset: 4px;
+}
+
+/* --- The sequence -------------------------------------------------------- */
+
+/* Beat 2: stopping at -168deg rather than -180 leaves the flap tilted, which
+   reads as stiff paper rather than as a hinge. */
+.opening .flap {
+  animation: flap-lift 1300ms var(--ease-flap) 600ms both;
+}
+
+/* Beat 3: the envelope fills the screen, so there is nowhere for a card to
+   slide *to*. The honest move at phone scale is the camera going in. */
+.opening .envelope {
+  animation: card-rise 1600ms var(--ease-rise) 1500ms both;
+}
+
+.opening .face {
+  animation: names-settle 1200ms var(--ease-press-in) 3400ms both;
+}
+
+.opening .overlay,
+.opening {
+  animation: card-rise-out 700ms ease-in 5200ms both;
+}
+
+@keyframes flap-lift {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-168deg);
+  }
+}
+
+@keyframes card-rise {
+  from {
+    transform: translateY(6%) scale(1);
+  }
+  to {
+    transform: translateY(-4%) scale(1.035);
+  }
+}
+
+/* Not a fade-up: the names have been on screen since the first frame. What
+   happens is the impression being pressed — the letter-spacing tightening. */
+@keyframes names-settle {
+  from {
+    letter-spacing: 0.05em;
+  }
+  to {
+    letter-spacing: normal;
+  }
+}
+
+@keyframes card-rise-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-away {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/*
+ * Reduced motion keeps the envelope and removes the choreography. The guest
+ * still gets the addressed object — that is the whole metaphor, and it should
+ * not be a reward for vestibular tolerance. Tapping crossfades in 400ms.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .opening .flap,
+  .opening .envelope,
+  .opening .face,
+  .opening .sealLabel {
+    animation: none;
+  }
+
+  .opening {
+    animation: card-rise-out 400ms ease-out both;
+  }
+}
