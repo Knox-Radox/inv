@@ -2,17 +2,20 @@
 
 ## Current state — read before anything else
 
-Revision 5 is in progress. The client rejected the first builds against
-La Maison Dorée as looking fake, and their feedback supersedes parts of the
-brief below. The cause was synthesising materials in code; the cover is a
-photograph, and as of revision 5 it is a full-bleed macro of one rather than a
-picture of an envelope laid on a page. The type is the reference's own two
-faces, Parfumerie Script and Mrs Eaves.
+Revision 6 is done. The client rejected the first builds against La Maison
+Dorée as looking fake, and their feedback supersedes parts of the brief below.
+The cause was synthesising materials in code; the cover is a photograph, and as
+of revision 5 it is a full-bleed macro of one. The type is the reference's own
+two faces, Parfumerie Script and Mrs Eaves. Revision 6 added the ornament
+programme — columns, a thoranam, lamps, a malai, banana stems, a jasmine bough,
+urns and a kolam — in a drawn-line-plus-watercolour-wash technique.
 
-**Start with `docs/handoff-revision-5.md`.** The client's benchmark is captured
-in **`docs/reference/maison-doree/`** — look at it before designing anything. The verification harness is in
-`tools/verify/`; every number in the docs came from it and every change should
-go back through it.
+**Start with `docs/handoff-revision-6.md`**, then `docs/revision-6-ornament.md`.
+The client's benchmark is captured in **`docs/reference/maison-doree/`** — look
+at it before designing anything. The verification harness is in `tools/verify/`;
+every number in the docs came from it and every change should go back through
+it. One number in it is wrong and is called out in the handoff: the LCP figure
+recorded for revision 5 does not reproduce.
 
 ## What this is
 
@@ -75,15 +78,21 @@ the sound toggle, and add-to-calendar. If you are building a fourth, stop and as
 
 ## Motion budget
 
-Enforced, not aspirational:
+**Lifted by the client in revision 6.** The old rule — one hero sequence, at
+most two scroll-linked draw-ons, ~150 KB of JS — is superseded by:
+every ornament may draw itself on as the guest reaches it, and LCP under 2.5 s
+on Slow 4G is the only hard line. What survives, and is still enforced:
 
-- One orchestrated hero sequence (the envelope). Nearly the whole budget.
-- At most two scroll-linked SVG stitch draw-ons in the entire page.
+- One orchestrated hero sequence (the envelope). Still the boldest thing here.
 - Micro-interactions only in response to a real user action.
 - No fade-and-slide-up entrance on every section. No hover transition on every
   card.
+- Ambient motion belongs only to things the family carried in — the garlands
+  and the lamp flames. Stone does not move. It runs only while on screen.
 - `prefers-reduced-motion: reduce` honoured everywhere, and the reduced version
   must still look designed.
+- Every number goes back through `tools/verify/`. Scroll pacing is now part of
+  that and was not before.
 
 ## Hard bans
 
