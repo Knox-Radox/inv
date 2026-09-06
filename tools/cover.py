@@ -416,13 +416,25 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
 
     break_pts = arc(1.31)
 
+    # Both crops turn about the frame's own top edge in CSS — .flap's
+    # transform-origin is a hardcoded `50% 0`, not `var(--hinge)` — because on
+    # the landscape crop the true hinge (hingeY, reported below) sits 38% of a
+    # frame above the picture, and rotating about an axis that far outside the
+    # element does not open the flap, it launches it (see Envelope.module.css).
+    # A polygon vertex above that origin rotates the *other* way as the flap
+    # turns, and on the landscape crop that used to be a 38%-tall strip of the
+    # flap doing exactly that: it did not fold, it glitched out almost
+    # instantly. So the polygons are pinned to the same origin the CSS turns
+    # them on, not to the true hinge.
+    STAGE_TOP = 0.0
+
     # The flap: along its hinge, down the right crease, across the wax, back up
     # the left crease. The hinge runs the full width of the envelope, which is
     # wider than either frame, so its corners sit outside 0-100% and the stage
     # clips them.
     flap = [
-        (-40.0, fy(TOP)),
-        (140.0, fy(TOP)),
+        (-40.0, STAGE_TOP),
+        (140.0, STAGE_TOP),
         (fx(edge(FLAP_RIGHT, ry)), fy(ry)),
     ]
     flap += [(fx(x), fy(y)) for x, y in break_pts]
@@ -452,20 +464,41 @@ def crop_geometry(box: tuple[int, int, int, int], size: tuple[int, int]) -> dict
     # mouth to the flap's shape put a round bump of darkness below the V.
     vx, vy = flap_vertex()
     NC = 7
-    mouth = [(-40.0, fy(TOP)), (140.0, fy(TOP))]
+    # Same top edge as the flap, and for the same reason: the mouth does not
+    # rotate, but it is the flap's own footprint and the two should describe
+    # the same stage rather than disagree above frame.
+    right_pts = []
     for i in range(NC + 1):
         y = TOP + (vy - TOP) * i / NC
-        mouth.append((fx(edge(FLAP_RIGHT, y)), fy(y)))
+        right_pts.append((fx(edge(FLAP_RIGHT, y)), fy(y)))
+    left_pts = []
     for i in range(NC + 1):
         y = vy - (vy - TOP) * i / NC
-        mouth.append((fx(edge(FLAP_LEFT, y)), fy(y)))
+        left_pts.append((fx(edge(FLAP_LEFT, y)), fy(y)))
+    mouth = [(-40.0, STAGE_TOP), (140.0, STAGE_TOP)] + right_pts + left_pts
 
     # The same cut with its lower boundary dropped past the foot of the frame:
     # the envelope's mouth, opened out until it is the whole picture. Same point
     # count and order as `mouth`, which is what lets CSS interpolate between the
     # two — so the opening widens into the page instead of the page being
     # crossfaded in over a card still trapped behind the flap.
-    opened = [(x, y) if y <= fy(TOP) else (x, 130.0) for x, y in mouth]
+    #
+    # "Which points stay at the roof" used to be answered by comparing each
+    # point's y against fy(TOP), which worked only because every roof point's
+    # y happened to equal it exactly. Now that the roof points are emitted as
+    # STAGE_TOP instead, that comparison would misfire on the two hardcoded
+    # corners (no longer equal to fy(TOP)) while still wrongly matching the
+    # crease loops' *early* points — the ones between TOP and the vertex that
+    # are merely above frame, not on the roof. So the roof is named by
+    # position, not inferred from value: the two hardcoded corners, plus
+    # exactly where each crease loop touches TOP (its own start for the right
+    # side, i=0; its own end for the left side, i=NC — the loops run from TOP
+    # to the vertex and back, so the vertex itself, shared at the midpoint, is
+    # never a roof point).
+    roof = {0, 1, 2, len(mouth) - 1}
+    opened = [
+        (x, STAGE_TOP) if i in roof else (x, 130.0) for i, (x, y) in enumerate(mouth)
+    ]
 
     return {
         "width": W,

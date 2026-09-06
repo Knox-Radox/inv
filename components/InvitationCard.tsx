@@ -33,8 +33,7 @@ export function InvitationCard({
     <div
       className={`${styles.card} ${replica ? styles.replica : ""}`}
       aria-hidden={replica || undefined}
-      // @ts-expect-error React 19 types the attribute as boolean; it is fine.
-      inert={replica ? "" : undefined}
+      inert={replica || undefined}
     >
       <div className={styles.inner}>
         <div
