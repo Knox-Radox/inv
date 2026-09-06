@@ -121,3 +121,10 @@ If the page needs more life, the lever is not another object — it is scale and
 bleed on what is already there, which is what the reference actually does. And
 if anything should come out, look first at whether the columns earn their keep
 on a phone, where only a sliver of each is in frame.
+
+That said, the client asked for the list anyway and it is in
+**`docs/ornament-ideas.md`** — every idea specified against the primitives that
+exist, with the four tests a new piece has to pass, a map of where the page is
+still empty, and the two that are worth building if only two ever are. The best
+of them costs no geometry at all: the countdown already knows whether the
+wedding is ahead, today, or past, and none of the ornament does.
