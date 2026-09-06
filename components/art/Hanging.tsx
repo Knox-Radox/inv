@@ -1,7 +1,4 @@
-import { ORNAMENT } from "./ornament";
-import { Painting } from "./Painting";
-import { Stitch } from "./Stitch";
-import { Wash } from "./Wash";
+import { LazyDecor } from "./LazyDecor";
 import styles from "./Hanging.module.css";
 
 /**
@@ -25,105 +22,10 @@ import styles from "./Hanging.module.css";
  * | 1 | 2.0 → 2.4s | The bunch at the foot, where the string is tied off. |
  */
 
-const MALAI = ORNAMENT.malai;
-
-const STRING_START = 300;
-const STRING_MS = 1600;
-
-function Malai({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 130 940"
-      fill="none"
-      aria-hidden="true"
-      focusable="false"
-      preserveAspectRatio="xMidYMin meet"
-    >
-      <Stitch
-        d={MALAI.cord.d}
-        length={MALAI.cord.len}
-        width={MALAI.cord.w}
-        tone="sage"
-        shadow={false}
-        delay={STRING_START}
-        duration={STRING_MS}
-      />
-
-      {MALAI.flowers.map((f, i) => {
-        // Threaded as the string reaches it, which is the mechanic the client
-        // asked for more of — the jasmine spray on the card does the same.
-        const cue = STRING_START + STRING_MS * f.t * 0.92;
-        return (
-          <g
-            key={i}
-            className={styles.bloomOnString}
-            style={
-              {
-                "--anchor": `${f.ax}px ${f.ay}px`,
-                "--sway": `${f.sway}s`,
-                "--phase": `${-f.phase}s`,
-              } as React.CSSProperties
-            }
-          >
-            <Wash
-              id={`malai-${i}`}
-              d={f.sil}
-              sheet="stone"
-              box={[f.cx - 30, f.cy - 30, 60, 60]}
-              rim={0.24}
-              rimWidth={1.5}
-              style={{ "--bloom-delay": `${Math.round(cue + 130)}ms` } as React.CSSProperties}
-            />
-            <Stitch
-              d={f.sil}
-              length={f.len}
-              width={0.62}
-              tone="sage"
-              shadow={false}
-              delay={cue}
-              duration={340}
-            />
-            <circle cx={f.cx} cy={f.cy} r={f.r} fill="var(--gold)" opacity={0.7} />
-          </g>
-        );
-      })}
-
-      {/* The bunch the string is tied off with. A malai does not end in its
-          last flower any more than the page ends in its last sentence. */}
-      <g>
-        <Wash
-          id="malai-tail"
-          d={MALAI.tail.sil}
-          sheet="foliage"
-          box={[MALAI.tail.x - 60, MALAI.tail.y - 20, 120, 120]}
-          rim={0.28}
-          rimWidth={1.8}
-          style={{ "--bloom-delay": "2150ms" } as React.CSSProperties}
-        />
-        {MALAI.tail.lines.map((ln, i) => (
-          <Stitch
-            key={i}
-            d={ln.d}
-            length={ln.len}
-            width={ln.w}
-            tone="deep"
-            shadow={false}
-            delay={2000 + i * 40}
-            duration={420}
-          />
-        ))}
-      </g>
-    </svg>
-  );
-}
-
 export function Hanging({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.stage}>
-      <Painting className={styles.deco}>
-        <Malai className={styles.malai} />
-      </Painting>
+      <LazyDecor piece="hanging" />
       <div className={styles.content}>{children}</div>
     </div>
   );

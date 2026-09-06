@@ -9,22 +9,55 @@
 
 .stage {
   position: relative;
+  /*
+   * Full-bleed, and the *stage* is what bleeds — not the ornament layer inside
+   * it.
+   *
+   * `content-visibility: auto` implies `contain: paint`, which clips this box
+   * to its own padding box. With the break-out on `.deco` that clipped a 100vw
+   * ornament layer back to the 700px measure: at 390px both columns and both
+   * lamps vanished and the garland was cut in half. It is the same failure the
+   * first pass had with `overflow: hidden` here, arrived at from the other
+   * direction.
+   *
+   * So the stage spans the viewport and pushes the type back into the measure
+   * with matching padding. `.deco` is then a plain `inset: 0` overlay, and an
+   * absolutely positioned child resolves `inset` against the *padding* box —
+   * the whole 100vw — so it still covers the frame.
+   */
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(50vw - 50%);
+
   padding-top: clamp(24px, 5vh, 70px);
   /* The urns stand at the foot of the note, and need floor to stand on. */
   padding-bottom: clamp(60px, 10vh, 130px);
+
+  /*
+   * Skipped entirely while off screen.
+   *
+   * Measured: scrolling the whole page at a 4x CPU throttle went from p95
+   * 35.9 ms a frame to 19.9 ms, and at 6x from 50.3 ms to 32.0 ms. With the
+   * ornament layers hidden altogether the same scroll is p95 17.5 ms, so this
+   * recovers most of what the ornament costs.
+   *
+   * It has to be on the stage, not on the ornament layer. `.deco` is
+   * absolutely positioned at `inset: 0`, so it takes its size from this box
+   * rather than from its contents, and a size-contained element that has no
+   * size of its own is never actually skipped — measured at p95 35.4 ms, which
+   * is no change at all.
+   *
+   * `contain-intrinsic-size: auto <h>` is the height a section stands in for
+   * before it has ever been rendered; after that the browser uses the size it
+   * last had, so the placeholder only has to be close. The values are measured
+   * at 390/430/768/1440 and are the widest case rounded up.
+   */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 440px;
 }
 
 .deco {
   position: absolute;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  top: 0;
-  /* The kolam moved out of this stage (see KolamMark), so this reaches the
-     foot of it again. It reserved `--kolam-band` of space for a mark that is
-     no longer here, which left the layer 330px short and both urns with
-     nowhere to stand. */
-  bottom: 0;
+  inset: 0;
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
@@ -49,8 +82,11 @@
 }
 
 .deco {
-  --urn-w: clamp(112px, 13vw, 196px);
-  --urn-out: clamp(-40px, -2vw, -4px);
+  /* Narrower and pushed further out on a phone. At 112px sitting 8px off the
+     edge the left urn's jasmine sat over the "S" of "See you in November",
+     which is the last sentence on the page. */
+  --urn-w: clamp(96px, 13vw, 196px);
+  --urn-out: clamp(-58px, -9vw, -4px);
   --kolam-band: clamp(150px, 24vw, 330px);
 }
 
@@ -116,6 +152,14 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* Laid down, and staying down. `html.js` prefix for the specificity reason
+   in Ornament.module.css. */
+:global(html.js .settled) .pulli {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 /*

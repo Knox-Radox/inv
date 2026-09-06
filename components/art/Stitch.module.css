@@ -67,6 +67,13 @@
   }
 }
 
+/* Once it has been drawn it stays drawn. Without this a section that
+   `content-visibility` had skipped re-stitched itself every time the guest
+   scrolled back to it — see components/art/Painting.tsx. */
+:global(.settled) .line {
+  animation: none;
+}
+
 /* Reduced motion: the thread is already stitched. No needle, no waiting. */
 @media (prefers-reduced-motion: reduce) {
   :global(.stitching) .line {

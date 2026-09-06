@@ -46,6 +46,22 @@
   }
 }
 
+/*
+ * `html.js` prefix deliberately.
+ *
+ * The rule this has to beat is `:global(html.js) .wash { opacity: 0 }`, which
+ * is (0,2,1); a bare `:global(.settled) .wash` is (0,2,0) and loses. The
+ * symptom was a garland that stayed half-painted no matter how long you looked
+ * at it, because `animation: none` had taken away the only thing making it
+ * visible.
+ */
+:global(html.js .settled) .wash,
+:global(html.js .settled) .kindle {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
 /* ==========================================================================
    Ambient — only while on screen, and only for what the family brought
    ========================================================================== */

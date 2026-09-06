@@ -68,12 +68,22 @@ export function Wash({
   const [x, y, w, h] = box;
   return (
     <g className={`${styles.wash} ${className ?? ""}`} style={style}>
+      {/*
+       * The silhouette is written once and referenced three times.
+       *
+       * It is needed as a clip, as an opaque base, and as the rim stroke, and
+       * emitting `d` three times put 199 KB of duplicated path data into a
+       * 1.3 MB document — which Next then serialises a second time into the
+       * RSC payload, so every wasted byte was paid for twice. Measured on the
+       * built page: 1,218 paths, 730 distinct.
+       */}
       <defs>
+        <path id={`${id}-s`} d={d} />
         <clipPath id={`${id}-clip`}>
-          <path d={d} />
+          <use href={`#${id}-s`} />
         </clipPath>
       </defs>
-      <path d={d} fill={BASE[sheet]} />
+      <use href={`#${id}-s`} fill={BASE[sheet]} />
       <g clipPath={`url(#${id}-clip)`}>
         <image
           href={`/wash/${sheet}.webp`}
@@ -92,7 +102,7 @@ export function Wash({
            * the mismatch cost. LCP is measured instead, in tools/verify.
            */
         />
-        <path d={d} fill="none" stroke={RIM[sheet]} strokeWidth={rimWidth} opacity={rim} />
+        <use href={`#${id}-s`} fill="none" stroke={RIM[sheet]} strokeWidth={rimWidth} opacity={rim} />
       </g>
     </g>
   );

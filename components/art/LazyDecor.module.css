@@ -1,0 +1,26 @@
+/*
+ * The sentinel the loader watches.
+ *
+ * It spans its stage rather than being a zero-height marker at the top of it,
+ * because a marker at the top of a 600px stage fires when the stage's top edge
+ * comes near — which for a section a guest is scrolling *up* to, or for the
+ * closing section on a tall desktop, is the wrong moment. Spanning the stage
+ * means "any part of this section is near" rather than "its first pixel is".
+ *
+ * It cannot receive pointer events and it is out of the flow, so it adds no
+ * height and cannot shift anything.
+ */
+.sentinel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+ * The in-flow variant, for a layer that is not an overlay on a stage. It has
+ * no size of its own until its ornament lands, which is fine: the kolam sits
+ * at the very foot of the page, so nothing below it can be pushed down.
+ */
+.inFlow {
+  position: relative;
+}
