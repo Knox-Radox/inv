@@ -28,6 +28,30 @@ import styles from "../Hanging.module.css";
  */
 
 const MALAI = ORNAMENT.malai;
+const KAL = ORNAMENT.kalasham;
+
+
+/**
+ * Measured viewBoxes.
+ *
+ * Every ornament was authored in a round-numbered box and every one of them
+ * drew outside it — an `<svg>` clips to its viewport, so the left banana lost
+ * a leaf, the urns lost the tops of their jasmine and the lamps lost the tops
+ * of their flames. None of it showed in the preview harness, which had
+ * `overflow: visible` on the svg. `tools/ornament.py` measures them now, and
+ * `--ar` hands the box's aspect to the stylesheet so a piece's height is
+ * always its own.
+ */
+const BOX = ORNAMENT.box;
+
+/** viewBox plus the aspect the CSS needs, from one measured box. */
+function framed(box: readonly [number, number, number, number] | readonly number[]) {
+  const [x, y, w, h] = box;
+  return {
+    viewBox: `${x} ${y} ${w} ${h}`,
+    style: { "--ar": String(w / h) } as React.CSSProperties,
+  };
+}
 
 const STRING_START = 300;
 const STRING_MS = 1600;
@@ -62,7 +86,7 @@ function Malai({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 130 940"
+      {...framed(BOX.malai)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -152,9 +176,90 @@ function Malai({ className }: { className?: string }) {
 }
 
 
+/**
+ * The kalasham — docs/revision-6-ornament.md, piece 10.
+ *
+ * The purna kumbham: a brass pot of water, five mango leaves set round its
+ * mouth, a coconut resting on them. It stands at the entrance to the mandapam
+ * at every South Indian wedding and it is what the couple are received past.
+ *
+ * It is here because the day had ornament on one side only. A drape stood on
+ * this side for three passes and was cut; this is what should have been there.
+ * It is a turned object, so it is drawn with the construction that has worked
+ * every time, and it is something the family carries in rather than something
+ * the venue owns — which is why its leaves stir and its brass does not.
+ */
+function Kalasham({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      {...framed(BOX.kalasham)}
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      preserveAspectRatio="xMidYMax meet"
+    >
+      <defs>
+        <radialGradient id="kal-cast">
+          <stop offset="0" stopColor="#8A9A83" stopOpacity="0.26" />
+          <stop offset="1" stopColor="#8A9A83" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx={KAL.cx} cy={KAL.base + 5} rx={KAL.rx} ry={9} fill="url(#kal-cast)" />
+
+      <g
+        className={styles.mangoLeaves}
+        style={{ "--anchor": `${KAL.cx}px ${KAL.base - 150}px` } as React.CSSProperties}
+      >
+        <Wash
+          id="kal-leaves"
+          d={KAL.leaves}
+          sheet="foliage"
+          box={[18, 44, 164, 164]}
+          rim={0.3}
+          rimWidth={2}
+          style={{ "--bloom-delay": "760ms", "--bloom-dur": "1100ms" } as React.CSSProperties}
+        />
+      </g>
+      <Wash
+        id="kal-pot"
+        d={KAL.sil}
+        sheet="brass"
+        box={[26, 126, 148, 204]}
+        rim={0.3}
+        rimWidth={2.2}
+        style={{ "--bloom-delay": "300ms" } as React.CSSProperties}
+      />
+      <Wash
+        id="kal-coconut"
+        d={KAL.coconut}
+        sheet="brass"
+        box={[58, 74, 84, 84]}
+        rim={0.34}
+        rimWidth={1.8}
+        style={{ "--bloom-delay": "980ms" } as React.CSSProperties}
+      />
+
+      {KAL.lines.map((ln, i) => (
+        <Stitch
+          key={i}
+          d={ln.d}
+          length={ln.len}
+          width={ln.w}
+          tone="brass"
+          shadow={false}
+          delay={200 + i * 26}
+          duration={760}
+        />
+      ))}
+    </svg>
+  );
+}
+
 export default function HangingDeco() {
   return (
     <Painting className={styles.deco}>
+      <Kalasham className={styles.kalasham} />
       <Malai className={styles.malai} />
     </Painting>
   );

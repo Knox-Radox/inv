@@ -8,6 +8,15 @@
  */
 
 .stage {
+  /* Narrower and pushed further out on a phone. At 112px sitting 8px off the
+     edge the left urn's jasmine sat over the "S" of "See you in November",
+     which is the last sentence on the page. */
+  --urn-w: clamp(96px, 13vw, 196px);
+  /* Between the urns, on the floor the kolam is drawn on. */
+  --petals-bottom: clamp(4px, 1vh, 20px);
+  --petals-h: clamp(72px, 10vw, 140px);
+  --urn-out: clamp(-58px, -9vw, -4px);
+  --kolam-band: clamp(150px, 24vw, 330px);
   position: relative;
   /*
    * Full-bleed, and the *stage* is what bleeds — not the ornament layer inside
@@ -24,9 +33,16 @@
    * with matching padding. `.deco` is then a plain `inset: 0` overlay, and an
    * absolutely positioned child resolves `inset` against the *padding* box —
    * the whole 100vw — so it still covers the frame.
+   *
+   * The two `--bleed-*` values come from `.inner` and are asymmetric on
+   * purpose, because that column's own padding is — see the note there. A
+   * symmetric `calc(50% - 50vw)` put this box 16px to the right of the
+   * viewport on a phone.
    */
-  margin-inline: calc(50% - 50vw);
-  padding-inline: calc(50vw - 50%);
+  width: 100vw;
+  margin-left: calc(-1 * var(--bleed-left));
+  padding-left: var(--bleed-left);
+  padding-right: var(--bleed-right);
 
   padding-top: clamp(24px, 5vh, 70px);
   /* The urns stand at the foot of the note, and need floor to stand on. */
@@ -52,7 +68,7 @@
    * at 390/430/768/1440 and are the widest case rounded up.
    */
   content-visibility: auto;
-  contain-intrinsic-size: auto 440px;
+  contain-intrinsic-size: auto 620px;
 }
 
 .deco {
@@ -77,17 +93,11 @@
   position: absolute;
   bottom: 0;
   width: var(--urn-w);
-  height: calc(var(--urn-w) * 2.22);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--urn-w) / var(--ar));
   opacity: 0.94;
-}
-
-.deco {
-  /* Narrower and pushed further out on a phone. At 112px sitting 8px off the
-     edge the left urn's jasmine sat over the "S" of "See you in November",
-     which is the last sentence on the page. */
-  --urn-w: clamp(96px, 13vw, 196px);
-  --urn-out: clamp(-58px, -9vw, -4px);
-  --kolam-band: clamp(150px, 24vw, 330px);
 }
 
 .urnLeft {
@@ -98,6 +108,96 @@
   /* Shorter, and standing further in. Two matching urns either side of a
      closing note is the stencil this whole programme is trying not to be. */
   right: calc(var(--urn-out) + clamp(6px, 2.4vw, 54px));
+}
+
+/*
+ * On a narrow screen the urns stand *below* the note rather than beside it.
+ *
+ * There is no room to flank 34 characters of type with two urns on a 390px
+ * phone: at any width that reads as an urn, the left one's jasmine sits over
+ * the "S" of "See you in November", which is the last sentence on the page.
+ * Out in a desktop margin they are clear of the measure entirely and can stay
+ * where they are.
+ *
+ * 2.876 is the urn box's own height-over-width — see BOXES in
+ * tools/ornament.py. The padding is the urns' full height, so the note ends
+ * before they begin.
+ */
+@media (max-width: 699px) {
+  .stage {
+    padding-bottom: calc(var(--urn-w) * 2.876 + clamp(10px, 2vh, 26px));
+  }
+
+  .deco {
+    --urn-w: 84px;
+    --urn-out: -10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Fallen petals
+   -------------------------------------------------------------------------- */
+
+/*
+ * `preserveAspectRatio="none"` on the petal sheets is deliberate: they are a
+ * scatter on a floor, not a drawing, so stretching the field they lie in
+ * spreads them rather than distorting anything anyone reads. The petals
+ * themselves are small enough that the stretch is invisible.
+ */
+.petals {
+  position: absolute;
+  left: 0;
+  /* `width` explicitly, not `right: 0`. An absolutely positioned *replaced*
+     element with `width: auto` takes its intrinsic width from the viewBox and
+     drops `right` on the floor — the threshold's scatter came out 297px wide
+     inside a 390px frame. */
+  width: 100%;
+  bottom: var(--petals-bottom);
+  height: var(--petals-h);
+  pointer-events: none;
+}
+
+.petal {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+  /* Lying over, and turned. */
+  transform: rotate(var(--tilt)) scaleY(var(--squash));
+}
+
+:global(html.js) .petal {
+  opacity: 0;
+}
+
+:global(.painted) .petal {
+  animation: petal-fall 900ms var(--ease-rise) var(--fall-delay, 0ms) both;
+}
+
+@keyframes petal-fall {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(calc(var(--tilt) - 26deg)) scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--tilt)) scaleY(var(--squash));
+  }
+}
+
+:global(html.js .settled) .petal {
+  animation: none;
+  opacity: 1;
+  transform: rotate(var(--tilt)) scaleY(var(--squash));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .petal {
+    opacity: 1;
+  }
+
+  :global(.painted) .petal {
+    animation: none;
+    transform: rotate(var(--tilt)) scaleY(var(--squash));
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -117,7 +217,10 @@
 
 .kolam {
   width: var(--kolam-band);
-  height: var(--kolam-band);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--kolam-band) / var(--ar));
 }
 
 .kolamWrap {

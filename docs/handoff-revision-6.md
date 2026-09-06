@@ -29,9 +29,9 @@ what the family brings is allowed to move.*
 | Section | Ornament |
 |---|---|
 | Countdown | Two fluted columns at the margins, a **thoranam** of mango leaves and jasmine strung between their capitals, and a **kuthuvilakku** lit at each foot |
-| The day | A **jasmine malai** hanging past both moments, unbroken |
+| The day | A **kalasham** standing on the left, a **jasmine malai** hanging past both moments on the right |
 | The place | **Banana stems** standing at the foot, a jasmine **bough** leaning in from the top right |
-| The closing | Two urns of jasmine flanking the note, and a **kolam** drawn on the ground below it |
+| The closing | Two urns of jasmine, a **kolam** drawn on the ground below the note, and fallen petals on the floor |
 
 The kolam is the page's last mark and the one animation worth watching twice:
 the pulli go down first, from the centre outward, and the line follows.
@@ -62,15 +62,21 @@ both columns and both lamps disappear at 390px.
 promote one to a composited layer the way it will an HTML box. The garlands
 sway in bands, not leaf by leaf.
 
+**5. Measure the box, and put the variables on the stage.** Every ornament was
+clipped by its own hand-written viewBox until `tools/ornament.py` started
+measuring them; and `--kal-w` declared on `.deco` but used in `.stage`'s
+padding silently resolved to nothing, because custom properties only inherit
+downward. Both are in `docs/revision-6-ornament.md § The second pass`.
+
 ## Verified, on the built site
 
 | | Revision 5 (as recorded) | Revision 6 |
 |---|---|---|
 | Frame pacing, the opening, 1x/4x/6x | 22.5 / 24.3 / 28.7 ms | **20.1 / 21.6 / 25.7 ms** |
-| Frame pacing, scrolling the field | not measured | **17.8 / 20.1 / 27.0 ms** |
+| Frame pacing, scrolling the field | not measured | **17.4 / 19.3 / 23.3 ms** |
 | CLS | 0.0222 | **0.0222** |
 | Document, gzipped | ~35 KB | **79 KB** |
-| JS over the wire | 142.6 KB | **~207 KB**, 65 KB of it ornament fetched on approach |
+| JS on the critical path | 142.6 KB | **144.7 KB**; the ornament is a further ~70 KB, fetched on approach |
 | Images on the critical path | 149 KB | **149 KB** (+97 KB of wash sheets, on approach) |
 | Lockout | 4/4 | **4/4** |
 | Audit 320–1920, 400% reflow, 3x type | clean | **clean** |

@@ -18,6 +18,7 @@ Run through tools/emit_art.py, which writes components/art/ornament.ts.
 from __future__ import annotations
 
 import math
+import re
 
 from pen import chain, emit, path_length, simplify
 
@@ -213,6 +214,71 @@ def wobble(points: list[Point], amp: float, seed: int) -> list[Point]:
         k = (next(rng) - 0.5) * 2 * amp
         out.append((x + (-dy / m) * k, y + (dx / m) * k))
     return out
+
+
+_CMD = re.compile(r"([MmCcLlHhVvZz])|(-?\d*\.?\d+(?:e-?\d+)?)")
+
+
+def path_bbox(ds: list[str], pad: float = 5.0) -> list[float]:
+    """The box a set of `d` strings actually occupies, plus a margin.
+
+    Every ornament in revision 6 was authored in a round-numbered box — 300x420
+    for the banana, 100x214 for the lamp — and every one of them drew outside
+    it. An `<svg>` clips to its viewport, so the left banana lost a leaf, the
+    urns lost the top of their jasmine and the lamps lost the tops of their
+    flames, and none of it was visible in the preview harness because that had
+    `overflow: visible` on the svg. The viewBox is measured now.
+
+    Control points are counted as though they were on the curve, which
+    overestimates slightly. That is the right direction to be wrong in.
+    """
+    xs: list[float] = []
+    ys: list[float] = []
+    for d in ds:
+        cx = cy = 0.0
+        cmd = "M"
+        nums: list[float] = []
+
+        def flush() -> None:
+            nonlocal cx, cy, nums
+            if not nums:
+                return
+            rel = cmd.islower()
+            k = cmd.upper()
+            step = {"M": 2, "L": 2, "C": 6, "H": 1, "V": 1}.get(k, 2)
+            for i in range(0, len(nums) - step + 1, step):
+                chunk = nums[i : i + step]
+                if k == "H":
+                    cx = cx + chunk[0] if rel else chunk[0]
+                elif k == "V":
+                    cy = cy + chunk[0] if rel else chunk[0]
+                else:
+                    for j in range(0, len(chunk), 2):
+                        x = cx + chunk[j] if rel else chunk[j]
+                        y = cy + chunk[j + 1] if rel else chunk[j + 1]
+                        xs.append(x)
+                        ys.append(y)
+                    cx = cx + chunk[-2] if rel else chunk[-2]
+                    cy = cy + chunk[-1] if rel else chunk[-1]
+                xs.append(cx)
+                ys.append(cy)
+            nums = []
+
+        for m in _CMD.finditer(d):
+            if m.group(1):
+                flush()
+                cmd = m.group(1)
+                if cmd in "Zz":
+                    cmd = "M"
+            else:
+                nums.append(float(m.group(2)))
+        flush()
+
+    if not xs:
+        return [0.0, 0.0, 1.0, 1.0]
+    x0, x1 = min(xs) - pad, max(xs) + pad
+    y0, y1 = min(ys) - pad, max(ys) + pad
+    return [round(x0, 1), round(y0, 1), round(x1 - x0, 1), round(y1 - y0, 1)]
 
 
 def random_seq(seed: int):
@@ -1281,3 +1347,301 @@ def _kolam():
 
 
 KOLAM = _kolam()
+
+
+# ---------------------------------------------------------------------------
+# 10. The kalasham — docs/revision-6-ornament.md, piece 10
+# ---------------------------------------------------------------------------
+# The purna kumbham: a brass pot filled with water, five mango leaves set
+# around its mouth, and a coconut resting on them. It stands at the entrance to
+# the mandapam at every South Indian wedding and it is what the couple are
+# received past.
+#
+# It goes on the left of the day, which is the one place on the page with
+# ornament on a single side — a drape stood there for three passes and was cut.
+# This is the piece that should have been there: it is a turned object, so it
+# is drawn with the construction that has worked every time, and it is
+# something the family carries in rather than something the venue owns.
+#
+# Authored in a 200 x 320 box.
+def _kalasham():
+    cx = 100.0
+    base = 306.0
+    # A kalasham is belly, shoulder, neck, flare — in that order and all of it
+    # in about a hand's width. The neck has to be narrow enough that the
+    # coconut looks like it is resting on the leaves and not sitting in a bowl.
+    prof = [
+        (base - 156, 27.0),  # the rim, flared
+        (base - 150, 30.0),
+        (base - 144, 22.0),  # under the rim
+        (base - 136, 19.5),  # the neck, narrow
+        (base - 128, 21.0),
+        (base - 112, 33.0),  # the shoulder opens
+        (base - 92, 43.0),
+        (base - 72, 48.0),  # the belly, widest low
+        (base - 50, 45.0),
+        (base - 30, 35.0),
+        (base - 14, 24.0),
+        (base - 5, 21.5),  # the foot
+        (base - 1, 24.0),
+        (base, 22.0),
+    ]
+    sil, right, left = lathe(cx, prof, samples=44)
+    lines = [{**right, "w": 1.05}, {**left, "w": 0.72}]
+
+    # Two turned rules where the profile changes direction, and the kalava —
+    # the thread tied round the neck, which is the detail that makes it a
+    # kalasham rather than a jug.
+    for v, w in ((150.0, 0.9), (136.0, 0.6)):
+        hw = 0.0
+        for (y0, w0), (y1, w1) in zip(prof, prof[1:]):
+            if min(y0, y1) <= base - v <= max(y0, y1):
+                hw = (w0 + w1) / 2
+                break
+        lines.append({**line([(cx - hw, base - v), (cx, base - v - 0.6), (cx + hw, base - v)]), "w": w})
+    for k in range(2):
+        y = base - 132 + k * 5.0
+        lines.append(
+            {**line([(cx - 20.5, y), (cx, y + 2.2), (cx + 20.5, y - 0.4)]), "w": 0.75}
+        )
+
+    # Five mango leaves set round the mouth, pointing up and out. The middle
+    # one stands nearly upright and the outer pair lie almost flat, which is
+    # how they sit when they are wedged under a coconut.
+    rng = random_seq(6301)
+    leaves = []
+    neck = base - 150
+    for ang, L in ((-152.0, 82.0), (-121.0, 94.0), (-90.0, 84.0), (-59.0, 98.0), (-28.0, 78.0)):
+        r1 = next(rng)
+        a = math.radians(ang + (r1 - 0.5) * 9)
+        root = (cx + math.cos(a) * 14.0, neck + math.sin(a) * 5.0 + 2.0)
+        tip = (root[0] + math.cos(a) * L, root[1] + math.sin(a) * L * 0.92)
+        lf = leafshape(root, tip, L * 0.21, lbulge=1.05, rbulge=0.88, wob=0.7, seed=int(r1 * 900) + 3)
+        leaves.append(lf["sil"])
+        lines += [
+            {**lf["left"], "w": 0.85},
+            {**lf["right"], "w": 0.55},
+            {**lf["mid"], "w": 0.5},
+        ]
+
+    # The coconut, resting on the leaves. An ovoid with the three eyes at its
+    # foot and a short tuft of husk at the crown.
+    ccx, ccy = cx + 1.5, neck - 38.0
+    coconut = blob(
+        [
+            (ccx, ccy - 30.0),
+            (ccx + 20.0, ccy - 20.0),
+            (ccx + 25.0, ccy + 2.0),
+            (ccx + 17.0, ccy + 24.0),
+            (ccx, ccy + 30.0),
+            (ccx - 17.0, ccy + 23.0),
+            (ccx - 25.0, ccy + 1.0),
+            (ccx - 20.0, ccy - 21.0),
+        ]
+    )
+    for k in range(3):
+        a = math.radians(-96 + k * 16)
+        lines.append(
+            {
+                **bez(
+                    [
+                        (ccx + math.cos(a) * 11, ccy - 30 + 6 + k),
+                        (ccx + math.cos(a) * 13, ccy - 20),
+                        (ccx + math.cos(a) * 14, ccy - 8),
+                        (ccx + math.cos(a) * 12, ccy + 6),
+                    ]
+                ),
+                "w": 0.4,
+            }
+        )
+    for k, dx in enumerate((-5.0, 0.0, 5.0)):
+        lines.append(
+            {
+                **bez(
+                    [
+                        (ccx + dx, ccy - 29.0),
+                        (ccx + dx * 1.6, ccy - 36.0),
+                        (ccx + dx * 2.2 - 2, ccy - 41.0),
+                        (ccx + dx * 2.6 - 3, ccy - 45.0),
+                    ]
+                ),
+                "w": 0.45,
+            }
+        )
+
+    return {
+        "sil": sil,
+        "leaves": "".join(leaves),
+        "coconut": coconut,
+        "lines": lines,
+        "cx": cx,
+        "base": base,
+        "rx": 46.0,
+    }
+
+
+KALASHAM = _kalasham()
+
+
+# ---------------------------------------------------------------------------
+# 11. Fallen petals — docs/revision-6-ornament.md, piece 11
+# ---------------------------------------------------------------------------
+# Jasmine that has come off the garlands hanging above and settled on the
+# floor. Five or six to a section, tiny, and the cheapest density on the page:
+# they add life at almost no weight and they *explain* the garlands, because
+# something that sheds is something that is real.
+#
+# Each carries where it lies, how it is turned, and how far it fell, so the
+# component can drop them in at different moments.
+def _petals(seed: int, count: int, w: float, h: float):
+    rng = random_seq(seed)
+    out = []
+    for i in range(count):
+        r1, r2, r3, r4 = next(rng), next(rng), next(rng), next(rng)
+        cx = w * (0.06 + 0.88 * ((i + r1 * 0.7) / count))
+        cy = h * (0.18 + 0.74 * r2)
+        # Bigger than they look on paper. At the size a scatter renders on a
+        # phone — about a fiftieth of the frame — anything under this simply
+        # does not register, and an ornament nobody can see is weight for
+        # nothing.
+        rad = 10.5 + r3 * 5.5
+        # Seen from above and lying over, so they are squashed and turned.
+        ring = rosette(cx, cy, rad, 5, r4 * 6.28, 1300 + i * 31)
+        out.append(
+            {
+                "d": ring["d"],
+                "len": ring["len"],
+                "cx": round(cx, 1),
+                "cy": round(cy, 1),
+                "r": round(rad * 0.16, 2),
+                "tilt": round((r3 - 0.5) * 46, 1),
+                "squash": round(0.52 + r1 * 0.26, 2),
+                "fall": round(r2 * 900 + i * 120, 0),
+            }
+        )
+    return out
+
+
+PETALS = {
+    "threshold": _petals(211, 7, 800.0, 150.0),
+    "closing": _petals(487, 6, 400.0, 150.0),
+}
+
+
+# ---------------------------------------------------------------------------
+# Measured viewBoxes
+# ---------------------------------------------------------------------------
+# One per *rendered* SVG, not per piece: the banana's two stems share a frame
+# and each lamp has its own. Anything drawn that is not a path — the lamps'
+# glow discs, the cast shadows under the standing objects, the kolam's dots —
+# is added by hand here, because it is not in a `d` string to be measured.
+def _paths(*groups) -> list[str]:
+    out: list[str] = []
+    for g in groups:
+        if g is None:
+            continue
+        if isinstance(g, str):
+            out.append(g)
+        elif isinstance(g, dict):
+            out.append(g["d"])
+        else:
+            for x in g:
+                out.append(x if isinstance(x, str) else x["d"])
+    return out
+
+
+def _grow(box: list[float], x0: float, y0: float, x1: float, y1: float) -> list[float]:
+    """Widen a measured box to take in something that is not a path."""
+    bx, by, bw, bh = box
+    nx0, ny0 = min(bx, x0), min(by, y0)
+    nx1, ny1 = max(bx + bw, x1), max(by + bh, y1)
+    return [round(nx0, 1), round(ny0, 1), round(nx1 - nx0, 1), round(ny1 - ny0, 1)]
+
+
+def _column_box(col: dict) -> list[float]:
+    return path_bbox(_paths(col["sil"], col["acanthus"], col["lines"]), pad=3.0)
+
+
+def _lamp_box(lamp: dict) -> list[float]:
+    box = path_bbox(
+        _paths(lamp["sil"], lamp["dish"], lamp["bud"], lamp["lines"],
+               [f["body"] for f in lamp["flames"]]),
+        pad=3.0,
+    )
+    # The glow discs, and the ellipse the lamp stands on.
+    for f in lamp["flames"]:
+        cy = f["y"] - f["r"] * 0.3
+        box = _grow(box, f["x"] - f["r"], cy - f["r"], f["x"] + f["r"], cy + f["r"])
+    return _grow(box, 50 - 34, 202 - 7, 50 + 34, 202 + 7)
+
+
+def _urn_box(urn: dict) -> list[float]:
+    box = path_bbox(
+        _paths(urn["sil"], urn["lines"], urn["stems"], [f["sil"] for f in urn["flowers"]]),
+        pad=4.0,
+    )
+    return _grow(box, urn["cx"] - urn["rx"], urn["base"] - 8, urn["cx"] + urn["rx"], urn["base"] + 13)
+
+
+def _banana_box() -> list[float]:
+    ds: list[str] = []
+    for st in BANANA:
+        ds += _paths(st["sil"], st["blades"], st["lines"])
+    box = path_bbox(ds, pad=4.0)
+    for st in BANANA:
+        box = _grow(box, st["x"] - st["rx"], st["y"] - 7, st["x"] + st["rx"], st["y"] + 12)
+    return box
+
+
+def _kolam_box() -> list[float]:
+    box = path_bbox(_paths(KOLAM["ring"], KOLAM["petals"]), pad=6.0)
+    for d in KOLAM["dots"]:
+        r = d["r"] + 1
+        box = _grow(box, d["cx"] - r, d["cy"] - r, d["cx"] + r, d["cy"] + r)
+    return box
+
+
+def _union(a: list[float], b: list[float]) -> list[float]:
+    """One box for a pair.
+
+    The two columns, the two lamps and the two urns each get a *shared*
+    viewBox. Given separate ones they would be scaled to the same rendered
+    width and the narrower of the pair would simply be blown up to match,
+    which throws away the whole point of their not being mirrors.
+    """
+    return _grow(a, b[0], b[1], b[0] + b[2], b[1] + b[3])
+
+
+BOXES = {
+    "column": _union(_column_box(COLUMN_L), _column_box(COLUMN_R)),
+    "thoranam": path_bbox(
+        _paths(THORANAM["cord"],
+               [lf["sil"] for lf in THORANAM["leaves"]],
+               [ln["d"] for lf in THORANAM["leaves"] for ln in lf["lines"]],
+               [cl["sil"] for cl in THORANAM["clusters"]],
+               [cl["stalk"]["d"] for cl in THORANAM["clusters"]]),
+        pad=4.0,
+    ),
+    "lamp": _union(_lamp_box(LAMP_L), _lamp_box(LAMP_R)),
+    "malai": path_bbox(
+        _paths(MALAI["cord"],
+               [f["sil"] for f in MALAI["flowers"]],
+               MALAI["tail"]["sil"], MALAI["tail"]["lines"]),
+        pad=4.0,
+    ),
+    "banana": _banana_box(),
+    "bough": path_bbox(
+        _paths(BOUGH["branch"], BOUGH["leaves"], BOUGH["lines"],
+               [f["sil"] for f in BOUGH["flowers"]]),
+        pad=5.0,
+    ),
+    "urn": _union(_urn_box(URN_L), _urn_box(URN_R)),
+    "kolam": _kolam_box(),
+    "kalasham": _grow(
+        path_bbox(_paths(KALASHAM["sil"], KALASHAM["leaves"], KALASHAM["coconut"], KALASHAM["lines"]), pad=4.0),
+        KALASHAM["cx"] - KALASHAM["rx"], KALASHAM["base"] - 8,
+        KALASHAM["cx"] + KALASHAM["rx"], KALASHAM["base"] + 13,
+    ),
+    "petalsThreshold": path_bbox(_paths([p["d"] for p in PETALS["threshold"]]), pad=6.0),
+    "petalsClosing": path_bbox(_paths([p["d"] for p in PETALS["closing"]]), pad=6.0),
+}

@@ -26,6 +26,29 @@ import styles from "../Entrance.module.css";
  * competing.
  */
 
+
+/**
+ * Measured viewBoxes.
+ *
+ * Every ornament was authored in a round-numbered box and every one of them
+ * drew outside it — an `<svg>` clips to its viewport, so the left banana lost
+ * a leaf, the urns lost the tops of their jasmine and the lamps lost the tops
+ * of their flames. None of it showed in the preview harness, which had
+ * `overflow: visible` on the svg. `tools/ornament.py` measures them now, and
+ * `--ar` hands the box's aspect to the stylesheet so a piece's height is
+ * always its own.
+ */
+const BOX = ORNAMENT.box;
+
+/** viewBox plus the aspect the CSS needs, from one measured box. */
+function framed(box: readonly [number, number, number, number] | readonly number[]) {
+  const [x, y, w, h] = box;
+  return {
+    viewBox: `${x} ${y} ${w} ${h}`,
+    style: { "--ar": String(w / h) } as React.CSSProperties,
+  };
+}
+
 const BANANA = ORNAMENT.banana;
 const BOUGH = ORNAMENT.bough;
 
@@ -33,7 +56,7 @@ function Banana({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 300 420"
+      {...framed(BOX.banana)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -89,7 +112,7 @@ function Bough({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 300 460"
+      {...framed(BOX.bough)}
       fill="none"
       aria-hidden="true"
       focusable="false"

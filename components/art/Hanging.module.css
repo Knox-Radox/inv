@@ -8,7 +8,23 @@
  * the 700px measure.
  */
 
+/*
+ * The ornament's own measurements live on the *stage*, not on `.deco`.
+ *
+ * Custom properties inherit downward only. Declared on `.deco` they are
+ * invisible to `.stage`, and a `.stage` padding written in terms of one
+ * resolves to nothing — which is how the kalasham and the urns ended up with
+ * no band to stand in and `padding-bottom: 0px`, measured. `.deco` is a child
+ * of this box, so everything here reaches it.
+ */
 .stage {
+  --malai-w: clamp(56px, 7.4vw, 116px);
+  /* The schedule's lines are short and left-aligned, so the right half of the
+     measure is empty at every width and the garland hangs down it. */
+  --malai-in: clamp(6px, 9vw, 168px);
+  --kal-w: clamp(126px, 14vw, 216px);
+  --kal-out: clamp(-14px, -1vw, 8px);
+
   position: relative;
   /*
    * Full-bleed, and the *stage* is what bleeds — not the ornament layer inside
@@ -25,9 +41,16 @@
    * with matching padding. `.deco` is then a plain `inset: 0` overlay, and an
    * absolutely positioned child resolves `inset` against the *padding* box —
    * the whole 100vw — so it still covers the frame.
+   *
+   * The two `--bleed-*` values come from `.inner` and are asymmetric on
+   * purpose, because that column's own padding is — see the note there. A
+   * symmetric `calc(50% - 50vw)` put this box 16px to the right of the
+   * viewport on a phone.
    */
-  margin-inline: calc(50% - 50vw);
-  padding-inline: calc(50vw - 50%);
+  width: 100vw;
+  margin-left: calc(-1 * var(--bleed-left));
+  padding-left: var(--bleed-left);
+  padding-right: var(--bleed-right);
 
   padding-top: clamp(8px, 2vh, 26px);
   padding-bottom: clamp(24px, 5vh, 64px);
@@ -52,7 +75,7 @@
    * at 390/430/768/1440 and are the widest case rounded up.
    */
   content-visibility: auto;
-  contain-intrinsic-size: auto 710px;
+  contain-intrinsic-size: auto 880px;
 }
 
 .deco {
@@ -69,6 +92,65 @@
 }
 
 /* --------------------------------------------------------------------------
+   The kalasham, standing on the left
+   -------------------------------------------------------------------------- */
+
+.kalasham {
+  position: absolute;
+  bottom: 0;
+  left: var(--kal-out);
+  width: var(--kal-w);
+  /* Height from the piece's own measured box — see `framed()` in the decor. */
+  height: calc(var(--kal-w) / var(--ar));
+}
+
+/*
+ * On a narrow screen it stands *below* the schedule rather than beside it.
+ *
+ * There is no left margin on a phone — the thread is at 28px and the times
+ * start at 56px — so a pot standing beside them would be behind "8:30 AM".
+ * The section grows by the pot's own height instead, which also gives the
+ * malai's long hang something to end level with. 1.627 is the kalasham box's
+ * height over its width; see BOXES in tools/ornament.py.
+ */
+@media (max-width: 899px) {
+  .stage {
+    padding-bottom: calc(var(--kal-w) * 1.627 + clamp(14px, 3vh, 34px));
+  }
+
+  .deco {
+    --kal-w: 126px;
+    --kal-out: -8px;
+  }
+}
+
+/* The mango leaves stir; the brass does not. */
+.mangoLeaves {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+}
+
+:global(.astir) .mangoLeaves {
+  animation: leaf-stir 7.4s ease-in-out -2.1s infinite alternate;
+}
+
+@keyframes leaf-stir {
+  from {
+    transform: rotate(-0.7deg);
+  }
+  to {
+    transform: rotate(0.7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.astir) .mangoLeaves {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
    The malai, on the right, over the empty half of the measure
    -------------------------------------------------------------------------- */
 
@@ -77,14 +159,10 @@
   top: clamp(-90px, -9vh, -30px);
   right: var(--malai-in);
   width: var(--malai-w);
-  height: calc(var(--malai-w) * 7.23);
-}
-
-.deco {
-  --malai-w: clamp(56px, 7.4vw, 116px);
-  /* The schedule's lines are short and left-aligned, so the right half of the
-     measure is empty at every width and the garland hangs down it. */
-  --malai-in: clamp(6px, 9vw, 168px);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--malai-w) / var(--ar));
 }
 
 .bloomOnString {

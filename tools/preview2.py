@@ -107,6 +107,23 @@ def main(out: Path) -> None:
     columns = column(o.COLUMN_L) + column(o.COLUMN_R)
     lamps = lamp(o.LAMP_L) + lamp(o.LAMP_R)
 
+    k = o.KALASHAM
+    kb = o.BOXES["kalasham"]
+    ks2 = (f'<ellipse cx="{k["cx"]}" cy="{k["base"]+4}" rx="{k["rx"]}" ry="8" fill="#8A9A83" opacity=".2"/>'
+           + washed(k["leaves"], "foliage", (20, 40, 160, 160))
+           + washed(k["sil"], "brass", (30, 130, 140, 200))
+           + washed(k["coconut"], "brass", (60, 80, 80, 80))
+           + paths(k["lines"], "#7E5F35"))
+    kalasham = f'<svg viewBox="{kb[0]} {kb[1]} {kb[2]} {kb[3]}" width="{kb[2]}" height="{kb[3]}">{ks2}</svg>'
+
+    pb = o.BOXES["petalsThreshold"]
+    ps = ""
+    for pl in o.PETALS["threshold"]:
+        ps += washed(pl["d"], "stone", (pl["cx"]-16, pl["cy"]-16, 32, 32), 1.1)
+        ps += paths([{"d": pl["d"], "w": 0.5}], "#8A9A83")
+        ps += f'<circle cx="{pl["cx"]}" cy="{pl["cy"]}" r="{pl["r"]}" fill="#B08D57" opacity=".7"/>'
+    petals = f'<svg viewBox="{pb[0]} {pb[1]} {pb[2]} {pb[3]}" width="{pb[2]}" height="{pb[3]}">{ps}</svg>'
+
     out.write_text(f"""<!doctype html><meta charset=utf-8>
 <style>body{{margin:0;background:#F0E9DB;font:13px Georgia,serif;color:#2E2A24}}
 section{{padding:20px 28px;border-bottom:1px solid #ddd6c6;background:#FBF7F0}}
@@ -119,6 +136,8 @@ h2{{font-size:12px;letter-spacing:.08em;color:#8A9A83;margin:0 0 10px;font-weigh
 <section><h2>jasmine bough</h2>{cypress}</section>
 <section><h2>urns — left, right</h2><div class=row>{urn(o.URN_L)}{urn(o.URN_R)}</div></section>
 <section><h2>kolam</h2>{kolam}</section>
+<section><h2>kalasham</h2>{kalasham}</section>
+<section><h2>fallen petals</h2>{petals}</section>
 """, encoding="utf-8")
     print("wrote", out)
 

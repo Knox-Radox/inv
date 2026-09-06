@@ -67,6 +67,22 @@
 .inner {
   --field-pad-right: clamp(24px, 6vw, 56px);
 
+  /*
+   * How far this column's content box sits from each edge of the viewport.
+   *
+   * The ornament stages break out to full bleed against these. They used to do
+   * it with `margin-inline: calc(50% - 50vw)`, which assumes the containing
+   * block is centred in the viewport — and this one is not: the left padding is
+   * the content datum at 56px and the right is `--field-pad-right`, which is
+   * 23px on a phone. The stage came out 16px to the right of the viewport at
+   * 390px, so the right-hand column, the right lamp and the right urn were all
+   * cut 16px harder than their partners while the left ones had room to spare.
+   * That asymmetry was the whole of "the pillars are too far right" and "the
+   * lamps are not aligned".
+   */
+  --bleed-left: calc((100vw - min(var(--card-width), 100vw)) / 2 + var(--content-x));
+  --bleed-right: calc((100vw - min(var(--card-width), 100vw)) / 2 + var(--field-pad-right));
+
   position: relative;
   max-width: var(--card-width);
   margin-inline: auto;

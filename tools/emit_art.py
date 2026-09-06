@@ -165,6 +165,9 @@ def write_ornament() -> None:
         "bough": orn.BOUGH,
         "urn": {"left": orn.URN_L, "right": orn.URN_R},
         "kolam": orn.KOLAM,
+        "kalasham": orn.KALASHAM,
+        "petals": orn.PETALS,
+        "box": orn.BOXES,
     }
     ORN_OUT.write_text(
         "\n".join(

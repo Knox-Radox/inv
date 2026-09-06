@@ -8,7 +8,25 @@
  * space.
  */
 
+/*
+ * The ornament's own measurements live on the *stage*, not on `.deco`.
+ *
+ * Custom properties inherit downward only. Declared on `.deco` they are
+ * invisible to `.stage`, and a `.stage` padding written in terms of one
+ * resolves to nothing — which is how the kalasham and the urns ended up with
+ * no band to stand in and `padding-bottom: 0px`, measured. `.deco` is a child
+ * of this box, so everything here reaches it.
+ */
 .stage {
+  --vazhai-w: clamp(190px, 26vw, 400px);
+  /* On a phone the pair is cropped to the left plant and half the right one,
+     which is the crop you get standing at the door rather than across the
+     street. On a desktop it sits wholly in the left margin. */
+  --vazhai-out: clamp(-104px, -7vw, -10px);
+  --bough-w: clamp(210px, 28vw, 430px);
+  --bough-out: clamp(-96px, -7vw, -14px);
+  --bough-up: clamp(-56px, -5vh, -14px);
+
   position: relative;
   /*
    * Full-bleed, and the *stage* is what bleeds — not the ornament layer inside
@@ -25,9 +43,16 @@
    * with matching padding. `.deco` is then a plain `inset: 0` overlay, and an
    * absolutely positioned child resolves `inset` against the *padding* box —
    * the whole 100vw — so it still covers the frame.
+   *
+   * The two `--bleed-*` values come from `.inner` and are asymmetric on
+   * purpose, because that column's own padding is — see the note there. A
+   * symmetric `calc(50% - 50vw)` put this box 16px to the right of the
+   * viewport on a phone.
    */
-  margin-inline: calc(50% - 50vw);
-  padding-inline: calc(50vw - 50%);
+  width: 100vw;
+  margin-left: calc(-1 * var(--bleed-left));
+  padding-left: var(--bleed-left);
+  padding-right: var(--bleed-right);
 
   padding-top: clamp(28px, 6vh, 76px);
   /* Deep enough that the vazhai has its own band below the address. At a
@@ -80,16 +105,11 @@
   bottom: 0;
   left: var(--vazhai-out);
   width: var(--vazhai-w);
-  height: calc(var(--vazhai-w) * 1.4);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--vazhai-w) / var(--ar));
   opacity: 0.9;
-}
-
-.deco {
-  --vazhai-w: clamp(190px, 26vw, 400px);
-  /* On a phone the pair is cropped to the left plant and half the right one,
-     which is the crop you get standing at the door rather than across the
-     street. On a desktop it sits wholly in the left margin. */
-  --vazhai-out: clamp(-104px, -7vw, -10px);
 }
 
 /* --------------------------------------------------------------------------
@@ -101,14 +121,11 @@
   top: var(--bough-up);
   right: var(--bough-out);
   width: var(--bough-w);
-  height: calc(var(--bough-w) * 1.533);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--bough-w) / var(--ar));
   opacity: 0.94;
-}
-
-.deco {
-  --bough-w: clamp(210px, 28vw, 430px);
-  --bough-out: clamp(-96px, -7vw, -14px);
-  --bough-up: clamp(-56px, -5vh, -14px);
 }
 
 /*
@@ -120,12 +137,19 @@
   .deco {
     --bough-w: 260px;
     --bough-out: -128px;
-    /* Smaller and pushed further out, so the crown clears the address. */
-    --vazhai-w: 158px;
-    --vazhai-out: -52px;
+    /*
+     * Both plants in frame, and large enough to read as plants.
+     *
+     * At 158px pushed 52px off the left edge the pair was sliced through the
+     * near trunk, which is what "the two trees are overflowing to the left"
+     * was. The viewBox is measured now, so this width is the width of the
+     * planting rather than the width of a box it was drawn in.
+     */
+    --vazhai-w: 238px;
+    --vazhai-out: -10px;
   }
 
   .banana {
-    bottom: -26px;
+    bottom: -18px;
   }
 }

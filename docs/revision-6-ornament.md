@@ -66,6 +66,8 @@ does to it. Neither half is borrowed costume.
 | 7 | **Jasmine bough** leaning in (replaced a cypress — **cut**, see below) | brought | The place, top right | No |
 | 8 | Urns on plinths ×2, holding jasmine | stone + brought | The closing, flanking | No |
 | 9 | **Kolam** — pulli dots, then one continuous sikku line | brought | The closing, beneath the note | Draws once |
+| 10 | **Kalasham** — brass pot, five mango leaves, a coconut | brought | The day, standing on the left | Leaves stir |
+| 11 | **Fallen petals** — jasmine off the garlands above | brought | The threshold's floor and the closing's | Drop once |
 
 Piece 9 is the emotional close and the reason the order ends where it does. A
 kolam is drawn at the threshold at dawn; it is the mark that says the house is
@@ -147,6 +149,46 @@ Worth writing down before starting, because each has a specific smell.
 - **Symmetry.** Two identical columns, two identical lamps, two identical urns
   is a stencil. Nothing mirrors anything.
 
+
+---
+
+## The second pass, on the client's mobile notes
+
+Four placement faults and two additions.
+
+**The bleed was 16px off centre.** Every stage broke out with
+`margin-inline: calc(50% - 50vw)`, which assumes its containing block is
+centred in the viewport. `.inner` is not: its left padding is the content datum
+at 56px and its right is `--field-pad-right`, 23px on a phone. So the whole
+ornament layer sat 16px to the right, and the right column, the right lamp and
+the right urn were each cut 16px harder than their partners. That single number
+was "the pillars are too far right" and "the lamps are not aligned". The bleed
+comes off `--bleed-left` / `--bleed-right` now, declared on `.inner` where the
+paddings are.
+
+**Every piece was clipped by its own viewBox.** All of them were authored in
+round-numbered boxes — 300x420 for the banana, 100x214 for the lamp — and all
+of them drew outside. An `<svg>` clips to its viewport, so the left banana lost
+a leaf, the urns lost the tops of their jasmine and the lamps lost the tops of
+their flames. It never showed in the preview harness because that had
+`overflow: visible` on the svg. `tools/ornament.py` measures the boxes now and
+hands each one's aspect to the stylesheet as `--ar`, so a hand-kept multiplier
+can never go stale against the geometry again.
+
+**Two lamps, one floor.** The right lamp used to sit 12px lower on the
+reasoning that two objects put down by hand are never level. The floor is,
+though, and with both sharing a bottom-aligned viewBox the offset put one of
+them through it. The difference between them is in the drawing.
+
+**Ornament variables have to live on the stage.** `--kal-w` and `--urn-w` were
+declared on `.deco` and used in `.stage`'s padding; custom properties inherit
+downward only, so both resolved to nothing and both pieces had
+`padding-bottom: 0px` — measured — and no band to stand in.
+
+The two additions are pieces 10 and 11 above. The kalasham goes where the drape
+failed: the day had ornament on one side only. The petals are the cheapest
+density on the page and they *explain* the garlands, because a thing that sheds
+is a thing that is real.
 
 ---
 
@@ -258,10 +300,10 @@ Harness in `tools/verify/`. Everything below is from the production build.
 | | Revision 5 (as recorded) | Revision 6 |
 |---|---|---|
 | Frame pacing, the opening, 1x/4x/6x | 22.5 / 24.3 / 28.7 ms | **20.1 / 21.6 / 25.7 ms** |
-| Frame pacing, scrolling the field, 1x/4x/6x | not measured | **17.8 / 20.1 / 27.0 ms** |
+| Frame pacing, scrolling the field, 1x/4x/6x | not measured | **17.4 / 19.3 / 23.3 ms** |
 | CLS | 0.0222 | **0.0222** |
 | Document, gzipped | ~35 KB | **79 KB** |
-| JS over the wire | 142.6 KB | **~207 KB** (65 KB of it the ornament, loaded on approach) |
+| JS on the critical path | 142.6 KB | **144.7 KB** (the ornament is a further ~70 KB, fetched on approach) |
 | Images | 149 KB | **149 KB** on the critical path; 97 KB of wash sheets on approach |
 | Lockout | 4/4 | **4/4** |
 | Audit 320–1920, reflow, 3x type | clean | **clean** |

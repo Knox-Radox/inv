@@ -8,7 +8,30 @@
  * ivory down each side with the ornament nowhere near it.
  */
 
+/*
+ * The ornament's own measurements live on the *stage*, not on `.deco`.
+ *
+ * Custom properties inherit downward only. Declared on `.deco` they are
+ * invisible to `.stage`, and a `.stage` padding written in terms of one
+ * resolves to nothing — which is how the kalasham and the urns ended up with
+ * no band to stand in and `padding-bottom: 0px`, measured. `.deco` is a child
+ * of this box, so everything here reaches it.
+ */
 .stage {
+  /* On a phone only the outer sliver of each column is in frame, which is
+     enough to say "there is a building here" without crowding four numerals
+     into the middle third. */
+  /* 78px of a 430px phone was 36% of the screen given to two flat panels
+     behind four numerals. A sliver is enough: the guest needs to know there is
+     a building, not to be able to survey it. */
+  --col-w: clamp(46px, 8.5vw, 124px);
+  --col-out: clamp(-22px, -2vw, -4px);
+  --lamp-w: clamp(56px, 8vw, 118px);
+  /* On the floor, in front of the columns and behind the lamps. */
+  --petals-bottom: clamp(6px, 1.4vh, 26px);
+  --petals-h: clamp(64px, 9vw, 124px);
+  --lamp-in: clamp(4px, 3.4vw, 92px);
+
   position: relative;
   /*
    * Full-bleed, and the *stage* is what bleeds — not the ornament layer inside
@@ -25,9 +48,16 @@
    * with matching padding. `.deco` is then a plain `inset: 0` overlay, and an
    * absolutely positioned child resolves `inset` against the *padding* box —
    * the whole 100vw — so it still covers the frame.
+   *
+   * The two `--bleed-*` values come from `.inner` and are asymmetric on
+   * purpose, because that column's own padding is — see the note there. A
+   * symmetric `calc(50% - 50vw)` put this box 16px to the right of the
+   * viewport on a phone.
    */
-  margin-inline: calc(50% - 50vw);
-  padding-inline: calc(50vw - 50%);
+  width: 100vw;
+  margin-left: calc(-1 * var(--bleed-left));
+  padding-left: var(--bleed-left);
+  padding-right: var(--bleed-right);
 
   /* Room above for the thoranam to hang into, and below for the lamps to
      stand in. Both are ornament, so both scale with the viewport rather than
@@ -117,27 +147,11 @@
   position: absolute;
   top: -2%;
   width: var(--col-w);
-  /*
-   * 70:760, which is the *column's* aspect and not the drawing box's.
-   *
-   * The box was 120 wide and the shaft is 46 of it, so a column asked to be
-   * 144 px wide drew 55 px of stone inside 89 px of nothing and read as a pale
-   * stripe lost at the edge of the page. The viewBox is cropped to the art
-   * now, so `--col-w` means what it says.
-   */
-  height: calc(var(--col-w) * 10.857);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--col-w) / var(--ar));
   opacity: 0.96;
-}
-
-.deco {
-  /* On a phone only the outer sliver of each column is in frame, which is
-     enough to say "there is a building here" without crowding four numerals
-     into the middle third. */
-  /* 78px of a 430px phone was 36% of the screen given to two flat panels
-     behind four numerals. A sliver is enough: the guest needs to know there is
-     a building, not to be able to survey it. */
-  --col-w: clamp(46px, 8.5vw, 124px);
-  --col-out: clamp(-22px, -2vw, -4px);
 }
 
 /*
@@ -236,10 +250,10 @@
   left: 50%;
   transform: translateX(-50%);
   width: min(100%, 1180px);
-  /* 800:160, cropped to the art. The drawing box ran to 210 and the lowest
-     leaf reaches 156, so a fifth of the garland's height was empty air that
-     every section above it had to make room for. */
-  aspect-ratio: 800 / 160;
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  aspect-ratio: var(--ar);
   height: auto;
 }
 
@@ -263,12 +277,10 @@
    */
   bottom: clamp(18px, 5vh, 96px);
   width: var(--lamp-w);
-  height: calc(var(--lamp-w) * 2.14);
-}
-
-.deco {
-  --lamp-w: clamp(56px, 8vw, 118px);
-  --lamp-in: clamp(4px, 3.4vw, 92px);
+  /* Height from the piece's own measured box — see `framed()` in the decor
+     file. Hand-kept aspect multipliers went stale the moment the geometry
+     changed, and a stale one silently squashes the drawing. */
+  height: calc(var(--lamp-w) / var(--ar));
 }
 
 .lampLeft {
@@ -276,11 +288,83 @@
 }
 
 .lampRight {
-  /* The pair is not symmetrical: the right lamp is shorter, so it stands a
-     little further in and a little lower, the way two objects put down by
-     hand do. */
+  /*
+   * The pair is not symmetrical, but it does stand on one floor.
+   *
+   * The right lamp used to sit 12px lower on the reasoning that two objects
+   * put down by hand are never level. They are, though — the floor is — and
+   * with both lamps sharing a measured viewBox that is bottom-aligned, giving
+   * them different `bottom` values put one of them through the floor. The
+   * difference between them is in the drawing: the right lamp is shorter and
+   * narrower, and it stands a little further in.
+   */
   right: calc(var(--lamp-in) + clamp(2px, 1.2vw, 26px));
-  bottom: clamp(10px, 3.6vh, 74px);
+}
+
+/* --------------------------------------------------------------------------
+   Fallen petals
+   -------------------------------------------------------------------------- */
+
+/*
+ * `preserveAspectRatio="none"` on the petal sheets is deliberate: they are a
+ * scatter on a floor, not a drawing, so stretching the field they lie in
+ * spreads them rather than distorting anything anyone reads. The petals
+ * themselves are small enough that the stretch is invisible.
+ */
+.petals {
+  position: absolute;
+  left: 0;
+  /* `width` explicitly, not `right: 0`. An absolutely positioned *replaced*
+     element with `width: auto` takes its intrinsic width from the viewBox and
+     drops `right` on the floor — the threshold's scatter came out 297px wide
+     inside a 390px frame. */
+  width: 100%;
+  bottom: var(--petals-bottom);
+  height: var(--petals-h);
+  pointer-events: none;
+}
+
+.petal {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+  /* Lying over, and turned. */
+  transform: rotate(var(--tilt)) scaleY(var(--squash));
+}
+
+:global(html.js) .petal {
+  opacity: 0;
+}
+
+:global(.painted) .petal {
+  animation: petal-fall 900ms var(--ease-rise) var(--fall-delay, 0ms) both;
+}
+
+@keyframes petal-fall {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(calc(var(--tilt) - 26deg)) scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--tilt)) scaleY(var(--squash));
+  }
+}
+
+:global(html.js .settled) .petal {
+  animation: none;
+  opacity: 1;
+  transform: rotate(var(--tilt)) scaleY(var(--squash));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .petal {
+    opacity: 1;
+  }
+
+  :global(.painted) .petal {
+    animation: none;
+    transform: rotate(var(--tilt)) scaleY(var(--squash));
+  }
 }
 
 /* --------------------------------------------------------------------------

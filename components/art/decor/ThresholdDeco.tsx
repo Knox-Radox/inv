@@ -34,6 +34,29 @@ const TH = ORNAMENT.thoranam;
 const LAMP = ORNAMENT.lamp;
 
 /** The cord's own draw, and the window the leaves are cued inside. */
+
+/**
+ * Measured viewBoxes.
+ *
+ * Every ornament was authored in a round-numbered box and every one of them
+ * drew outside it — an `<svg>` clips to its viewport, so the left banana lost
+ * a leaf, the urns lost the tops of their jasmine and the lamps lost the tops
+ * of their flames. None of it showed in the preview harness, which had
+ * `overflow: visible` on the svg. `tools/ornament.py` measures them now, and
+ * `--ar` hands the box's aspect to the stylesheet so a piece's height is
+ * always its own.
+ */
+const BOX = ORNAMENT.box;
+
+/** viewBox plus the aspect the CSS needs, from one measured box. */
+function framed(box: readonly [number, number, number, number] | readonly number[]) {
+  const [x, y, w, h] = box;
+  return {
+    viewBox: `${x} ${y} ${w} ${h}`,
+    style: { "--ar": String(w / h) } as React.CSSProperties,
+  };
+}
+
 const CORD_START = 500;
 const CORD_MS = 1400;
 
@@ -72,7 +95,7 @@ function Column({ side, className }: { side: "left" | "right"; className?: strin
   return (
     <svg
       className={className}
-      viewBox="25 0 70 760"
+      {...framed(BOX.column)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -108,7 +131,7 @@ function Column({ side, className }: { side: "left" | "right"; className?: strin
         style={{ "--bloom-delay": "200ms", "--bloom-dy": "3%" } as React.CSSProperties}
       />
       <g className={styles.round} clipPath={`url(#shaft-${side})`}>
-        <rect x="25" y="0" width="70" height="760" fill={`url(#round-${side})`} />
+        <rect x={BOX.column[0]} y={BOX.column[1]} width={BOX.column[2]} height={BOX.column[3]} fill={`url(#round-${side})`} />
       </g>
       {/* The carved leaves are washed a shade deeper than the shaft. That, and
           nothing else, is what puts the capital in front of it. */}
@@ -142,7 +165,7 @@ function Thoranam({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 800 160"
+      {...framed(BOX.thoranam)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -270,7 +293,7 @@ function Lamp({ side, className }: { side: "left" | "right"; className?: string 
   return (
     <svg
       className={className}
-      viewBox="0 0 100 214"
+      {...framed(BOX.lamp)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -365,6 +388,66 @@ function Lamp({ side, className }: { side: "left" | "right"; className?: string 
 }
 
 
+/** After the lamps are lit, so the floor is the last thing to fill. */
+const FALL_AT = 3100;
+
+/**
+ * Jasmine that has come off the garland hanging above — piece 11.
+ *
+ * The cheapest density on the page: five or six to a section, at almost no
+ * weight, and they *explain* the garlands, because a thing that sheds is a
+ * thing that is real. They drop in one at a time and settle.
+ */
+function Petals({ which, className }: { which: "threshold" | "closing"; className?: string }) {
+  const petals = ORNAMENT.petals[which];
+  const box = which === "threshold" ? BOX.petalsThreshold : BOX.petalsClosing;
+  return (
+    <svg
+      className={className}
+      {...framed(box)}
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      preserveAspectRatio="none"
+    >
+      {petals.map((pl, i) => (
+        <g
+          key={i}
+          className={styles.petal}
+          style={
+            {
+              "--anchor": `${pl.cx}px ${pl.cy}px`,
+              "--tilt": `${pl.tilt}deg`,
+              "--squash": String(pl.squash),
+              "--fall-delay": `${FALL_AT + pl.fall}ms`,
+            } as React.CSSProperties
+          }
+        >
+          <Wash
+            id={`petal-${which}-${i}`}
+            d={pl.d}
+            sheet="stone"
+            box={[pl.cx - 16, pl.cy - 16, 32, 32]}
+            rim={0.2}
+            rimWidth={1}
+            style={{ "--bloom-delay": `${FALL_AT + pl.fall}ms` } as React.CSSProperties}
+          />
+          <Stitch
+            d={pl.d}
+            length={pl.len}
+            width={0.5}
+            tone="sage"
+            shadow={false}
+            delay={FALL_AT + pl.fall}
+            duration={260}
+          />
+          <circle cx={pl.cx} cy={pl.cy} r={pl.r} fill="var(--gold)" opacity={0.62} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export default function ThresholdDeco() {
   return (
     <Painting className={styles.deco}>
@@ -375,6 +458,7 @@ export default function ThresholdDeco() {
       <Thoranam className={styles.thoranam} />
       <Lamp side="left" className={styles.lampLeft} />
       <Lamp side="right" className={styles.lampRight} />
+      <Petals which="threshold" className={styles.petals} />
       <div className={styles.floor} />
     </Painting>
   );

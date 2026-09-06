@@ -32,6 +32,29 @@ import styles from "../ClosingThreshold.module.css";
  * | 3 | 2.2 → 4.0s | The eight petals are looped, and the line closes around them. |
  */
 
+
+/**
+ * Measured viewBoxes.
+ *
+ * Every ornament was authored in a round-numbered box and every one of them
+ * drew outside it — an `<svg>` clips to its viewport, so the left banana lost
+ * a leaf, the urns lost the tops of their jasmine and the lamps lost the tops
+ * of their flames. None of it showed in the preview harness, which had
+ * `overflow: visible` on the svg. `tools/ornament.py` measures them now, and
+ * `--ar` hands the box's aspect to the stylesheet so a piece's height is
+ * always its own.
+ */
+const BOX = ORNAMENT.box;
+
+/** viewBox plus the aspect the CSS needs, from one measured box. */
+function framed(box: readonly [number, number, number, number] | readonly number[]) {
+  const [x, y, w, h] = box;
+  return {
+    viewBox: `${x} ${y} ${w} ${h}`,
+    style: { "--ar": String(w / h) } as React.CSSProperties,
+  };
+}
+
 const URN = ORNAMENT.urn;
 const KOLAM = ORNAMENT.kolam;
 
@@ -41,7 +64,7 @@ function Urn({ side, className }: { side: "left" | "right"; className?: string }
   return (
     <svg
       className={className}
-      viewBox="0 0 180 400"
+      {...framed(BOX.urn)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -125,7 +148,7 @@ function Kolam({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 300 300"
+      {...framed(BOX.kolam)}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -176,11 +199,72 @@ function Kolam({ className }: { className?: string }) {
 }
 
 
+/** After both urns have been filled. */
+const FALL_AT = 1900;
+
+/**
+ * Jasmine that has come off the garland hanging above — piece 11.
+ *
+ * The cheapest density on the page: five or six to a section, at almost no
+ * weight, and they *explain* the garlands, because a thing that sheds is a
+ * thing that is real. They drop in one at a time and settle.
+ */
+function Petals({ which, className }: { which: "threshold" | "closing"; className?: string }) {
+  const petals = ORNAMENT.petals[which];
+  const box = which === "threshold" ? BOX.petalsThreshold : BOX.petalsClosing;
+  return (
+    <svg
+      className={className}
+      {...framed(box)}
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      preserveAspectRatio="none"
+    >
+      {petals.map((pl, i) => (
+        <g
+          key={i}
+          className={styles.petal}
+          style={
+            {
+              "--anchor": `${pl.cx}px ${pl.cy}px`,
+              "--tilt": `${pl.tilt}deg`,
+              "--squash": String(pl.squash),
+              "--fall-delay": `${FALL_AT + pl.fall}ms`,
+            } as React.CSSProperties
+          }
+        >
+          <Wash
+            id={`petal-${which}-${i}`}
+            d={pl.d}
+            sheet="stone"
+            box={[pl.cx - 16, pl.cy - 16, 32, 32]}
+            rim={0.2}
+            rimWidth={1}
+            style={{ "--bloom-delay": `${FALL_AT + pl.fall}ms` } as React.CSSProperties}
+          />
+          <Stitch
+            d={pl.d}
+            length={pl.len}
+            width={0.5}
+            tone="sage"
+            shadow={false}
+            delay={FALL_AT + pl.fall}
+            duration={260}
+          />
+          <circle cx={pl.cx} cy={pl.cy} r={pl.r} fill="var(--gold)" opacity={0.62} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export default function ClosingDeco() {
   return (
     <Painting className={styles.deco} threshold={0.08}>
       <Urn side="left" className={styles.urnLeft} />
       <Urn side="right" className={styles.urnRight} />
+      <Petals which="closing" className={styles.petals} />
     </Painting>
   );
 }
