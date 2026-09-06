@@ -109,10 +109,32 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Both sheets are needed in the first seconds; 21 KB between them.
-            Measured: inlining the envelope sheet as a data URI did not move
-            LCP and tripled the HTML, so they are preloaded instead. */}
-        <link rel="preload" as="image" href="/cover/envelope.webp" fetchPriority="high" />
+        {/*
+         * The cover photograph, preloaded at high priority: it is the first
+         * thing a guest sees and it must not arrive after the wax.
+         *
+         * This preloaded `/cover/envelope.webp` until revision 6 and had done
+         * since revision 4 renamed the file. The URL 404'd on every load —
+         * a wasted round trip on the critical path, and it hid nothing because
+         * the overlay fetches its own image anyway. `media` picks the same crop
+         * the stylesheet does at the same breakpoint, so exactly one is
+         * fetched, and if the two ever disagree the preload is merely unused
+         * rather than wrong.
+         */}
+        <link
+          rel="preload"
+          as="image"
+          href="/cover/envelope-portrait.webp"
+          media="(max-aspect-ratio: 1/1)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/cover/envelope-landscape.webp"
+          media="(min-aspect-ratio: 1/1)"
+          fetchPriority="high"
+        />
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
          * it flash and a first-time guest never sees the invitation flash

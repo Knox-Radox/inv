@@ -1,0 +1,357 @@
+/*
+ * The countdown's stage — docs/revision-6-ornament.md, pieces 1 to 3.
+ *
+ * The ornament layer is full-bleed and the type is not. That difference is the
+ * whole composition: the reference reads expensive largely because its
+ * illustrations run off the edges of the frame while its copy stays in a
+ * narrow measure, and at 1440px our own page had five hundred pixels of empty
+ * ivory down each side with the ornament nowhere near it.
+ */
+
+.stage {
+  position: relative;
+  /* Room above for the thoranam to hang into, and below for the lamps to
+     stand in. Both are ornament, so both scale with the viewport rather than
+     with the type. */
+  /*
+   * The top padding is tied to **vw**, not vh, because the thing it has to
+   * clear is the garland, and the garland scales with the width. At 14vh the
+   * numerals sat 126 px down a page where the leaves hung 273 px, and four
+   * mango leaves were lying across "81 23 44 27". Ornament that covers the
+   * four facts a guest came for has stopped being ornament.
+   *
+   * The garland's own drop is about 0.88 x (0.2625 x its span); these leave
+   * roughly 50 px of air under the lowest leaf at every width.
+   */
+  padding-top: clamp(130px, 22vw, 292px);
+  padding-bottom: clamp(72px, 11vh, 132px);
+  /*
+   * Deliberately NOT `overflow: hidden`. It was, for one pass, and it clipped
+   * the full-bleed ornament layer back to the 700px measure — the columns and
+   * both lamps were laid out at the right place off in the margins and then
+   * cut away, and the garland was trimmed to the width of the type. The clip
+   * belongs on the bleed layer itself, below.
+   */
+}
+
+.deco {
+  position: absolute;
+  /* Full-bleed out of the 700px measure. `.field` clips whatever this
+     overhangs, so it can never make the page scroll sideways. */
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  /* The columns and the garland are cut off by the frame on purpose — you are
+     standing close enough that the building does not fit — and this is where
+     that cut is made. */
+  overflow: hidden;
+  /* Behind the numerals, always. Ornament that competes with the four facts a
+     guest came for has failed at being ornament. */
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   The columns
+   -------------------------------------------------------------------------- */
+
+/*
+ * The colonnade wrapper exists only to carry the fade.
+ *
+ * The columns are far longer than the stage at every width — deliberately, so
+ * the frame always ends them — which means a mask on the column itself fades a
+ * part of it nobody can see. This box is the stage, so the fade is always at
+ * the bottom of what is actually in view. The lamps are outside it: they are
+ * standing on the floor, not receding into it.
+ */
+.colonnade {
+  position: absolute;
+  inset: 0;
+  mask-image: linear-gradient(to bottom, #000 0 58%, rgb(0 0 0 / 0.45) 84%, transparent 99%);
+}
+
+.columnLeft,
+.columnRight {
+  position: absolute;
+  top: -2%;
+  width: var(--col-w);
+  /*
+   * 70:760, which is the *column's* aspect and not the drawing box's.
+   *
+   * The box was 120 wide and the shaft is 46 of it, so a column asked to be
+   * 144 px wide drew 55 px of stone inside 89 px of nothing and read as a pale
+   * stripe lost at the edge of the page. The viewBox is cropped to the art
+   * now, so `--col-w` means what it says.
+   */
+  height: calc(var(--col-w) * 10.857);
+  opacity: 0.96;
+}
+
+.deco {
+  /* On a phone only the outer sliver of each column is in frame, which is
+     enough to say "there is a building here" without crowding four numerals
+     into the middle third. */
+  /* 78px of a 430px phone was 36% of the screen given to two flat panels
+     behind four numerals. A sliver is enough: the guest needs to know there is
+     a building, not to be able to survey it. */
+  --col-w: clamp(46px, 8.5vw, 124px);
+  --col-out: clamp(-22px, -2vw, -4px);
+}
+
+/*
+ * The floor.
+ *
+ * Two columns cut off by the frame and two lamps below them read as two
+ * unrelated bands until something says they are standing in the same room.
+ * This is that: a very soft shadow gathering along the bottom of the stage,
+ * which is where the light stops reaching. It is also what stops the columns'
+ * cut edge reading as a mistake — a shaft that fades into shadow has been
+ * cropped, and one that stops on a clean line has been deleted.
+ */
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(120px, 20vh, 240px);
+  /*
+   * The last stop is the ground itself, not a tint of it. That is what erases
+   * the columns' cut edge: a shaft guillotined on a clean horizontal line
+   * reads as a bug, and one that goes down into shadow reads as a crop. The
+   * opaque part is only the final few per cent, so it is a floor rather than
+   * a vignette, and the lamps stand clear of it.
+   */
+  /*
+   * Never opaque. A final stop of solid --ground-deep did erase the columns'
+   * cut edge, but it also painted over the field's own backdrop and lattice,
+   * and left a band across the full width of the page where the section ended.
+   * The cut is handled by `.colonnade`'s mask instead; this is only the shadow
+   * gathering where the light stops.
+   */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--sage) 4%, transparent) 42%,
+    color-mix(in srgb, var(--sage) 8%, transparent) 74%,
+    /* Back to nothing at the very bottom. Ending on a tint left a ten-point
+       step across the full width of the page exactly where the section did,
+       which is a seam, not a shadow. */ transparent 100%
+  );
+  pointer-events: none;
+}
+
+.columnLeft {
+  left: var(--col-out);
+}
+
+.columnRight {
+  right: var(--col-out);
+  /* Not a mirror — it carries its own geometry — but it is lit from the same
+     side as everything else, so it is not flipped either. */
+}
+
+/* The cylinder gradient rides with the wash rather than arriving separately;
+   without this it paints in over a shaft that has not appeared yet. */
+:global(html.js) .round {
+  opacity: 0;
+}
+
+:global(.painted) .round {
+  animation: round-in 1200ms var(--ease-rise) 420ms both;
+}
+
+@keyframes round-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The thoranam
+   -------------------------------------------------------------------------- */
+
+/*
+ * The cord is tied to the two columns, so it has to reach them.
+ *
+ * A fixed height plus `preserveAspectRatio="meet"` letterboxed it: at 1440 the
+ * 800x210 viewBox fitted inside a 1440x230 box at scale 1.095, drew 876 px
+ * wide, and centred — leaving the garland floating in the middle of the page
+ * with both ends stopping in mid-air three hundred pixels short of the columns
+ * they are supposed to be tied to. `aspect-ratio` gives the box exactly the
+ * height `meet` needs to fill the width, at every width.
+ *
+ * The consequence is that the leaves scale with the viewport. That is the
+ * wrong model for a garland — a longer cord takes *more* leaves, not bigger
+ * ones — so the span is capped, and past that the cord runs to the columns
+ * and no further, which is where it was tied.
+ */
+.thoranam {
+  position: absolute;
+  top: clamp(-16px, -1.4vh, 0px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 1180px);
+  /* 800:160, cropped to the art. The drawing box ran to 210 and the lowest
+     leaf reaches 156, so a fifth of the garland's height was empty air that
+     every section above it had to make room for. */
+  aspect-ratio: 800 / 160;
+  height: auto;
+}
+
+/* --------------------------------------------------------------------------
+   The lamps
+   -------------------------------------------------------------------------- */
+
+/*
+ * The lamps stand *in front of* the columns, not below them. They sat under
+ * the shafts' cut edge for one pass and the stage read as two unrelated
+ * friezes; overlapping the shaft is what puts them in the same room as it.
+ */
+.lampLeft,
+.lampRight {
+  position: absolute;
+  /*
+   * High enough to flank the numerals rather than sit in a band of their own
+   * below them. With the lamps at the floor the section read as a garland, a
+   * gap, four numerals, a gap, and two candlesticks; overlapping the numerals'
+   * band is what makes it one room with a countdown standing in it.
+   */
+  bottom: clamp(18px, 5vh, 96px);
+  width: var(--lamp-w);
+  height: calc(var(--lamp-w) * 2.14);
+}
+
+.deco {
+  --lamp-w: clamp(56px, 8vw, 118px);
+  --lamp-in: clamp(4px, 3.4vw, 92px);
+}
+
+.lampLeft {
+  left: var(--lamp-in);
+}
+
+.lampRight {
+  /* The pair is not symmetrical: the right lamp is shorter, so it stands a
+     little further in and a little lower, the way two objects put down by
+     hand do. */
+  right: calc(var(--lamp-in) + clamp(2px, 1.2vw, 26px));
+  bottom: clamp(10px, 3.6vh, 74px);
+}
+
+/* --------------------------------------------------------------------------
+   Kindling
+   -------------------------------------------------------------------------- */
+
+:global(html.js) .kindleGlow,
+:global(html.js) .kindleFlame {
+  opacity: 0;
+}
+
+:global(.painted) .kindleGlow {
+  animation: glow-in 900ms ease-out var(--kindle-delay, 0ms) both;
+}
+
+:global(.painted) .kindleFlame {
+  animation: flame-in 620ms var(--ease-wax) var(--kindle-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@keyframes glow-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes flame-in {
+  from {
+    opacity: 0;
+    transform: scale(0.24, 0.06);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.1, 1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Once lit, it burns. The two lamps are given different periods and one a
+   negative delay in the geometry, so they are never in step. */
+.flameBody {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+:global(.astir) .flameBody {
+  animation: burn var(--period, 3s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+@keyframes burn {
+  from {
+    transform: scale(0.94, 0.9) skewX(-2.5deg);
+    opacity: 0.84;
+  }
+  to {
+    transform: scale(1.02, 1.08) skewX(3deg);
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The leaves sway on their ties
+   -------------------------------------------------------------------------- */
+
+.leaf {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+}
+
+:global(.astir) .leaf {
+  animation: leaf-sway var(--sway, 5s) ease-in-out var(--phase, 0s) infinite alternate;
+}
+
+@keyframes leaf-sway {
+  from {
+    transform: rotate(-1deg);
+  }
+  to {
+    transform: rotate(1deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion — all of the ornament, none of the weather
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .round,
+  :global(html.js) .kindleGlow,
+  :global(html.js) .kindleFlame {
+    opacity: 1;
+  }
+
+  :global(.painted) .round,
+  :global(.painted) .kindleGlow,
+  :global(.painted) .kindleFlame,
+  :global(.astir) .flameBody,
+  :global(.astir) .leaf {
+    animation: none;
+    transform: none;
+  }
+}

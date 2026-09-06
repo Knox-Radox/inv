@@ -1,3 +1,4 @@
+import { Threshold } from "../art/Threshold";
 import { Closing } from "./Closing";
 import { Countdown } from "./Countdown";
 import { Place } from "./Place";
@@ -34,9 +35,11 @@ export function Field() {
         <Dimple />
         <Thread lean={1} />
 
-        <Reveal>
-          <Countdown />
-        </Reveal>
+        <Threshold>
+          <Reveal>
+            <Countdown />
+          </Reveal>
+        </Threshold>
         <Reveal delay={80}>
           <Schedule />
         </Reveal>

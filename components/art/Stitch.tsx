@@ -35,7 +35,7 @@ export function Stitch({
   /** Path length, from tools/*.py. Never measured in the browser. */
   length: number;
   width: number;
-  tone?: "sage" | "gold";
+  tone?: "sage" | "gold" | "deep" | "stone" | "brass";
   /** Milliseconds, relative to the start of the sequence. */
   delay?: number;
   duration?: number;
@@ -61,7 +61,7 @@ export function Stitch({
         />
       )}
       <path
-        className={`${styles.line} ${tone === "gold" ? styles.gold : styles.sage}`}
+        className={`${styles.line} ${styles[tone]}`}
         d={d}
         strokeWidth={width}
         opacity={opacity}

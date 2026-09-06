@@ -26,6 +26,22 @@
   stroke: var(--gold);
 }
 
+/* Revision 6 added three registers the botanicals did not need. Deep sage is
+   the mango leaf and the malai, which sit on champagne rather than on the
+   card's ivory and were washed out at --sage. Stone and brass are the
+   carved and the cast — a column drawn in leaf green reads as topiary. */
+.deep {
+  stroke: var(--sage-deep);
+}
+
+.stone {
+  stroke: #7e8a75;
+}
+
+.brass {
+  stroke: #7e5f35;
+}
+
 .shadow {
   stroke: var(--sage-deep);
   opacity: 0.18;

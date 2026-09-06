@@ -415,6 +415,20 @@
  * a flap opening. The last third is past 90 degrees, where the flap is facing
  * away and only its edge is left, so it is taken out on opacity rather than
  * held as a sliver.
+ *
+ * That opacity hold used to run to 78%, which is *after* the flap has already
+ * foreshortened into the sliver it was meant to avoid: the wax bump is round
+ * and the flap's edges are straight, and a rotating plane forces the straight
+ * edges toward zero height much faster than the round one, so between roughly
+ * 65% and 85% the silhouette is a flat bar with the bump still hanging off it
+ * — not a flap closing, a shape breaking apart. Measured with
+ * tools/verify/probe.js's rect heights and confirmed against the live 3D
+ * transform (getBoundingClientRect on the actual rotated vertices, not a
+ * screenshot — screenshots of this animation cannot be trusted paused mid-
+ * scrub in every environment, this one included). It is the same on both
+ * crops; it reads as a small flaw on a phone and as an unmissable one
+ * stretched across a desktop viewport. So the fade starts before the
+ * silhouette breaks, not after.
  */
 @keyframes flap-open {
   0% {
@@ -425,8 +439,11 @@
     transform: rotateX(-3deg);
     opacity: 1;
   }
-  78% {
+  55% {
     opacity: 1;
+  }
+  88% {
+    opacity: 0;
   }
   100% {
     transform: rotateX(-104deg);

@@ -1,0 +1,145 @@
+/*
+ * The revision 6 ornament motion — docs/revision-6-ornament.md.
+ *
+ * The organising rule of the whole programme is enforced here rather than
+ * described: **only what the family brings is allowed to move.** Stone paints
+ * itself once and is then still. The thoranam sways, the malai sways, the lamp
+ * flames breathe, because those are the things that were carried in and hung
+ * up this morning.
+ *
+ * Everything below is transform and opacity, so it composites. No filter, no
+ * clip-path animation — the handoff records what both cost.
+ */
+
+/* ==========================================================================
+   The wash bloom
+   ========================================================================== */
+
+/*
+ * Hidden only when a script exists to reveal it, exactly as Reveal.module.css
+ * does. With JavaScript off every ornament is simply painted and still, which
+ * is a designed state and not a broken one.
+ */
+:global(html.js) .wash {
+  opacity: 0;
+}
+
+/*
+ * Pigment spreading out from where the brush touched down. Not a fade: the
+ * scale and the drift are what make it read as wet, and dropping them leaves
+ * a picture being turned up like a dimmer.
+ */
+:global(.painted) .wash {
+  animation: bloom var(--bloom-dur, 1500ms) var(--ease-rise) var(--bloom-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: var(--bloom-origin, 50% 100%);
+}
+
+@keyframes bloom {
+  from {
+    opacity: 0;
+    transform: translate(var(--bloom-dx, 0), var(--bloom-dy, 2%)) scale(0.955);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Ambient — only while on screen, and only for what the family brought
+   ========================================================================== */
+
+/*
+ * A hung leaf turns about its tie, not about its own centre, so the origin is
+ * given in the SVG's own coordinates rather than as a percentage of the leaf.
+ */
+.sway {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+}
+
+:global(.astir) .sway {
+  animation: sway var(--sway, 5s) ease-in-out var(--phase, 0s) infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    transform: rotate(-0.85deg);
+  }
+  to {
+    transform: rotate(0.85deg);
+  }
+}
+
+/*
+ * The flame. It leans and it breathes; it does not pulse, which is what an
+ * opacity-only flicker looks like. The two lamps are given different periods
+ * and one a negative delay, so they are never in step — a pair of flames
+ * flickering together is the single most synthetic thing a page can do.
+ */
+.flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+:global(.astir) .flame {
+  animation: flicker var(--period, 3s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+@keyframes flicker {
+  from {
+    transform: scale(0.94, 0.9) skewX(-2.5deg);
+    opacity: 0.82;
+  }
+  to {
+    transform: scale(1.02, 1.07) skewX(3deg);
+    opacity: 1;
+  }
+}
+
+/* The flame is struck rather than faded up: it arrives small and hot. */
+:global(html.js) .kindle {
+  opacity: 0;
+}
+
+:global(.painted) .kindle {
+  animation: kindle 620ms var(--ease-wax) var(--kindle-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@keyframes kindle {
+  from {
+    opacity: 0;
+    transform: scale(0.2, 0.05);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.12, 1.1);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — every ornament is already painted, and nothing breathes.
+   The page still has all of its ornament; it simply has none of its weather.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .wash,
+  :global(html.js) .kindle {
+    opacity: 1;
+  }
+
+  :global(.painted) .wash,
+  :global(.painted) .kindle,
+  :global(.astir) .sway,
+  :global(.astir) .flame {
+    animation: none;
+    transform: none;
+  }
+}

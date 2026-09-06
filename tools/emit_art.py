@@ -15,12 +15,14 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import jasmine as jm  # noqa: E402
 import mapplate as mp  # noqa: E402
+import ornament as orn  # noqa: E402
 import relief as rl  # noqa: E402
 import monogram as mg  # noqa: E402
 import thread as th  # noqa: E402
 import wax as wx  # noqa: E402
 
 OUT = Path(__file__).parent.parent / "components" / "art" / "paths.ts"
+ORN_OUT = Path(__file__).parent.parent / "components" / "art" / "ornament.ts"
 
 # The korvai ring sits inside the wax, not on its silhouette.
 REKU = mg.reku_ring(50, 50, 37.6, 52, 2.2, 0.25)
@@ -146,6 +148,41 @@ def map_block() -> str:
     )
 
 
+def write_ornament() -> None:
+    """components/art/ornament.ts — the revision 6 pieces.
+
+    Kept out of paths.ts because that file is imported by the cover, which is
+    on the critical path, and none of this is. Two files, two budgets.
+    """
+    import json
+
+    data = {
+        "column": {"left": orn.COLUMN_L, "right": orn.COLUMN_R},
+        "thoranam": orn.THORANAM,
+        "lamp": {"left": orn.LAMP_L, "right": orn.LAMP_R},
+    }
+    ORN_OUT.write_text(
+        "\n".join(
+            [
+                "/**",
+                " * Generated ornament geometry — do not edit by hand.",
+                " *",
+                " * Emitted by tools/emit_art.py from tools/ornament.py. See",
+                " * docs/revision-6-ornament.md for what each piece is and why.",
+                " *",
+                " * Every piece carries a closed `sil` for the wash to be clipped to and",
+                " * open `lines` with their lengths for the draw-on, because those are two",
+                " * different kinds of path and only the second can be stroked on.",
+                " */",
+                "",
+                "export const ORNAMENT = " + json.dumps(data, indent=2) + " as const;",
+                "",
+            ]
+        )
+    )
+    print(f"wrote {ORN_OUT.relative_to(ORN_OUT.parent.parent.parent)}  ({ORN_OUT.stat().st_size} bytes)")
+
+
 def main() -> None:
     lines = [
         "/**",
@@ -204,6 +241,7 @@ def main() -> None:
     for name, d, _ in BLOCKS:
         print(f"  {name:14s} {len(d):5d} chars")
     print(f"  {'TOTAL':14s} {total:5d} chars of path data")
+    write_ornament()
 
 
 if __name__ == "__main__":
