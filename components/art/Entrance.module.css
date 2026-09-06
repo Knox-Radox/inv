@@ -22,7 +22,9 @@
   /* On a phone the pair is cropped to the left plant and half the right one,
      which is the crop you get standing at the door rather than across the
      street. On a desktop it sits wholly in the left margin. */
-  --vazhai-out: clamp(-104px, -7vw, -10px);
+  /* A modest crop, not a slice. The art fills its measured box now, so at
+     -7vw a desktop lost 101px of the near plant — a third of it. */
+  --vazhai-out: clamp(-30px, -2vw, -8px);
   --bough-w: clamp(210px, 28vw, 430px);
   --bough-out: clamp(-96px, -7vw, -14px);
   --bough-up: clamp(-56px, -5vh, -14px);

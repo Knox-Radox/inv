@@ -15,7 +15,9 @@
   /* Between the urns, on the floor the kolam is drawn on. */
   --petals-bottom: clamp(4px, 1vh, 20px);
   --petals-h: clamp(72px, 10vw, 140px);
-  --urn-out: clamp(-58px, -9vw, -4px);
+  /* Both urns crop by a similar amount. At -9vw the left one lost 58px and
+     the right 23, which reads as one of them having slipped. */
+  --urn-out: clamp(-40px, -1.6vw, -4px);
   --kolam-band: clamp(150px, 24vw, 330px);
   position: relative;
   /*
@@ -107,7 +109,7 @@
 .urnRight {
   /* Shorter, and standing further in. Two matching urns either side of a
      closing note is the stencil this whole programme is trying not to be. */
-  right: calc(var(--urn-out) + clamp(6px, 2.4vw, 54px));
+  right: calc(var(--urn-out) + clamp(2px, 0.7vw, 16px));
 }
 
 /*

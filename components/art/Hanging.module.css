@@ -23,7 +23,9 @@
      measure is empty at every width and the garland hangs down it. */
   --malai-in: clamp(6px, 9vw, 168px);
   --kal-w: clamp(126px, 14vw, 216px);
-  --kal-out: clamp(-14px, -1vw, 8px);
+  /* Wholly inside the frame on a desktop: the art fills its measured box, so
+     a negative inset here cuts a mango leaf rather than trimming empty margin. */
+  --kal-out: clamp(-6px, 1vw, 26px);
 
   position: relative;
   /*
