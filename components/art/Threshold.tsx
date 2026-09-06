@@ -206,18 +206,15 @@ function Thoranam({ className }: { className?: string }) {
               delay={cue}
               duration={300}
             />
-            {cl.petals.map((p, j) => (
-              <Stitch
-                key={j}
-                d={p.d}
-                length={p.len}
-                width={p.w}
-                tone="sage"
-                shadow={false}
-                delay={cue + 120 + j * 26}
-                duration={280}
-              />
-            ))}
+            <Stitch
+              d={cl.sil}
+              length={cl.len}
+              width={0.6}
+              tone="sage"
+              shadow={false}
+              delay={cue + 120}
+              duration={420}
+            />
             <circle cx={cl.cx} cy={cl.cy} r={cl.r} fill="var(--gold)" opacity={0.75} />
           </g>
         );

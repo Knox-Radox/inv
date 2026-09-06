@@ -159,6 +159,40 @@ def blob(points: list[Point], tol: float = 0.1) -> str:
     return curve1(chain(points + [points[0]])) + "Z"
 
 
+def rosette(cx: float, cy: float, r: float, petals: int, rot: float, seed: int) -> dict:
+    """A small flower seen face on, as **one closed outline** with its length.
+
+    Built for the malai, where the first pass drew every petal as two margins
+    and a midrib. Forty-six flowers at twelve strokes each is five hundred and
+    fifty paths for a garland eight pixels wide, and what it actually rendered
+    was a row of asterisks — at that size the strokes crossing at the centre
+    are most of the ink.
+
+    One outline through alternating tips and valleys reads as a flower, draws
+    on in a single stroke, and is a twelfth of the payload. The valley radius
+    is what decides whether it is a flower or a star: much below a third and
+    the petals separate into spikes.
+    """
+    rng = random_seq(seed)
+    pts: list[Point] = []
+    for k in range(petals):
+        a = rot + 2 * math.pi * k / petals
+        half = math.pi / petals
+        tip_r = r * (0.90 + 0.10 * next(rng))
+        # Two points across each petal rather than one at its point. A single
+        # tip with a Catmull-Rom through it overshoots into a spike, and a
+        # ring of spikes is an asterisk — which is exactly what the first
+        # garland rendered as at eight pixels wide.
+        for u in (-0.34, 0.34):
+            pts.append((cx + math.cos(a + half * u) * tip_r, cy + math.sin(a + half * u) * tip_r))
+        # The valley is over half the tip radius. Much below that and the
+        # petals stop being lobes and start being points.
+        vr = r * (0.60 + 0.05 * next(rng))
+        pts.append((cx + math.cos(a + half) * vr, cy + math.sin(a + half) * vr))
+    c = chain(pts + [pts[0]])
+    return {"d": curve1(c) + "Z", "len": round(path_length(c), 1)}
+
+
 def wobble(points: list[Point], amp: float, seed: int) -> list[Point]:
     """Push a silhouette out of true.
 
@@ -450,27 +484,18 @@ def _thoranam():
             stalk = bez(
                 [(x, y), place(drop * 0.4, W * 1.1), place(drop * 0.75, W * 1.9), (cx_, cy_)]
             )
-            # Petals as real leaf shapes rather than hairlines. At six units
-            # across, a jasmine drawn in single strokes read as an insect on
-            # the string; drawn as six small filled petals it reads as a
-            # flower, which is the same lesson the acanthus taught.
-            petals = []
-            sils = []
-            for k in range(6):
-                a2 = 2 * math.pi * k / 6 + r1 * 2.0
-                r = 10.5 + (k % 2) * 2.2
-                tipk = (cx_ + math.cos(a2) * r, cy_ + math.sin(a2) * r)
-                pl = leafshape((cx_, cy_), tipk, r * 0.34, lbulge=1.0, rbulge=0.94)
-                sils.append(pl["sil"])
-                petals += [{**pl["left"], "w": 0.55}, {**pl["right"], "w": 0.45}]
+            # One closed outline, not six leaf shapes. Same lesson as the
+            # malai: at this size the strokes meeting at the centre are most
+            # of the ink and the flower reads as an insect.
+            ring = rosette(cx_, cy_, 11.5, 6, r1 * 6.28, 500 + i * 11)
             clusters.append(
                 {
                     "stalk": {**stalk, "w": 0.5},
-                    "sil": "".join(sils),
-                    "petals": petals,
+                    "sil": ring["d"],
+                    "len": ring["len"],
                     "cx": round(cx_, 1),
                     "cy": round(cy_, 1),
-                    "r": 3.0,
+                    "r": 2.6,
                     "t": round(min(1.0, max(0.0, x / w)), 4),
                 }
             )
@@ -651,3 +676,608 @@ def _lamp(cx: float, *, scale: float, tall: float, seed: int):
 # countdown is a stencil; a pair that was made by hand is not a pair.
 LAMP_L = _lamp(50.0, scale=1.0, tall=1.0, seed=5)
 LAMP_R = _lamp(50.0, scale=0.93, tall=0.86, seed=23)
+
+
+# ---------------------------------------------------------------------------
+# 4. The drape — CUT
+# ---------------------------------------------------------------------------
+# A hung length of silk sat here for three passes and never worked. It is
+# recorded rather than quietly dropped, because the reason is a general one.
+#
+# A drape reads by **light**: alternating lit and shadowed bands running down
+# its folds, one band per pleat. Everything else — the silhouette, the pleat
+# lines, the hem, even a zari border — is scaffolding around that, and without
+# it the piece renders as a grey rectangle with a wavy right edge. Three
+# versions confirmed it: a generic curtain, a curtain with a woven gold edge,
+# and the same panel brought fully into frame so the whole thing could be
+# judged. All three read as a bookmark.
+#
+# Doing it properly needs a per-fold shading model, which is a lighting problem
+# and not a drawing one, and at the end of it the page would have a European
+# curtain doing work the thoranam, the malai, the columns and the lamps already
+# do — and doing it with meaning, which the curtain never had. It was the only
+# piece in the programme that was pure venue dressing.
+#
+# See docs/revision-6-ornament.md § What was cut.
+
+
+# ---------------------------------------------------------------------------
+# 5. The jasmine malai — docs/revision-6-ornament.md, piece 5
+# ---------------------------------------------------------------------------
+# The strung garland. Not a wreath and not a spray: a malai is a *line* of
+# flowers, which is why jasmine was the page's motif in the first place — see
+# the note at the top of tools/jasmine.py.
+#
+# It hangs down the field past both moments of the day, which is the same
+# argument the running thread makes about the seven and a half hours between
+# the ceremony and the reception, made in the other material: the day is one
+# thing, and nothing about it breaks in the middle.
+#
+# Authored in a 130 x 940 box, bleeding off the top.
+MALAI_W, MALAI_H = 130.0, 940.0
+
+
+def _malai():
+    w, h = MALAI_W, MALAI_H
+    rng = random_seq(7717)
+
+    def cord_x(t: float) -> float:
+        """A hanging string is not plumb. Two low harmonics, no more — a third
+        makes it read as a vine rather than as something under its own weight."""
+        return 62.0 + 11.0 * math.sin(t * 3.05 + 0.4) + 4.5 * math.sin(t * 7.7 + 1.2)
+
+    top, bot = -20.0, h - 96.0
+    cord_pts = [(cord_x(i / 22), top + (bot - top) * i / 22) for i in range(23)]
+    cord = {**line(cord_pts), "w": 1.0}
+
+    flowers: list[dict] = []
+    # Dense. A malai is a *rope* of flowers, packed so they touch and overlap;
+    # thirty-two spaced along a metre of string read as a chain of asterisks
+    # with the cord showing through between them, which is a zip, not a
+    # garland. At this count and radius they overlap by about a third and the
+    # string is hidden behind them, which is what it looks like in the hand.
+    count = 54
+    for i in range(count):
+        t = (i + 0.5) / count
+        y = top + (bot - top) * t
+        r1, r2, r3 = next(rng), next(rng), next(rng)
+        # Strung flowers alternate to either side of the string, which is what
+        # gives a malai its thickness. The offset is not regular: a garland
+        # tied by hand bunches.
+        side = 1.0 if i % 2 else -1.0
+        cx_ = cord_x(t) + side * (4.5 + r1 * 8.0)
+        cy_ = y + (r2 - 0.5) * 6.0
+        rad = 16.5 + r1 * 6.0
+        n = 5 if r3 < 0.5 else 6
+        ring = rosette(cx_, cy_, rad, n, r2 * 6.28, 900 + i * 13)
+        flowers.append(
+            {
+                "sil": ring["d"],
+                "len": ring["len"],
+                "cx": round(cx_, 1),
+                "cy": round(cy_, 1),
+                "r": round(rad * 0.15, 2),
+                "t": round(t, 4),
+                # Bound to the string, so it turns about where it is tied.
+                "ax": round(cord_x(t), 1),
+                "ay": round(y, 1),
+                "sway": round(5.0 + r3 * 3.6, 2),
+                "phase": round(r1 * 6.0, 2),
+            }
+        )
+
+    # A malai ends in a bunch, not in a last flower. Three buds and two leaves
+    # on short pedicels, which is how the string is finished off and tied.
+    tx, ty = cord_x(1.0), bot
+    tail: list[dict] = []
+    tail_sils: list[str] = []
+    for k, (ang, ln) in enumerate(((-104.0, 46.0), (-84.0, 62.0), (-64.0, 40.0))):
+        a = math.radians(ang + 180)
+        tip = (tx + math.cos(a) * ln, ty + math.sin(a) * ln)
+        pl = leafshape((tx, ty), tip, ln * 0.13, lbulge=1.0, rbulge=0.86)
+        tail_sils.append(pl["sil"])
+        tail += [{**pl["left"], "w": 0.7}, {**pl["right"], "w": 0.5}, {**pl["mid"], "w": 0.4}]
+
+    return {
+        "cord": cord,
+        "flowers": flowers,
+        "tail": {"sil": "".join(tail_sils), "lines": tail, "x": round(tx, 1), "y": round(ty, 1)},
+    }
+
+
+MALAI = _malai()
+
+
+# ---------------------------------------------------------------------------
+# Blades — the primitive the banana and the cypress need
+# ---------------------------------------------------------------------------
+def blade(points: list[Point], widths: list[tuple[float, float]], tol: float = 0.14) -> dict:
+    """A leaf on a *curved* spine.
+
+    `leafshape` runs between a base and a tip in a straight line, which is
+    right for a mango leaf and wrong for a banana blade — a banana leaf is two
+    metres long and arches under its own weight, and the arch is most of what
+    identifies it. This offsets along the normal of a real curve instead, the
+    same construction `pen.Spine` uses for the seal's letterforms.
+    """
+    segs = chain(points)
+    n = 46
+    left: list[Point] = []
+    right: list[Point] = []
+    mid: list[Point] = []
+
+    def width_at(t: float) -> float:
+        for (t0, w0), (t1, w1) in zip(widths, widths[1:]):
+            if t0 <= t <= t1:
+                k = 0.0 if t1 == t0 else (t - t0) / (t1 - t0)
+                k = k * k * (3 - 2 * k)
+                return w0 + k * (w1 - w0)
+        return widths[-1][1]
+
+    for i in range(n + 1):
+        t = i / n
+        raw = t * len(segs)
+        j = min(int(raw), len(segs) - 1)
+        lt = raw - j
+        p0, p1, p2, p3 = segs[j]
+        u = 1 - lt
+        x = u * u * u * p0[0] + 3 * u * u * lt * p1[0] + 3 * u * lt * lt * p2[0] + lt**3 * p3[0]
+        y = u * u * u * p0[1] + 3 * u * u * lt * p1[1] + 3 * u * lt * lt * p2[1] + lt**3 * p3[1]
+        dx = 3 * u * u * (p1[0] - p0[0]) + 6 * u * lt * (p2[0] - p1[0]) + 3 * lt * lt * (p3[0] - p2[0])
+        dy = 3 * u * u * (p1[1] - p0[1]) + 6 * u * lt * (p2[1] - p1[1]) + 3 * lt * lt * (p3[1] - p2[1])
+        m = math.hypot(dx, dy) or 1e-6
+        nx, ny = -dy / m, dx / m
+        h = width_at(t) / 2
+        left.append((x + nx * h, y + ny * h))
+        right.append((x - nx * h, y - ny * h))
+        mid.append((x, y))
+
+    sil = emit(simplify(left, tol) + simplify(right[::-1], tol), close=True)
+    return {
+        "sil": sil,
+        "left": {**line(simplify(left, tol))},
+        "right": {**line(simplify(right, tol))},
+        "mid": {**line(simplify(mid, tol))},
+        "pts": mid,
+    }
+
+
+# ---------------------------------------------------------------------------
+# 6. The banana stems — docs/revision-6-ornament.md, piece 6
+# ---------------------------------------------------------------------------
+# Vazhai: two banana plants tied either side of the entrance. The single most
+# literal thing a South Indian family does to a doorway on a wedding morning,
+# and the one ornament here that is not a stand-in for anything.
+#
+# Authored in a 300 x 420 box, standing on its own floor.
+BANANA_W, BANANA_H = 300.0, 420.0
+
+
+def _banana():
+    rng = random_seq(3301)
+    stems = []
+    # Two plants, unequal, the smaller behind and to the right.
+    for si, (bx, scale, lean) in enumerate(((104.0, 1.0, -1.5), (196.0, 0.78, 3.0))):
+        s = scale
+        base_y = 404.0
+        top_y = base_y - 152.0 * s
+        # The pseudostem: a sheath of rolled leaf, so it is nearly a cylinder
+        # and only slightly narrower at the top.
+        prof = [
+            (top_y, 6.2 * s),
+            (top_y + 30 * s, 7.4 * s),
+            (base_y - 60 * s, 9.6 * s),
+            (base_y - 16 * s, 11.8 * s),
+            (base_y, 13.4 * s),
+        ]
+        stem_sil, stem_r, stem_l = lathe(bx + lean, prof, samples=26)
+
+        lines = [{**stem_r, "w": 0.9}, {**stem_l, "w": 0.62}]
+        blades = []
+        # Four blades, alternating sides, each arching further as it goes
+        # lower and older. The lowest one is torn — wind splits a banana leaf
+        # along its lateral veins within days, and an unsplit one reads as
+        # plastic.
+        # Six blades, not four, and the lower pair springing from well down
+        # the sheath. Four leaves radiating from the top of a bare stem is a
+        # palm; a banana carries its whole crown low and overlapping.
+        specs = [
+            (-1.0, 140.0, -52.0, 0.88),
+            (1.0, 126.0, -40.0, 0.78),
+            (-1.0, 108.0, -14.0, 0.68),
+            (1.0, 96.0, 2.0, 0.60),
+            (-1.0, 78.0, 26.0, 0.50),
+            (1.0, 68.0, 34.0, 0.44),
+        ]
+        for li, (side, length, drop, wk) in enumerate(specs):
+            L = length * s
+            r1 = next(rng)
+            ox = bx + lean
+            tipx = ox + side * L * (0.82 + r1 * 0.16)
+            spine = [
+                (ox, top_y + li * 5.0 * s),
+                (ox + side * L * 0.34, top_y - 18 * s + drop * 0.2 * s),
+                (ox + side * L * 0.70, top_y + drop * 0.55 * s),
+                (tipx, top_y + drop * s + L * 0.30),
+            ]
+            bl = blade(
+                spine,
+                [(0.0, 3.0 * s), (0.22, 30.0 * s * wk), (0.62, 26.0 * s * wk), (1.0, 3.0 * s)],
+            )
+            blades.append(bl["sil"])
+            lines += [
+                {**bl["left"], "w": 0.75},
+                {**bl["right"], "w": 0.5},
+                {**bl["mid"], "w": 1.0},
+            ]
+            # Lateral veins: they leave the midrib at a shallow angle and run
+            # straight to the margin, which is the other half of what makes a
+            # banana leaf a banana leaf.
+            def half_at(t: float, _wk=wk, _s=s) -> float:
+                """The blade's own half-width where the vein leaves the midrib.
+
+                A constant reach put every vein through the margin near the
+                tip, where the profile has already tapered to nothing — the
+                plant came out looking like a thistle. The stations below are
+                the same ones passed to `blade`.
+                """
+                prof = ((0.0, 3.0 * _s), (0.22, 30.0 * _s * _wk), (0.62, 26.0 * _s * _wk), (1.0, 3.0 * _s))
+                for (t0, w0), (t1, w1) in zip(prof, prof[1:]):
+                    if t0 <= t <= t1:
+                        k2 = 0.0 if t1 == t0 else (t - t0) / (t1 - t0)
+                        k2 = k2 * k2 * (3 - 2 * k2)
+                        return (w0 + k2 * (w1 - w0)) / 2
+                return prof[-1][1] / 2
+
+            for k in range(5):
+                t = 0.22 + k * 0.16
+                idx = int(t * (len(bl["pts"]) - 1))
+                px, py = bl["pts"][idx]
+                nxt = bl["pts"][min(idx + 3, len(bl["pts"]) - 1)]
+                dx, dy = nxt[0] - px, nxt[1] - py
+                m = math.hypot(dx, dy) or 1.0
+                nx_, ny_ = -dy / m, dx / m
+                reach = half_at(t) * (0.62 + 0.14 * next(rng))
+                for sgn in (1, -1):
+                    lines.append(
+                        {
+                            **bez(
+                                [
+                                    (px, py),
+                                    (px + nx_ * reach * 0.34 * sgn + dx * 0.4, py + ny_ * reach * 0.34 * sgn + dy * 0.4),
+                                    (px + nx_ * reach * 0.72 * sgn + dx * 0.7, py + ny_ * reach * 0.72 * sgn + dy * 0.7),
+                                    (px + nx_ * reach * sgn + dx * 0.7, py + ny_ * reach * sgn + dy * 0.7),
+                                ]
+                            ),
+                            "w": 0.32,
+                        }
+                    )
+        stems.append(
+            {
+                "sil": stem_sil,
+                "blades": "".join(blades),
+                "lines": lines,
+                "x": round(bx, 1),
+                "y": round(base_y, 1),
+                "rx": round(30.0 * s, 1),
+            }
+        )
+    return stems
+
+
+BANANA = _banana()
+
+
+# ---------------------------------------------------------------------------
+# 7. The cypress — CUT, and replaced by the bough below
+# ---------------------------------------------------------------------------
+# Two passes, two different wrong plants. A smooth spindle profile with long
+# raking strokes inside rendered as three aloe leaves; adding tufts to the
+# profile and making the strokes droop rendered as agave. Both failures are the
+# same failure: a conifer's silhouette is not a profile with noise on it, it is
+# an accumulation of overlapping sprays, and drawing one convincingly means
+# stacking dozens of small dark shapes rather than lathing one and marking it.
+#
+# It was also, like the drape, pure venue dressing with nothing behind it. The
+# thing that belongs on the other side of the map plate is the plant this whole
+# page has been about since revision 1.
+#
+# See docs/revision-6-ornament.md § What was cut.
+
+
+# ---------------------------------------------------------------------------
+# 7. The jasmine bough — docs/revision-6-ornament.md, piece 7
+# ---------------------------------------------------------------------------
+# The spray on the card, grown up.
+#
+# `docs/design-plan.md` § Illustration inventory already listed this as item
+# 10 — "oversized cropped jasmine, the card's spray at 340%" — and it was never
+# built. It is the right answer here for the reason it was the right answer
+# then: at that scale the jasmine stops being a mark on a card and becomes a
+# branch leaning into the frame, and it is the one botanical on this page that
+# the guests will actually be wearing.
+#
+# Authored in a 300 x 460 box, entering from the top right.
+BOUGH_W, BOUGH_H = 300.0, 460.0
+
+
+def _bough():
+    rng = random_seq(5501)
+    # The branch, entering top right and sweeping down and left. Four sub-paths
+    # at stepped widths, thinning toward the growing tip — the same
+    # construction as the card's spray, which is drawn from the Hortus plate.
+    spine_pts = [(292.0, -16.0), (250.0, 60.0), (206.0, 128.0), (150.0, 196.0), (86.0, 262.0), (44.0, 336.0)]
+    widths = [(0.0, 5.4), (0.35, 4.0), (0.7, 2.6), (1.0, 1.1)]
+    br = blade(spine_pts, widths, tol=0.1)
+    lines = [{**br["left"], "w": 0.9}, {**br["right"], "w": 0.6}]
+    parts = [br["sil"]]
+
+    pts = br["pts"]
+
+    def at(t: float):
+        i = min(int(t * (len(pts) - 1)), len(pts) - 2)
+        (x, y), (nx_, ny_) = pts[i], pts[i + 1]
+        dx, dy = nx_ - x, ny_ - y
+        m = math.hypot(dx, dy) or 1.0
+        return (x, y), (-dy / m, dx / m)
+
+    # Leaves in opposite pairs, none matching. Jasminum sambac is ovate and
+    # nearly as wide as it is long, which is what stops this reading as bay.
+    leaves = []
+    for i, (t, side, L, ang) in enumerate(
+        (
+            (0.10, -1, 74.0, 46),
+            (0.15, 1, 62.0, 58),
+            (0.34, -1, 84.0, 40),
+            (0.40, 1, 70.0, 54),
+            (0.58, -1, 76.0, 44),
+            (0.63, 1, 60.0, 62),
+            (0.82, -1, 58.0, 50),
+        )
+    ):
+        (x, y), (nx_, ny_) = at(t)
+        r1 = next(rng)
+        a = math.radians(ang) * side
+        ux, uy = nx_ * math.cos(a) - ny_ * math.sin(a), nx_ * math.sin(a) + ny_ * math.cos(a)
+        Ls = L * (0.9 + r1 * 0.2)
+        tip = (x + ux * Ls * side, y + uy * Ls * side)
+        lf = leafshape((x, y), tip, Ls * 0.34, lbulge=1.04, rbulge=0.86, wob=1.1, seed=700 + i * 9)
+        leaves.append(lf["sil"])
+        lines += [{**lf["left"], "w": 0.85}, {**lf["right"], "w": 0.55}, {**lf["mid"], "w": 0.6}]
+
+    # Open flowers and closed buds, on their own pedicels.
+    flowers = []
+    for i, (t, side, rad) in enumerate(((0.24, 1, 21.0), (0.48, -1, 17.5), (0.72, 1, 19.0), (0.90, -1, 14.5))):
+        (x, y), (nx_, ny_) = at(t)
+        r1, r2 = next(rng), next(rng)
+        # Just over a radius. At 2.1 the flowers stood off the branch on long
+        # visible pedicels and read as wired, the same failure the urns had.
+        reach = rad * 1.05
+        fx, fy = x + nx_ * reach * side, y + ny_ * reach * side
+        lines.append(
+            {
+                **bez(
+                    [
+                        (x, y),
+                        (x + nx_ * reach * 0.4 * side + 4, y + ny_ * reach * 0.4 * side + 5),
+                        (fx - 5, fy - 4),
+                        (fx, fy),
+                    ]
+                ),
+                "w": 0.6,
+            }
+        )
+        ring = rosette(fx, fy, rad * (0.9 + r1 * 0.2), 7 if r2 < 0.5 else 6, r1 * 6.28, 800 + i * 23)
+        flowers.append(
+            {"sil": ring["d"], "len": ring["len"], "cx": round(fx, 1), "cy": round(fy, 1), "r": round(rad * 0.13, 2)}
+        )
+
+    return {
+        "branch": "".join(parts),
+        "leaves": "".join(leaves),
+        "lines": lines,
+        "flowers": flowers,
+    }
+
+
+BOUGH = _bough()
+
+
+# ---------------------------------------------------------------------------
+# 8. The urns — docs/revision-6-ornament.md, piece 8
+# ---------------------------------------------------------------------------
+# The reference closes on two urns on plinths holding white roses. This is the
+# same move with the flower the page has been about since revision 1: jasmine,
+# which is what is actually worn at the wedding this invites people to.
+#
+# Turned solids, like the lamps and the columns, which is the construction on
+# this page that has worked every time it has been used.
+#
+# Authored in a 180 x 400 box.
+URN_W, URN_H = 180.0, 400.0
+
+
+def _urn(*, scale: float, seed: int, blooms: int):
+    s = scale
+    cx = 90.0
+    base = 392.0
+
+    def y(v: float) -> float:
+        return base - v * s
+
+    prof = [
+        (y(196.0), 30.0 * s),  # the lip, flaring
+        (y(188.0), 27.0 * s),
+        (y(176.0), 30.5 * s),  # the bowl's shoulder
+        (y(156.0), 33.0 * s),
+        (y(132.0), 30.0 * s),
+        (y(112.0), 22.0 * s),
+        (y(98.0), 13.5 * s),  # the waist
+        (y(88.0), 11.0 * s),
+        (y(78.0), 15.0 * s),  # the knop
+        (y(68.0), 12.0 * s),
+        (y(58.0), 9.5 * s),
+        (y(48.0), 16.0 * s),  # the foot spreads
+        (y(40.0), 20.0 * s),
+        (y(34.0), 18.0 * s),
+        # The plinth. Square in life, so its sides are parallel here and its
+        # top and bottom are the only places it moves.
+        (y(32.0), 27.0 * s),
+        (y(28.0), 25.0 * s),
+        (y(6.0), 25.0 * s),
+        (y(2.0), 28.0 * s),
+        (y(0.0), 27.5 * s),
+    ]
+    sil, right, left = lathe(cx, prof, samples=40)
+
+    lines = [{**right, "w": 1.0}, {**left, "w": 0.68}]
+    # Rules where the turning changes direction. On a real urn these are where
+    # the tool was lifted, and they are what keep a lathe profile from reading
+    # as a single blown shape.
+    for v, wid in ((196.0, 0.9), (176.0, 0.6), (112.0, 0.55), (48.0, 0.6), (32.0, 0.85), (28.0, 0.6)):
+        hw = 0.0
+        for (y0, w0), (y1, w1) in zip(prof, prof[1:]):
+            if min(y0, y1) <= y(v) <= max(y0, y1):
+                hw = (w0 + w1) / 2
+                break
+        lines.append({**line([(cx - hw, y(v)), (cx, y(v) - 0.5), (cx + hw, y(v))]), "w": wid})
+
+    # Gadroons: the vertical lobes running up the bowl. They follow the
+    # profile, so they are widest where the bowl is.
+    for k in range(7):
+        u = (k + 0.5) / 7 * 2 - 1
+        pts = []
+        for j in range(6):
+            v = 116.0 + (188.0 - 116.0) * j / 5
+            hw = 0.0
+            for (y0, w0), (y1, w1) in zip(prof, prof[1:]):
+                if min(y0, y1) <= y(v) <= max(y0, y1):
+                    hw = (w0 + w1) / 2
+                    break
+            pts.append((cx + u * hw * 0.84, y(v)))
+        lines.append({**line(pts), "w": round(0.34 + 0.3 * abs(u), 2)})
+
+    # The jasmine spilling out. Not arranged: it is a fistful of malai laid in
+    # the top, so it falls over the lip on both sides and further on one.
+    rng = random_seq(seed)
+    flowers = []
+    stems = []
+    lip_y = y(194.0)
+    for i in range(blooms):
+        r1, r2, r3 = next(rng), next(rng), next(rng)
+        a = math.radians(-172 + 164 * (i + 0.5) / blooms + (r1 - 0.5) * 26)
+        # Short. At 26-60 units the flowers stood off the lip on visible wires
+        # and read as a bunch of pins in a pot; jasmine laid in a bowl mounds
+        # over the rim and hides its own stems.
+        reach = (9.0 + r2 * 19.0) * s
+        fx = cx + math.cos(a) * reach * 1.35
+        fy = lip_y + math.sin(a) * reach * 0.9
+        stems.append(
+            {
+                **bez(
+                    [
+                        (cx + math.cos(a) * 8 * s, lip_y + 4 * s),
+                        (cx + math.cos(a) * reach * 0.5, lip_y + math.sin(a) * reach * 0.3),
+                        (fx - math.cos(a) * 8, fy - math.sin(a) * 6),
+                        (fx, fy),
+                    ]
+                ),
+                "w": 0.5,
+            }
+        )
+        rad = (9.0 + r3 * 4.0) * s
+        ring = rosette(fx, fy, rad, 5 if r1 < 0.5 else 6, r2 * 6.28, seed + i * 17)
+        flowers.append(
+            {"sil": ring["d"], "len": ring["len"], "cx": round(fx, 1), "cy": round(fy, 1), "r": round(rad * 0.16, 2)}
+        )
+
+    return {
+        "sil": sil,
+        "lines": lines,
+        "stems": stems,
+        "flowers": flowers,
+        "cx": cx,
+        "base": base,
+        "rx": round(34.0 * s, 1),
+    }
+
+
+# Unequal, and holding unequal handfuls. Two matching urns is the stencil the
+# plan warns about, and it is the easiest one to fall into because an urn is
+# symmetrical in itself.
+URN_L = _urn(scale=1.0, seed=61, blooms=17)
+URN_R = _urn(scale=0.87, seed=137, blooms=13)
+
+
+# ---------------------------------------------------------------------------
+# 9. The kolam — docs/revision-6-ornament.md, piece 9
+# ---------------------------------------------------------------------------
+# The last mark on the page.
+#
+# A kolam is drawn at the threshold at dawn, in rice flour, freehand, around a
+# grid of dots laid down first. It is the mark that says the house is ready to
+# receive you, and it is redrawn every morning because it is meant to be walked
+# over. Ending an invitation on one is the correct last sentence.
+#
+# This is a radial pulli kolam: a centre, a ring of eight dots the petals loop
+# around, and an outer ring of sixteen the closing line weaves through. The
+# dots go down first and the line follows, which is the order it is drawn in
+# and is the whole reason it is worth animating.
+#
+# Authored in a 300 x 300 box.
+KOLAM_W = 300.0
+
+
+def _kolam():
+    c = KOLAM_W / 2
+    r1, r2 = 58.0, 108.0
+    dots: list[dict] = []
+    dots.append({"cx": c, "cy": c, "r": 2.2, "ring": 0})
+    for k in range(8):
+        a = math.pi * 2 * k / 8 - math.pi / 2
+        dots.append({"cx": round(c + math.cos(a) * r1, 1), "cy": round(c + math.sin(a) * r1, 1), "r": 2.0, "ring": 1})
+    for k in range(16):
+        a = math.pi * 2 * k / 16 - math.pi / 2 + math.pi / 16
+        dots.append({"cx": round(c + math.cos(a) * r2, 1), "cy": round(c + math.sin(a) * r2, 1), "r": 1.8, "ring": 2})
+
+    # Eight petals. Each leaves the centre, goes round the outside of its dot
+    # and comes back — which is what "the line never crosses a dot" means in
+    # practice, and is why a kolam has to be drawn rather than plotted.
+    petals: list[dict] = []
+    for k in range(8):
+        a = math.pi * 2 * k / 8 - math.pi / 2
+        half = math.pi / 8
+        pts: list[Point] = []
+        for u, rr in (
+            (-0.30, 14.0),
+            (-0.82, 46.0),
+            (-0.58, 82.0),
+            (0.0, 92.0),
+            (0.58, 82.0),
+            (0.82, 46.0),
+            (0.30, 14.0),
+        ):
+            ang = a + half * u
+            pts.append((c + math.cos(ang) * rr, c + math.sin(ang) * rr))
+        seg = chain(pts)
+        petals.append({"d": curve1(seg), "len": round(path_length(seg), 1)})
+
+    # The closing line: one continuous scalloped ring that bulges past each
+    # outer dot and dips between them, so it hugs the grid without touching it.
+    ring_pts: list[Point] = []
+    steps = 96
+    for i in range(steps + 1):
+        t = i / steps
+        ang = math.pi * 2 * t - math.pi / 2 + math.pi / 16
+        # Sixteen scallops, phase-locked to the sixteen dots.
+        # A cosine gives sixteen rounded scallops; raising it to a fractional
+        # power sharpened them into points, which is a star and not a kolam.
+        rr = r2 + 13.0 * math.cos(16 * (ang + math.pi / 2 - math.pi / 16))
+        ring_pts.append((c + math.cos(ang) * rr, c + math.sin(ang) * rr))
+    ring_seg = chain(ring_pts)
+    ring = {"d": curve1(ring_seg), "len": round(path_length(ring_seg), 1)}
+
+    return {"dots": dots, "petals": petals, "ring": ring, "c": c}
+
+
+KOLAM = _kolam()

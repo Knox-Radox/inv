@@ -1,0 +1,78 @@
+/*
+ * The day's ornament — docs/revision-6-ornament.md, pieces 4 and 5.
+ *
+ * Both hang from above the section and are cut by its top edge, so they read
+ * as continuing up behind the countdown rather than as two objects placed in
+ * this box. The clip is on `.deco`, for the reason recorded in
+ * Threshold.module.css: a clip on the stage cuts the full-bleed layer back to
+ * the 700px measure.
+ */
+
+.stage {
+  position: relative;
+  padding-top: clamp(8px, 2vh, 26px);
+  padding-bottom: clamp(24px, 5vh, 64px);
+}
+
+.deco {
+  position: absolute;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   The malai, on the right, over the empty half of the measure
+   -------------------------------------------------------------------------- */
+
+.malai {
+  position: absolute;
+  top: clamp(-90px, -9vh, -30px);
+  right: var(--malai-in);
+  width: var(--malai-w);
+  height: calc(var(--malai-w) * 7.23);
+}
+
+.deco {
+  --malai-w: clamp(56px, 7.4vw, 116px);
+  /* The schedule's lines are short and left-aligned, so the right half of the
+     measure is empty at every width and the garland hangs down it. */
+  --malai-in: clamp(6px, 9vw, 168px);
+}
+
+.bloomOnString {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+}
+
+:global(.astir) .bloomOnString {
+  animation: string-sway var(--sway, 6s) ease-in-out var(--phase, 0s) infinite alternate;
+}
+
+/* Smaller than the thoranam's. A flower threaded on a string that is itself
+   hanging free has less room to move than a leaf tied to a taut cord. */
+@keyframes string-sway {
+  from {
+    transform: rotate(-0.6deg);
+  }
+  to {
+    transform: rotate(0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.astir) .bloomOnString {
+    animation: none;
+    transform: none;
+  }
+}

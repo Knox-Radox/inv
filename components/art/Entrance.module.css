@@ -1,0 +1,94 @@
+/*
+ * The place's ornament — docs/revision-6-ornament.md, pieces 6 and 7.
+ *
+ * The plate is the section's object and neither of these may crowd it. The
+ * banana stands on the floor to its left, at the foot of the section; the
+ * bough leans in from the top right, which is the corner the plate's own
+ * compass rose already occupies, so the two overlap in register rather than in
+ * space.
+ */
+
+.stage {
+  position: relative;
+  padding-top: clamp(28px, 6vh, 76px);
+  /* Deep enough that the vazhai has its own band below the address. At a
+     shallower padding the crown grew up through "9981 County Road 419", which
+     is one of the four facts a guest came for. */
+  padding-bottom: clamp(150px, 14vh, 190px);
+}
+
+.deco {
+  position: absolute;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   The vazhai, standing at the foot of the section
+   -------------------------------------------------------------------------- */
+
+.banana {
+  position: absolute;
+  bottom: 0;
+  left: var(--vazhai-out);
+  width: var(--vazhai-w);
+  height: calc(var(--vazhai-w) * 1.4);
+  opacity: 0.9;
+}
+
+.deco {
+  --vazhai-w: clamp(190px, 26vw, 400px);
+  /* On a phone the pair is cropped to the left plant and half the right one,
+     which is the crop you get standing at the door rather than across the
+     street. On a desktop it sits wholly in the left margin. */
+  --vazhai-out: clamp(-104px, -7vw, -10px);
+}
+
+/* --------------------------------------------------------------------------
+   The bough, leaning in from the top right
+   -------------------------------------------------------------------------- */
+
+.bough {
+  position: absolute;
+  top: var(--bough-up);
+  right: var(--bough-out);
+  width: var(--bough-w);
+  height: calc(var(--bough-w) * 1.533);
+  opacity: 0.94;
+}
+
+.deco {
+  --bough-w: clamp(210px, 28vw, 430px);
+  --bough-out: clamp(-96px, -7vw, -14px);
+  --bough-up: clamp(-56px, -5vh, -14px);
+}
+
+/*
+ * Below 620px the bough would reach across the whole plate, so it is cropped
+ * harder rather than shrunk — a branch entering the corner of the frame is
+ * still a branch, and a whole miniature one floating beside the map is not.
+ */
+@media (max-width: 619px) {
+  .deco {
+    --bough-w: 260px;
+    --bough-out: -128px;
+    /* Smaller and pushed further out, so the crown clears the address. */
+    --vazhai-w: 158px;
+    --vazhai-out: -52px;
+  }
+
+  .banana {
+    bottom: -26px;
+  }
+}

@@ -160,6 +160,11 @@ def write_ornament() -> None:
         "column": {"left": orn.COLUMN_L, "right": orn.COLUMN_R},
         "thoranam": orn.THORANAM,
         "lamp": {"left": orn.LAMP_L, "right": orn.LAMP_R},
+        "malai": orn.MALAI,
+        "banana": orn.BANANA,
+        "bough": orn.BOUGH,
+        "urn": {"left": orn.URN_L, "right": orn.URN_R},
+        "kolam": orn.KOLAM,
     }
     ORN_OUT.write_text(
         "\n".join(

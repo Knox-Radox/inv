@@ -1,3 +1,6 @@
+import { ClosingThreshold, KolamMark } from "../art/ClosingThreshold";
+import { Entrance } from "../art/Entrance";
+import { Hanging } from "../art/Hanging";
 import { Threshold } from "../art/Threshold";
 import { Closing } from "./Closing";
 import { Countdown } from "./Countdown";
@@ -40,16 +43,25 @@ export function Field() {
             <Countdown />
           </Reveal>
         </Threshold>
-        <Reveal delay={80}>
-          <Schedule />
-        </Reveal>
-        <Reveal delay={80}>
-          <Place />
-        </Reveal>
-        <Reveal delay={80}>
-          <Closing />
-        </Reveal>
+        <Hanging>
+          <Reveal delay={80}>
+            <Schedule />
+          </Reveal>
+        </Hanging>
+        <Entrance>
+          <Reveal delay={80}>
+            <Place />
+          </Reveal>
+        </Entrance>
+        <ClosingThreshold>
+          <Reveal delay={80}>
+            <Closing />
+          </Reveal>
+        </ClosingThreshold>
       </div>
+
+      {/* Outside `.inner` on purpose — see KolamMark. */}
+      <KolamMark />
     </div>
   );
 }

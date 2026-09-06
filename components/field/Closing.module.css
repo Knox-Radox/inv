@@ -1,9 +1,22 @@
 .section {
   position: relative;
   padding-top: clamp(40px, 8vh, 72px);
-  overflow: hidden;
   margin-top: clamp(56px, 10vh, 104px);
-  padding-bottom: calc(clamp(48px, 8vh, 88px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
+  /*
+   * Deliberately NOT `overflow: hidden`, and no longer carrying the page's
+   * bottom padding.
+   *
+   * The clip was here for the blossoms, and it took the knot with it: `.knot`
+   * resolves to `left: -40px` — it sits on the thread's datum, which is 28px
+   * inside `.inner` while this section starts 56px inside it — so the one knot
+   * on the page has been laid out 40px outside its own clipping parent and
+   * painted nowhere since revision 3. The blossoms are masked to nothing well
+   * inside their own box now and `.field` clips anything that overhangs, so
+   * nothing needs clipping here.
+   *
+   * The bottom padding moved to the kolam, which now follows this section.
+   */
+  padding-bottom: clamp(20px, 4vh, 44px);
 }
 
 /* White blossoms behind the last words, softened and pulled to the right. */
@@ -20,11 +33,15 @@
   height: auto;
   opacity: 0.26;
   filter: sepia(0.28) saturate(0.62) blur(1.5px);
+  /* The ellipse has to reach transparent *inside* the element or the element's
+     own edge does the cutting: at 62% wide centred at 62% it ran off the right
+     and bottom of the box and the photograph showed a hard rectangular corner
+     on any screen wide enough to see it. */
   mask-image: radial-gradient(
-    ellipse 62% 62% at 62% 46%,
+    ellipse 42% 44% at 50% 48%,
     #000 0%,
-    rgb(0 0 0 / 0.55) 52%,
-    transparent 80%
+    rgb(0 0 0 / 0.5) 54%,
+    transparent 88%
   );
   pointer-events: none;
 }
@@ -48,5 +65,7 @@
   position: absolute;
   z-index: 1;
   left: calc(var(--thread-x) - var(--content-x) - 12px);
-  bottom: clamp(20px, 4vh, 44px);
+  /* Above the section's own foot, so the thread runs a short tail past it
+     rather than stopping dead in the middle of the knot. */
+  bottom: clamp(6px, 1.6vh, 18px);
 }

@@ -1,0 +1,136 @@
+/*
+ * The closing threshold — docs/revision-6-ornament.md, pieces 8 and 9.
+ *
+ * The urns flank the note and the kolam is drawn on the ground beneath it. The
+ * order matters and is the reason this section is laid out in three parts
+ * rather than one: the note is what the page says, the kolam is what it does
+ * last, and the knot ties off after both.
+ */
+
+.stage {
+  position: relative;
+  padding-top: clamp(24px, 5vh, 70px);
+  /* The urns stand at the foot of the note, and need floor to stand on. */
+  padding-bottom: clamp(60px, 10vh, 130px);
+}
+
+.deco {
+  position: absolute;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  top: 0;
+  /* The kolam moved out of this stage (see KolamMark), so this reaches the
+     foot of it again. It reserved `--kolam-band` of space for a mark that is
+     no longer here, which left the layer 330px short and both urns with
+     nowhere to stand. */
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   The urns
+   -------------------------------------------------------------------------- */
+
+.urnLeft,
+.urnRight {
+  position: absolute;
+  bottom: 0;
+  width: var(--urn-w);
+  height: calc(var(--urn-w) * 2.22);
+  opacity: 0.94;
+}
+
+.deco {
+  --urn-w: clamp(112px, 13vw, 196px);
+  --urn-out: clamp(-40px, -2vw, -4px);
+  --kolam-band: clamp(150px, 24vw, 330px);
+}
+
+.urnLeft {
+  left: var(--urn-out);
+}
+
+.urnRight {
+  /* Shorter, and standing further in. Two matching urns either side of a
+     closing note is the stencil this whole programme is trying not to be. */
+  right: calc(var(--urn-out) + clamp(6px, 2.4vw, 54px));
+}
+
+/* --------------------------------------------------------------------------
+   The kolam
+   -------------------------------------------------------------------------- */
+
+.kolamWrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding-top: clamp(18px, 4vh, 54px);
+  /* The page's bottom padding lives here now, because this is the page's last
+     mark. It clears the fixed bar and the home indicator. */
+  padding-bottom: calc(clamp(44px, 7vh, 92px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.kolam {
+  width: var(--kolam-band);
+  height: var(--kolam-band);
+}
+
+.kolamWrap {
+  --kolam-band: clamp(150px, 24vw, 330px);
+}
+
+/*
+ * The pulli are laid down, not faded in. A dot of rice flour lands and settles;
+ * it does not materialise. The overshoot is that settling, and it is the same
+ * two-stage curve the wax uses when the seal is pressed.
+ */
+:global(html.js) .pulli {
+  opacity: 0;
+}
+
+:global(.painted) .pulli {
+  animation: pulli-down 380ms var(--ease-wax) var(--pulli-delay, 0ms) both;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+@keyframes pulli-down {
+  from {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+  55% {
+    opacity: 0.9;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Reduced motion: the kolam is already drawn. It is the one piece on this page
+ * where the animation carries most of the meaning, so the reduced version has
+ * to be worth arriving at on its own — and a finished kolam is, because a
+ * finished kolam is what a guest would see at the door.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .pulli {
+    opacity: 1;
+  }
+
+  :global(.painted) .pulli {
+    animation: none;
+    transform: none;
+  }
+}
