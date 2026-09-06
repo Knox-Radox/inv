@@ -13,9 +13,9 @@ named one thing still open:
 > illustrations, one per section, are a large part of why it reads as
 > expensive, and they are still the thing we have least of.
 
-Revision 6 is that. Eight pieces, one per section plus the two on the closing,
-in a technique the plan calls **line plus wash**: drawn line art that draws
-itself on, with a watercolour wash flooding in behind it.
+Revision 6 is that. Ten pieces plus a scatter of fallen petals, at least two to
+a section, in a technique the plan calls **line plus wash**: drawn line art that
+draws itself on, with a watercolour wash flooding in behind it.
 
 The client made four decisions before any of it was designed, and they override
 parts of CLAUDE.md. They are recorded at the top of
@@ -112,8 +112,12 @@ Also still open, unchanged from revision 5:
 
 ## What I would not do next
 
-Add more ornament. The page now has eight pieces against the reference's
-eleven, in a fifth of the height, and the brief's warning is the one that
-applies: *spend your boldness in one place.* If anything, the next revision
-should look hard at whether the columns are earning their keep on a phone,
-where only a sliver of each is in frame.
+**Add more ornament.** The page now carries eleven pieces against the
+reference's eleven, in a fifth of its height, and every section has at least
+two. The brief's warning is the one that applies from here: *spend your
+boldness in one place.*
+
+If the page needs more life, the lever is not another object — it is scale and
+bleed on what is already there, which is what the reference actually does. And
+if anything should come out, look first at whether the columns earn their keep
+on a phone, where only a sliver of each is in frame.
