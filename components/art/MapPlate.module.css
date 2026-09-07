@@ -1,15 +1,28 @@
 /*
- * The engraved plate — docs/design-plan.md § Illustration inventory, item 7.
+ * The map plate — docs/revision-7-map.md.
  *
- * Every weight here is deliberate and none of them match. The roads are filled
- * tapered outlines, not strokes, because a burin never lays a uniform line;
- * uniform line is what makes a vector map read as a diagram.
+ * Every weight here is deliberate and no two match. The roads are filled
+ * tapered outlines, not strokes, because a burin never lays a uniform line, and
+ * uniform line is what makes a vector map read as a diagram. Hierarchy is
+ * carried by weight and value only: gold is the built world, sage is the
+ * natural one, and nothing on the plate introduces a third hue.
  */
 
 .plate {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* --- The paper ----------------------------------------------------------- */
+
+.paperTop {
+  stop-color: var(--ground);
+}
+
+.paperFoot {
+  stop-color: var(--ground-deep);
+  stop-opacity: 0.3;
 }
 
 .borderOuter,
@@ -20,178 +33,341 @@
 }
 
 .borderOuter {
-  stroke-width: 0.55;
-  opacity: 0.7;
-}
-
-.borderInner {
-  stroke-width: 0.22;
-  opacity: 0.5;
-}
-
-/* Land tone. The density is the drawing. */
-.hatch {
-  fill: none;
-  stroke: var(--sage);
-  stroke-width: 0.16;
-  stroke-linecap: round;
-  opacity: 0.4;
-}
-
-.creekBank {
-  fill: var(--sage);
-  fill-opacity: 0.5;
-}
-
-.creekTicks {
-  fill: none;
-  stroke: var(--sage);
-  stroke-width: 0.14;
-  stroke-linecap: round;
-  opacity: 0.45;
-}
-
-.approach {
-  fill: var(--sage);
-  fill-opacity: 0.72;
-}
-
-.trees {
-  fill: none;
-  stroke: var(--sage-deep);
-  stroke-width: 0.2;
-  stroke-linecap: round;
-  opacity: 0.55;
-}
-
-/* County Road 419: the thread's branch, and the heaviest line on the plate. */
-.road {
-  fill: var(--gold);
-  fill-opacity: 0.92;
-}
-
-.drive {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 0.35;
-  opacity: 0.7;
-}
-
-.venueBody {
-  fill: var(--ground);
-  fill-opacity: 0.9;
-  stroke: var(--sage-deep);
-  opacity: 0.88;
-  stroke-width: 0.28;
-  stroke-linejoin: round;
-}
-
-.venueRoof {
-  fill: none;
-  stroke: var(--sage-deep);
-  stroke-width: 0.38;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.venueDoor {
-  fill: none;
-  stroke: var(--sage-deep);
-  stroke-width: 0.26;
-}
-
-.compass circle {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 0.22;
-  opacity: 0.6;
-}
-
-/* Alternating filled and open halves: the engraved convention for north. */
-.starFilled {
-  fill: var(--gold);
-  fill-opacity: 0.78;
-}
-
-.starOpen {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 0.22;
+  stroke-width: 0.5;
   opacity: 0.75;
 }
 
-.cartOuter {
-  fill: var(--ground);
-  fill-opacity: 0.62;
-  stroke: var(--gold);
-  stroke-width: 0.4;
-  opacity: 0.9;
+.borderInner {
+  stroke-width: 0.18;
+  opacity: 0.5;
 }
 
-.cartInner {
+/*
+ * The washed paper. Low enough that it reads as tooth in the sheet rather than
+ * as a texture laid on top of one — above about 0.4 the mottling starts
+ * competing with the roads for attention, which is the opposite of the job.
+ */
+.paperWash {
+  opacity: 0.3;
+}
+
+/* The towns are landmarks, not the subject. At 0.5 they were the greenest
+   thing on the plate and pulled the eye off the seal. */
+.townPigment {
+  opacity: 0.38;
+}
+
+/* --- Ground under the seal ------------------------------------------------ */
+
+.haloCore {
+  stop-color: var(--gold);
+  stop-opacity: 0.15;
+}
+
+.haloMid {
+  stop-color: var(--gold);
+  stop-opacity: 0.06;
+}
+
+.haloEdge {
+  stop-color: var(--gold);
+  stop-opacity: 0;
+}
+
+/* --- The natural world --------------------------------------------------- */
+
+.creek {
+  fill: var(--sage);
+  fill-opacity: 0.68;
+}
+
+.townWash {
+  fill: var(--sage);
+  fill-opacity: 0.1;
+}
+
+.townEdge {
+  fill: none;
+  stroke: var(--sage);
+  stroke-width: 0.16;
+  opacity: 0.5;
+}
+
+.townBlocks {
+  fill: var(--sage);
+  fill-opacity: 0.42;
+}
+
+/* --- The built world ----------------------------------------------------- */
+
+.road {
+  fill: var(--gold);
+}
+
+/*
+ * Five values over six roads, in the order a driver feels them. US 75 is nearly
+ * three times the weight of County Road 419 and a shade darker as well; drawn
+ * at the same value the plate read flat, which was half of why the first pass
+ * looked like a diagram.
+ */
+.road0 .road {
+  fill-opacity: 1;
+}
+
+.road1 .road {
+  fill-opacity: 0.9;
+}
+
+.road2 .road {
+  fill-opacity: 0.84;
+}
+
+.road3 .road {
+  fill-opacity: 0.82;
+}
+
+.road4 .road {
+  fill-opacity: 0.76;
+}
+
+.road5 .road {
+  fill-opacity: 0.96;
+}
+
+/* --- The seal ------------------------------------------------------------ */
+
+.sealGround {
+  fill: var(--ground);
+  fill-opacity: 0.88;
+}
+
+.rim {
   fill: none;
   stroke: var(--gold);
-  stroke-width: 0.18;
-  opacity: 0.7;
+  stroke-width: 0.4;
 }
 
-.north,
-.venueName,
-.roadName {
+.rimInner {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.14;
+  opacity: 0.6;
+}
+
+.reku {
+  fill: var(--gold);
+  fill-opacity: 0.55;
+}
+
+.mono {
+  fill: var(--gold);
+}
+
+/* --- Lettering ------------------------------------------------------------ */
+
+/*
+ * One family in three styles, and the style tells you what kind of thing the
+ * name names: roman for roads, italic for water — which is the convention on
+ * every engraved plate ever cut — and letter-spaced roman for towns. `paint-
+ * order` puts a ground-coloured halo behind each glyph so a name stays legible
+ * where it crosses its own road.
+ */
+.lettering text {
   font-family: var(--font-eaves), Georgia, serif;
-  stroke: none;
+  paint-order: stroke fill;
+  stroke: var(--ground);
+  stroke-width: 0.6;
+  stroke-opacity: 0.9;
+  stroke-linejoin: round;
 }
 
-.north {
-  font-size: 3.6px;
-  text-anchor: middle;
+.lettering path {
+  fill: none;
+}
+
+.roadName {
+  font-size: 2.6px;
+  letter-spacing: 0.04em;
+  fill: var(--ink);
+  fill-opacity: 0.94;
+}
+
+.waterName {
+  font-size: 2.05px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  fill: var(--sage);
+  stroke-width: 0.5;
+}
+
+.townName {
+  font-size: 3.1px;
+  letter-spacing: 0.13em;
   fill: var(--sage-deep);
 }
 
 .venueName {
-  font-size: 5px;
-  text-anchor: middle;
-  dominant-baseline: central;
-  letter-spacing: 0.03em;
+  font-size: 4.4px;
+  letter-spacing: 0.01em;
   fill: var(--sage-deep);
 }
 
-.roadName {
-  font-size: 3.2px;
-  letter-spacing: 0.05em;
+.venueRoad {
+  font-size: 2.45px;
+  letter-spacing: 0.04em;
   fill: var(--ink);
-  opacity: 0.78;
+  fill-opacity: 0.8;
 }
 
-/*
- * The draw-on. The road is a filled outline, so it is revealed by sweeping a
- * thick stroked centreline through a clip path rather than by dashing a fill.
- * Resting state is fully revealed; the keyframe supplies only the *from*.
- */
-.revealPath {
+/* --- Scale and north ----------------------------------------------------- */
+
+.barFill {
+  fill: var(--gold);
+  fill-opacity: 0.8;
+}
+
+.barOpen {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.18;
+  opacity: 0.8;
+}
+
+.furniture text {
+  font-family: var(--font-eaves), Georgia, serif;
+  paint-order: stroke fill;
+  stroke: var(--ground);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.barLabel {
+  font-size: 2px;
+  fill: var(--ink);
+  fill-opacity: 0.7;
+}
+
+.northShaft {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.26;
+  opacity: 0.85;
+}
+
+.northHead {
+  fill: var(--gold);
+  fill-opacity: 0.85;
+}
+
+.northLetter {
+  font-size: 2.9px;
+  text-anchor: middle;
+  fill: var(--sage-deep);
+  stroke-width: 0.7;
+}
+
+/* ==========================================================================
+   The drawing
+   --------------------------------------------------------------------------
+   The plate draws the journey, not the file: US 75 first, because that is the
+   road every guest is actually on, then the highway they leave it for, then
+   the loop, then the lane — and the seal is pressed last.
+
+   Resting state is the finished plate. Every keyframe supplies only the
+   *from*, with `backwards`, so a guest whose observer never fires, or who has
+   JavaScript off inside a browser that still runs CSS, sees the plate whole.
+   ========================================================================== */
+
+.sweep {
   fill: none;
   stroke: #fff;
-  stroke-width: 6;
+  stroke-width: 8;
   stroke-linecap: round;
 }
 
-:global(.map-drawing) .revealPath {
-  animation: reveal-road 1600ms var(--ease-needle) backwards;
+:global(.map-drawing) .sweep {
+  animation: map-sweep 900ms var(--ease-needle) backwards;
+  animation-delay: var(--run-delay);
 }
 
-@keyframes reveal-road {
+@keyframes map-sweep {
   from {
-    stroke-dasharray: var(--road-len);
-    stroke-dashoffset: var(--road-len);
+    stroke-dasharray: var(--run-len);
+    stroke-dashoffset: var(--run-len);
   }
+
   to {
-    stroke-dasharray: var(--road-len);
+    stroke-dasharray: var(--run-len);
     stroke-dashoffset: 0;
   }
 }
 
+/*
+ * Everything that is not a road fades rather than draws. Opacity on a group is
+ * the one thing Chrome will composite here, and six simultaneous stroke
+ * animations would not have been.
+ */
+:global(.map-drawing) .water,
+:global(.map-drawing) .towns,
+:global(.map-drawing) .halo {
+  animation: map-wash 1100ms ease-out backwards;
+}
+
+:global(.map-drawing) .towns {
+  animation-delay: 260ms;
+}
+
+:global(.map-drawing) .halo {
+  animation-delay: 1500ms;
+  animation-duration: 1400ms;
+}
+
+@keyframes map-wash {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The lettering arrives once the roads it names have been drawn. */
+:global(.map-drawing) .lettering {
+  animation: map-wash 900ms ease-out 1750ms backwards;
+}
+
+:global(.map-drawing) .furniture {
+  animation: map-wash 900ms ease-out 2100ms backwards;
+}
+
+/*
+ * The seal is pressed. It comes down a little large and settles, which is what
+ * a seal does, and it is the last mark on the plate — the same beat the wax
+ * gets on the cover, at a twentieth of the scale.
+ */
+:global(.map-drawing) .seal {
+  animation: map-press 620ms var(--ease-wax) 1900ms backwards;
+  transform-origin: var(--seal-x) var(--seal-y);
+  transform-box: view-box;
+}
+
+@keyframes map-press {
+  from {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  :global(.map-drawing) .revealPath {
+  /*
+   * Not "no animation" — the finished plate. Resting state already is the
+   * finished plate, so withdrawing the animations is the whole change, and the
+   * reduced version is the drawing rather than a lesser version of it.
+   */
+  :global(.map-drawing) .sweep,
+  :global(.map-drawing) .water,
+  :global(.map-drawing) .towns,
+  :global(.map-drawing) .halo,
+  :global(.map-drawing) .lettering,
+  :global(.map-drawing) .furniture,
+  :global(.map-drawing) .seal {
     animation: none;
   }
 }

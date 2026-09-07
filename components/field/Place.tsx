@@ -1,61 +1,58 @@
-"use client";
-
-import { useEffect, useRef } from "react";
 import { invitation } from "@/content/invitation";
-import { MapPlate } from "../art/MapPlate";
+import { LazyMapPlate } from "../art/LazyMapPlate";
 import styles from "./Place.module.css";
 
 /**
- * The place — docs/design-plan.md § Layout.
+ * The place — docs/revision-7-map.md.
  *
- * The plate is decorative and nothing else: no link, no embed, no iframe, no
- * deep link, no tile provider, no click handler, no hover. The address beneath
- * it is the real information, and it is plain selectable text so a guest can
- * copy it into whatever they already use.
+ * Two settled decisions were reversed here by the client. The plate used to be
+ * decorative only, with invented geography and no link, and it was rejected as
+ * being of no use. It is now traced from real survey and the whole of it opens
+ * Google Maps.
  *
- * This is the page's second and last scroll-linked moment. The observer fires
- * once, disconnects itself, and is the only scroll listener on the page.
+ * The plate and its label are **one** anchor rather than a picture beside a
+ * link that does the same thing. That gives one target, one accessible name and
+ * one focus ring, and it makes the tap area the size of the drawing — which is
+ * what a guest on a phone will reach for anyway. It is the page's fourth
+ * interactive element and the cap in CLAUDE.md was lifted to four to allow it.
+ *
+ * The drawing itself arrives on approach and never on the server — see
+ * LazyMapPlate. This section stays a server component around it, so with
+ * JavaScript off a guest still gets the heading, the link, the address and the
+ * credit: every fact, and the one action.
  */
+
 export function Place() {
-  const { day, copy } = invitation;
-  const ref = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    // Honour the setting here as well as in CSS, so the observer does not even
-    // arm for a guest who has asked for less motion.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          e.target.classList.add("map-drawing");
-          io.disconnect();
-        }
-      },
-      { threshold: 0.6 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const { day, copy, map } = invitation;
 
   return (
-    <section ref={ref} className={styles.section} aria-labelledby="the-place">
+    <section className={styles.section} aria-labelledby="the-place">
       <h2 id="the-place" className={styles.title}>
         {copy.sectionTitles.location}
       </h2>
 
-      <div className={styles.plate}>
-        <MapPlate />
-      </div>
+      <a
+        className={styles.plateLink}
+        href={map.href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <LazyMapPlate />
+        <span className={styles.linkLabel}>{map.linkLabel}</span>
+      </a>
 
       <address className={styles.address}>
         {day.venue.street}
         <br />
         {day.venue.city}, {day.venue.stateCode} {day.venue.postalCode}
       </address>
+
+      {/*
+       * Required by the ODbL. The plate is a drawn work derived from OSM road
+       * and water geometry, and the credit is not optional — it belongs on the
+       * page a guest sees, not only in a comment in the tool that traced it.
+       */}
+      <p className={styles.credit}>{map.attribution}</p>
     </section>
   );
 }

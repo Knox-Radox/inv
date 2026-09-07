@@ -23,6 +23,7 @@ import wax as wx  # noqa: E402
 
 OUT = Path(__file__).parent.parent / "components" / "art" / "paths.ts"
 ORN_OUT = Path(__file__).parent.parent / "components" / "art" / "ornament.ts"
+MAP_OUT = Path(__file__).parent.parent / "components" / "art" / "map.ts"
 
 # The korvai ring sits inside the wax, not on its silhouette.
 REKU = mg.reku_ring(50, 50, 37.6, 52, 2.2, 0.25)
@@ -103,49 +104,51 @@ def jasmine_block() -> str:
     )
 
 
-def map_block() -> str:
+def write_map() -> None:
+    """components/art/map.ts — the plate's traced geometry.
+
+    Kept out of paths.ts for the same reason the ornament is: paths.ts is
+    imported by the cover, which is on the critical path, and the plate is four
+    screens down. Emitting it here cost paths.ts 4.8 KB gzipped and bought
+    nothing above the fold.
+    """
     import json
 
     data = {
-        "main": mp.MAIN,
-        "mainCentre": {"d": mp.MAIN_CENTRE, "len": mp.MAIN_LEN},
-        "approaches": list(mp.APPROACHES),
-        "creek": mp.CREEK_A,
-        "creekTicks": mp.CREEK_TICKS,
-        "hatch": [mp.HATCH_A, mp.HATCH_B],
-        "trees": mp.TREES,
-        "venue": {
-            "body": mp.VENUE_BODY,
-            "roof": mp.VENUE_ROOF,
-            "door": mp.VENUE_DOOR,
-            "drive": mp.VENUE_DRIVE,
-        },
-        "compass": {
-            "filled": mp.COMPASS_FILLED,
-            "open": mp.COMPASS_OPEN,
-            "cx": mp.CX,
-            "cy": mp.CY,
-            "r": mp.CR,
-        },
-        "cartouche": {
-            "d": mp.CARTOUCHE,
-            "inner": mp.CARTOUCHE_INNER,
-            "x": mp.CART_X,
-            "y": mp.CART_Y,
-            "w": mp.CART_W,
-            "h": mp.CART_H,
-        },
+        "frame": {"w": mp.W, "h": mp.H, "kmPerUnit": round(mp.FRAME.km_per_unit, 5)},
+        "roads": [
+            {
+                "label": r["label"],
+                "runs": [{"d": run["d"], "c": run["c"], "len": run["len"]} for run in r["runs"]],
+                "labelPath": r["labelPath"],
+            }
+            for r in mp.ROADS
+        ],
+        "water": [
+            {"name": w["name"], "d": list(w["d"]), "labelPath": w["labelPath"]}
+            for w in mp.WATER
+        ],
+        "towns": mp.TOWNS,
+        "venue": mp.VENUE,
+        "scale": mp.SCALE,
+        "north": mp.NORTH,
         "borderOuter": mp.BORDER_OUTER,
         "borderInner": mp.BORDER_INNER,
         "clip": mp.CLIP,
     }
-    return (
+    body = (
         "/**\n"
-        " * The engraved map plate. Only County Road 419 is lettered, because it\n"
-        " * is the only road the address gives us — see docs/open-questions.md #2.\n"
+        " * The map plate, traced from OpenStreetMap around the venue — see\n"
+        " * docs/revision-7-map.md. Roads carry their own centreline and its length\n"
+        " * so the draw-on never measures a path, and a `labelPath` that is a single\n"
+        " * smooth arc: a textPath run along the road's real polyline drops glyphs.\n"
+        " *\n"
+        " * Map data \u00a9 OpenStreetMap contributors, ODbL 1.0.\n"
         " */\n"
-        "export const MAP = " + json.dumps(data, indent=2) + " as const;\n"
+        "export const MAP = " + json.dumps(data, separators=(",", ":")) + " as const;\n"
     )
+    MAP_OUT.write_text(body)
+    print(f"wrote {MAP_OUT.relative_to(MAP_OUT.parent.parent.parent)}  ({MAP_OUT.stat().st_size} bytes)")
 
 
 def write_ornament() -> None:
@@ -209,7 +212,6 @@ def main() -> None:
         lines.append(f'export const {name} =\n  "{d}";')
         lines.append("")
     lines.append(jasmine_block())
-    lines.append(map_block())
     lines += [
         "/** Blind-embossed floral relief for the envelope, as SVG markup drawn in",
         " *  white on transparent: a height map for the lighting filter. 440x700. */",
@@ -250,6 +252,7 @@ def main() -> None:
         print(f"  {name:14s} {len(d):5d} chars")
     print(f"  {'TOTAL':14s} {total:5d} chars of path data")
     write_ornament()
+    write_map()
 
 
 if __name__ == "__main__":

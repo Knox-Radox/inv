@@ -8,22 +8,70 @@
   letter-spacing: -0.005em;
 }
 
-/* The thread branches right here and becomes County Road 419. The plate is
-   pulled back toward the datum so the branch reads as continuous. */
-.plate {
+/*
+ * The plate and its label are one link. The anchor carries no colour, no
+ * underline and no hover lift of its own — the label beneath does all the
+ * signalling, and a drawing that changed colour under the thumb would look
+ * like a bug rather than an affordance.
+ */
+.plateLink {
+  display: block;
   margin-top: clamp(24px, 4vh, 40px);
-  /* A plate lies on the surface: a sheet's soft shadow, not a card's. */
-  filter: drop-shadow(0 10px 22px rgb(58 48 30 / 0.16));
+  /* The thread branches here and runs into the plate, as it always has. */
   margin-left: calc(var(--thread-x) - var(--content-x));
   margin-right: calc(var(--field-pad-right) * -1);
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.plateLink:focus-visible {
+  outline: 2px solid var(--sage-deep);
+  outline-offset: 6px;
+}
+
+/*
+ * The label says what happens when you use it, in the same words the app it
+ * opens calls itself. It is the only rule on the page that is a link rule, so
+ * it is drawn as one — a hairline under the words, lifted clear of the
+ * descenders — and it is tall enough to be a target on its own.
+ */
+.linkLabel {
+  display: inline-block;
+  margin-top: clamp(16px, 2.4vh, 22px);
+  margin-left: calc(var(--content-x) - var(--thread-x));
+  min-height: 44px;
+  padding-top: 10px;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--sage-deep);
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 3px;
+}
+
+.plateLink:hover .linkLabel {
+  border-bottom-color: var(--sage-deep);
 }
 
 .address {
-  margin-top: clamp(20px, 3.5vh, 32px);
+  margin-top: clamp(14px, 2.4vh, 22px);
+  margin-left: calc(var(--content-x) - var(--thread-x));
   font-style: normal;
   font-size: var(--text-body);
   line-height: 1.6;
-  /* Real, selectable text — the one thing on the plate a guest may need to
-     take away with them. */
+  /* Real, selectable text — the one thing a guest may need to take away. */
   user-select: text;
+}
+
+/*
+ * The ODbL credit. Small, quiet, and set in the same face as everything else:
+ * a licence line is not a reason to introduce a monospace or a caps label.
+ */
+.credit {
+  margin-top: clamp(18px, 3vh, 26px);
+  margin-left: calc(var(--content-x) - var(--thread-x));
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  color: var(--ink);
+  opacity: 0.55;
 }

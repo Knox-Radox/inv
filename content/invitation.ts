@@ -181,14 +181,56 @@ export const invitation = {
   audio: null as { readonly src: string; readonly title: string } | null,
 
   /**
-   * The map plate is decorative only: no link, no embed, no deep link, no
-   * interactivity. `namedRoads` lists the roads lettered on the plate. Only
-   * County Road 419 is named, because it is the only road the address gives us.
-   * See docs/open-questions.md #2 before adding another.
+   * The map plate — revision 7, and a reversal of two settled decisions. The
+   * plate used to be decorative only, with invented geography and no link; the
+   * client rejected it as being of no use. It is now traced from real
+   * OpenStreetMap geometry around the venue and it opens Google Maps.
+   *
+   * See docs/revision-7-map.md. Open question #2 is answered and closed: there
+   * is nothing left to invent, so there is nothing left to ask.
    */
   map: {
-    namedRoads: ["County Road 419"] as const,
+    /**
+     * The address, geocoded. This is the single source of the venue's position:
+     * `tools/frame.py` projects the plate about the same pair, so the drawing
+     * and the link can never point at two different places.
+     */
+    coordinates: { lat: 33.325274, lon: -96.523372 },
+
+    /** Lettered on the plate, in the order the plate draws them. */
+    namedRoads: [
+      "US 75",
+      "TX 121",
+      "Collin County Outer Loop",
+      "FM 455",
+      "County Road 419",
+    ] as const,
+
     venueLabel: venue.name,
+
+    /**
+     * One universal Google Maps URL. `search/?api=1` opens the Maps app where
+     * it is installed and the browser where it is not, identically on Android,
+     * iOS and desktop, so there is no platform branch to get wrong. The query
+     * is the venue name and the full address — what a guest would have typed —
+     * which resolves to the business rather than to a bare pin.
+     */
+    href:
+      "https://www.google.com/maps/search/?api=1&query=" +
+      encodeURIComponent(
+        `${venue.name}, ${venue.street}, ${venue.city}, ${venue.stateCode} ${venue.postalCode}`,
+      ),
+
+    /** Says what happens when you use it. Not "View map", not "Directions". */
+    linkLabel: "Open in Google Maps",
+
+    /**
+     * Required by the ODbL, and rendered as visible text under the plate. The
+     * plate is a drawn work derived from OSM geometry; the credit is not
+     * optional and it does not belong only in a comment.
+     */
+    attribution: "Map data © OpenStreetMap contributors",
+
   },
 } as const;
 

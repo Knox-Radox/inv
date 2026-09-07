@@ -1,0 +1,11 @@
+/*
+ * The box the plate lands in. It holds the plate's aspect ratio from the first
+ * paint, so the drawing arriving a second later moves nothing — the lazy
+ * ornament in revision 6 cost no CLS for the same reason.
+ */
+.plate {
+  display: block;
+  aspect-ratio: 100 / 74;
+  /* A plate lies on the surface: a sheet's soft shadow, not a card's. */
+  filter: drop-shadow(0 10px 22px rgb(58 48 30 / 0.16));
+}
