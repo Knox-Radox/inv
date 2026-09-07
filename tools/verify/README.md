@@ -73,12 +73,16 @@ loaded.
 
 ```
 tools/verify/mapdraw.js    "$URL" /tmp/frames   # the plate drawing itself, frame by frame
+tools/verify/kolamdraw.js  "$URL" /tmp/frames   # the kolam drawing itself, frame by frame
 tools/verify/scrollperf.js "$URL"               # frame pacing while scrolling the field
 ```
 
-`mapdraw.js` pauses every animation on the plate and sets `currentTime` by hand,
-the way `open.js` does with the envelope, because a screenshot's repaint costs
-more than a frame and sleeping between shots mistimes all of them.
+`mapdraw.js` and `kolamdraw.js` pause every animation on the piece and set
+`currentTime` by hand, the way `open.js` does with the envelope, because a
+screenshot's repaint costs more than a frame and sleeping between shots mistimes
+all of them. `kolamdraw.js` also strips the `settled` class first: `Painting`
+sets it once a sequence should be over and it switches every entrance animation
+off, so without that there is nothing left to set a time on.
 
 It is also what caught the revision-6 plate's road never drawing at all. The
 reveal put a stroked centreline with an animated `stroke-dasharray` inside a
