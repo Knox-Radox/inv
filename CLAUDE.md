@@ -2,6 +2,31 @@
 
 ## Current state — read before anything else
 
+Revision 8 is the cover. The client looked at it against the reference and
+returned five faults, and the lesson in all of them is one line long:
+**a measurement of the right number is not a look at the result.**
+
+The fold "did not work" because `.frame` carried `transform-style: preserve-3d`,
+which paints children by depth instead of z-index — so the flap sat at negative
+z the moment it rotated and animated perfectly, out of sight. Two revisions of
+measuring its transform never caught it, because the transform was always
+correct. The seal was blurred because it was a *repair*: the code blurred a
+stock impression out of the photographed wax and pressed type back in, and a
+blur wide enough to erase the one is wide enough to erase the other. The
+"unnatural semicircle" was not the patch everyone would blame — it was the
+flap's own cut, wrapped around a circle a quarter wider than the wax.
+
+The photograph now carries **no wax at all**: the paper is reconstructed and
+blind-embossed edge to edge, and the wax is a sprite that rides inside the flap.
+**Read `docs/revision-8-cover.md`** — including its "what went wrong on the way"
+section, which is the most useful part.
+
+One number still fails and failed before: **LCP**. It is put to the client in
+`docs/open-questions.md` #4 rather than fixed, because every fix is a trade they
+should make. If you re-measure it, check the reported LCP *element* first — the
+harness is bimodal and the figure recorded for revision 5 is the card, not the
+cover.
+
 Revision 7 is the map and the kolam.
 
 The client rejected the hand-drawn plate in one line — *"the hand drawn map is
@@ -24,13 +49,16 @@ two faces, Parfumerie Script and Mrs Eaves. Revision 6 added the ornament
 programme — columns, a thoranam, lamps, a malai, banana stems, a jasmine bough,
 urns and a kolam — in a drawn-line-plus-watercolour-wash technique.
 
-**Start with `docs/handoff-revision-7.md`**, then `docs/revision-7-map.md`,
-then `docs/handoff-revision-6.md` and `docs/revision-6-ornament.md`.
+**Start with `docs/revision-8-cover.md`**, then `docs/handoff-revision-7.md`
+and `docs/revision-7-map.md`, then `docs/handoff-revision-6.md` and
+`docs/revision-6-ornament.md`.
 The client's benchmark is captured in **`docs/reference/maison-doree/`** — look
 at it before designing anything. The verification harness is in `tools/verify/`;
 every number in the docs came from it and every change should go back through
-it. One number in it is wrong and is called out in the handoff: the LCP figure
-recorded for revision 5 does not reproduce.
+it. One number in it was wrong and is now explained rather than merely flagged:
+the LCP figure recorded for revision 5 timed the invitation card, not the cover,
+because it was captured on a run where the envelope was not armed. See
+`docs/revision-8-cover.md` § LCP.
 
 ## What this is
 
