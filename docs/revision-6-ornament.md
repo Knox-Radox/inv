@@ -74,6 +74,13 @@ kolam is drawn at the threshold at dawn; it is the mark that says the house is
 ready to receive you. Ending an invitation on one is the correct last sentence,
 and it is the one animation on the page that is worth watching twice.
 
+> **Piece 9 was rebuilt in revision 7 — see `docs/revision-7-kolam.md`.** What
+> this revision actually shipped was an eight-petal rosette inside a scalloped
+> ring, described here as "one continuous sikku line" and not being one: its
+> petals each left the centre and came back, so the line lifted eight times, and
+> the dots were decoration it ignored. It is a real sikku kolam now, on
+> fifty-three pulli, and the line goes round all of them without lifting.
+
 Nothing here adds a section. The brief says invitation, not wedding website.
 Every piece hangs in the margins and bleeds of sections that already exist.
 

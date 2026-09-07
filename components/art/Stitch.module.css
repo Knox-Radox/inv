@@ -52,7 +52,7 @@
 /* Only inside a sequence that has started. Absent this class the line is
    simply present, which is what a guest with no JS sees. */
 :global(.stitching) .line {
-  animation: draw-on var(--stitch-duration, 900ms) var(--ease-needle)
+  animation: draw-on var(--stitch-duration, 900ms) var(--stitch-ease, var(--ease-needle))
     var(--stitch-delay, 0ms) backwards;
 }
 

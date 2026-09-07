@@ -2,12 +2,19 @@
 
 ## Current state — read before anything else
 
-Revision 7 is the map. The client rejected the hand-drawn plate in one line —
-*"the hand drawn map is of no use"* — and it was worse than useless, because its
-geography was invented. Every line on it is now traced from OpenStreetMap around
-the venue, and the whole plate is a link that opens Google Maps. **Read
-`docs/revision-7-map.md`.** It reverses two settled decisions below, and both
-are corrected in place rather than left contradicting the build.
+Revision 7 is the map and the kolam.
+
+The client rejected the hand-drawn plate in one line — *"the hand drawn map is
+of no use"* — and it was worse than useless, because its geography was invented.
+Every line on it is now traced from OpenStreetMap around the venue, and the
+whole plate is a link that opens Google Maps. It reverses two settled decisions
+below, and both are corrected in place rather than left contradicting the build.
+
+The kolam was an eight-petal rosette in a scalloped ring: a pretty mandala, and
+not a kolam. It is now a real **sikku** kolam on fifty-three pulli — one
+unbroken line looping around every one of them and closing on its own start,
+which is what an *infinite* kolam is and why it belongs at the end of a wedding
+invitation. **Read `docs/revision-7-map.md` and `docs/revision-7-kolam.md`.**
 
 Revision 6 is done. The client rejected the first builds against La Maison
 Dorée as looking fake, and their feedback supersedes parts of the brief below.

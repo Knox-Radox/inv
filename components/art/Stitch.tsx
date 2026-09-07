@@ -30,6 +30,7 @@ export function Stitch({
   duration = 900,
   opacity,
   shadow = true,
+  pace = "needle",
 }: {
   d: string;
   /** Path length, from tools/*.py. Never measured in the browser. */
@@ -42,11 +43,22 @@ export function Stitch({
   opacity?: number;
   /** Off for hairline details, where a seam would only muddy the line. */
   shadow?: boolean;
+  /**
+   * How the line is laid down.
+   *
+   * `needle` front-loads, which is what a thread pulled through cloth does and
+   * what every line on this page wanted until the kolam. A hand drawing a kolam
+   * moves at a steady speed for four seconds, and on the needle curve the same
+   * stroke was three-quarters done at the half-way mark — it read as a swipe
+   * rather than as a hand.
+   */
+  pace?: "needle" | "hand";
 }) {
   const style = {
     "--stitch-len": length,
     "--stitch-delay": `${delay}ms`,
     "--stitch-duration": `${duration}ms`,
+    ...(pace === "hand" ? { "--stitch-ease": "cubic-bezier(0.42, 0.02, 0.58, 0.98)" } : {}),
   } as React.CSSProperties;
 
   return (

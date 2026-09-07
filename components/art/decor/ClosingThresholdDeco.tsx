@@ -142,9 +142,31 @@ function Urn({ side, className }: { side: "left" | "right"; className?: string }
   );
 }
 
+/**
+ * The kolam — the last mark on the page.
+ *
+ * A real **sikku** kolam now, on a grid of fifty-three pulli, traced by
+ * `tools/kolam.py`. What stood here was an eight-petal rosette inside a
+ * scalloped ring: a pretty mandala, and not a kolam. A kolam is one line
+ * looping around a grid of dots, never crossing one, never lifting.
+ *
+ * This grid yields **exactly one loop**, and it closes on its own start. That
+ * is an *infinite* kolam, and what it is taken to mean is continuity — which is
+ * why it is drawn at a door on the morning of a wedding, and why it is the last
+ * thing on an invitation.
+ *
+ * The animation is the piece. The pulli go down first, from the middle outward,
+ * the way a hand lays them; then the line is drawn in a single unbroken stroke
+ * that takes four seconds to go round, with a point of light travelling at its
+ * head — the fingertip letting the rice flour fall. One path, one dash: the
+ * whole of it costs a single animated element.
+ */
+const KOLAM_DOTS_AT = 620;
+const KOLAM_DOTS_SPREAD = 900;
+const KOLAM_LINE_AT = KOLAM_DOTS_AT + KOLAM_DOTS_SPREAD + 240;
+const KOLAM_LINE_MS = 4200;
+
 function Kolam({ className }: { className?: string }) {
-  const DOTS_AT = 1500;
-  const LINE_AT = 2200;
   return (
     <svg
       className={className}
@@ -154,7 +176,7 @@ function Kolam({ className }: { className?: string }) {
       focusable="false"
       preserveAspectRatio="xMidYMid meet"
     >
-      {/* The pulli. They go down first, from the centre outward, because that
+      {/* The pulli. They go down first, from the middle outward, because that
           is the order a hand lays them and because a kolam without its grid
           showing is a drawing rather than a kolam. */}
       {KOLAM.dots.map((d, i) => (
@@ -163,37 +185,64 @@ function Kolam({ className }: { className?: string }) {
           className={styles.pulli}
           cx={d.cx}
           cy={d.cy}
-          r={d.r}
+          r={KOLAM.dotR}
           fill="var(--sage-deep)"
-          opacity={0.78}
-          style={{ "--pulli-delay": `${DOTS_AT + d.ring * 210 + i * 12}ms` } as React.CSSProperties}
+          opacity={0.8}
+          style={
+            {
+              "--pulli-delay": `${KOLAM_DOTS_AT + d.t * KOLAM_DOTS_SPREAD}ms`,
+            } as React.CSSProperties
+          }
         />
       ))}
 
-      {/* Eight petals, each looped out from the centre and back. */}
-      {KOLAM.petals.map((p, i) => (
-        <Stitch
-          key={i}
-          d={p.d}
-          length={p.len}
-          width={1.5}
-          tone="gold"
-          shadow={false}
-          delay={LINE_AT + i * 105}
-          duration={620}
-        />
+      {/* The line. One of them, and it comes back to where it began. */}
+      {KOLAM.loops.map((l, i) => (
+        <g key={i}>
+          <Stitch
+            d={l.d}
+            length={l.len}
+            width={2.4}
+            tone="gold"
+            shadow={false}
+            pace="hand"
+            delay={KOLAM_LINE_AT}
+            duration={KOLAM_LINE_MS}
+          />
+          {/*
+           * The hand. A small warm point riding the same path at the same
+           * speed, so it sits exactly where the line is being laid down.
+           *
+           * `offset-path` rather than an animated transform, because the path
+           * is already written and nothing should have to re-derive it; and
+           * `cx`/`cy` are left at the path's own start so a browser without
+           * `offset-path` puts the point somewhere sensible instead of at the
+           * origin. It is only ever visible while the line is drawing.
+           */}
+          <circle
+            className={styles.handGlow}
+            r={8.5}
+            style={
+              {
+                "--hand-path": `path("${l.d}")`,
+                "--hand-delay": `${KOLAM_LINE_AT}ms`,
+                "--hand-duration": `${KOLAM_LINE_MS}ms`,
+              } as React.CSSProperties
+            }
+          />
+          <circle
+            className={styles.hand}
+            r={2.5}
+            style={
+              {
+                "--hand-path": `path("${l.d}")`,
+                "--hand-delay": `${KOLAM_LINE_AT}ms`,
+                "--hand-duration": `${KOLAM_LINE_MS}ms`,
+              } as React.CSSProperties
+            }
+          />
+        </g>
       ))}
-
-      {/* And the line that closes around them. Last mark on the page. */}
-      <Stitch
-        d={KOLAM.ring.d}
-        length={KOLAM.ring.len}
-        width={1.6}
-        tone="gold"
-        shadow={false}
-        delay={LINE_AT + 780}
-        duration={1400}
-      />
     </svg>
   );
 }
@@ -271,7 +320,19 @@ export default function ClosingDeco() {
 
 export function KolamDeco() {
   return (
-    <Painting className={styles.kolamWrap} threshold={0.3}>
+    <Painting
+      className={styles.kolamWrap}
+      threshold={0.3}
+      /*
+       * Long enough for the line to get all the way round. `Painting` settles
+       * at 5,200 ms by default and switches every entrance off in favour of its
+       * finished state — which, with a four-second stroke starting at 1,760,
+       * cut the kolam off three quarters of the way through. The one piece on
+       * the page whose animation carries the meaning was the one piece that
+       * never finished it.
+       */
+      settleAfter={KOLAM_LINE_AT + KOLAM_LINE_MS + 900}
+    >
       <Kolam className={styles.kolam} />
     </Painting>
   );

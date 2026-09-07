@@ -18,6 +18,8 @@ Run through tools/emit_art.py, which writes components/art/ornament.ts.
 from __future__ import annotations
 
 import math
+
+from kolam import kolam as kolam_figure
 import re
 
 from pen import chain, emit, path_length, simplify
@@ -1295,55 +1297,24 @@ KOLAM_W = 300.0
 
 
 def _kolam():
-    c = KOLAM_W / 2
-    r1, r2 = 58.0, 108.0
-    dots: list[dict] = []
-    dots.append({"cx": c, "cy": c, "r": 2.2, "ring": 0})
-    for k in range(8):
-        a = math.pi * 2 * k / 8 - math.pi / 2
-        dots.append({"cx": round(c + math.cos(a) * r1, 1), "cy": round(c + math.sin(a) * r1, 1), "r": 2.0, "ring": 1})
-    for k in range(16):
-        a = math.pi * 2 * k / 16 - math.pi / 2 + math.pi / 16
-        dots.append({"cx": round(c + math.cos(a) * r2, 1), "cy": round(c + math.sin(a) * r2, 1), "r": 1.8, "ring": 2})
+    """A real sikku kolam — see tools/kolam.py for the construction.
 
-    # Eight petals. Each leaves the centre, goes round the outside of its dot
-    # and comes back — which is what "the line never crosses a dot" means in
-    # practice, and is why a kolam has to be drawn rather than plotted.
-    petals: list[dict] = []
-    for k in range(8):
-        a = math.pi * 2 * k / 8 - math.pi / 2
-        half = math.pi / 8
-        pts: list[Point] = []
-        for u, rr in (
-            (-0.30, 14.0),
-            (-0.82, 46.0),
-            (-0.58, 82.0),
-            (0.0, 92.0),
-            (0.58, 82.0),
-            (0.82, 46.0),
-            (0.30, 14.0),
-        ):
-            ang = a + half * u
-            pts.append((c + math.cos(ang) * rr, c + math.sin(ang) * rr))
-        seg = chain(pts)
-        petals.append({"d": curve1(seg), "len": round(path_length(seg), 1)})
+    What stood here was an eight-petal rosette inside a scalloped ring. It is a
+    pretty mandala and it is not a kolam: a kolam is not a flower with a border,
+    it is one line looping around a grid of dots without ever crossing one.
 
-    # The closing line: one continuous scalloped ring that bulges past each
-    # outer dot and dips between them, so it hugs the grid without touching it.
-    ring_pts: list[Point] = []
-    steps = 96
-    for i in range(steps + 1):
-        t = i / steps
-        ang = math.pi * 2 * t - math.pi / 2 + math.pi / 16
-        # Sixteen scallops, phase-locked to the sixteen dots.
-        # A cosine gives sixteen rounded scallops; raising it to a fractional
-        # power sharpened them into points, which is a star and not a kolam.
-        rr = r2 + 13.0 * math.cos(16 * (ang + math.pi / 2 - math.pi / 16))
-        ring_pts.append((c + math.cos(ang) * rr, c + math.sin(ang) * rr))
-    ring_seg = chain(ring_pts)
-    ring = {"d": curve1(ring_seg), "len": round(path_length(ring_seg), 1)}
+    The grid is nine, eleven, thirteen, eleven, nine — fifty-three pulli — and
+    it was chosen rather than picked, because how many loops a grid yields is a
+    property of the grid. This one yields exactly **one**, with no mirrors: a
+    single unbroken line, 3,700 units long, that closes on its own start. That
+    is an *infinite* kolam, and what it is understood to mean is continuity,
+    which is why it is drawn at a door on the morning of a wedding and why it is
+    the last mark on this page.
 
-    return {"dots": dots, "petals": petals, "ring": ring, "c": c}
+    It is wide rather than square, and that is right: a kolam is drawn across a
+    threshold, not in the middle of a room.
+    """
+    return kolam_figure([9, 11, 13, 11, 9])
 
 
 KOLAM = _kolam()
@@ -1593,14 +1564,6 @@ def _banana_box() -> list[float]:
     return box
 
 
-def _kolam_box() -> list[float]:
-    box = path_bbox(_paths(KOLAM["ring"], KOLAM["petals"]), pad=6.0)
-    for d in KOLAM["dots"]:
-        r = d["r"] + 1
-        box = _grow(box, d["cx"] - r, d["cy"] - r, d["cx"] + r, d["cy"] + r)
-    return box
-
-
 def _union(a: list[float], b: list[float]) -> list[float]:
     """One box for a pair.
 
@@ -1636,7 +1599,7 @@ BOXES = {
         pad=5.0,
     ),
     "urn": _union(_urn_box(URN_L), _urn_box(URN_R)),
-    "kolam": _kolam_box(),
+    "kolam": KOLAM["box"],
     "kalasham": _grow(
         path_bbox(_paths(KALASHAM["sil"], KALASHAM["leaves"], KALASHAM["coconut"], KALASHAM["lines"]), pad=4.0),
         KALASHAM["cx"] - KALASHAM["rx"], KALASHAM["base"] - 8,
