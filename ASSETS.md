@@ -95,6 +95,43 @@ None. `invitation.audio` is `null` in `content/invitation.ts` and the sound
 toggle does not render. If a track is added it must be either owned by the
 couple or released CC0 / public domain, and it gets a row in this table.
 
+## Revision 8 — the wax leaves the photograph
+
+The client's note on the cover was that the seal "looks very very low quality
+… it doesnt even look like a natural wax seal and its blurred", that the
+envelope "looks very plain while the reference has tasteful designs", and that
+opening it left "some unnatural semicircle below it". Those are three symptoms
+of one arrangement: the photograph carried the wax, and everything else was a
+repair laid over it.
+
+Revision 8 inverts that. **The photograph carries no wax at all**, and the wax
+is its own sprite.
+
+| Output | What |
+|---|---|
+| `public/cover/seal.webp` | 448×448, 22 KB. The wax with an alpha channel, cut at 1.26 R so it carries its own contact shadow. Sage, struck with the couple's wedding logo. Rides inside `.flap`, so it turns on the flap's hinge because it is on the flap. |
+| `public/cover/envelope-*.webp` | Now wax-free, paper reconstructed across the disc, and blind-embossed with jasmine edge to edge. |
+| ~~`public/cover/seal-patch.webp`~~ | **Deleted.** A 352 px disc of reconstructed paper composited over the photograph to take the wax away again. It had to agree with the paper it covered on tone, grain, gradient *and* the phase of the embossed florals underneath — and it is the "unnatural semicircle". There is no patch now; under the wax is the same continuous sheet as everywhere else. |
+
+Two new scripts, both generating and neither shipping anything third-party:
+
+| Script | What |
+|---|---|
+| `tools/emboss.py` | The blind-embossed jasmine field. Reads `tools/jasmine.py`'s own Bézier geometry through a 40-line flattener — `pen.curve()` emits only absolute `M` and `C` — so the relief is drawn at each frame's own resolution with no upscaling. There is no SVG rasteriser on this machine and none is needed. Depth is calibrated against the reference plate: detail sd 6.6 against its 6.4, shadows to −26 against its −23. |
+| `tools/seal.py` | The wax. Keeps the photograph's dome lighting, poured edge, beaded rim and grain; replaces the colour and the impression. |
+
+The seal's colour is **measured off the client's reference plate**, not invented
+— `seal.RAMP` is seven (luminance → RGB) samples through its wax, and ours is
+histogram-matched onto that range before the ramp is applied. The finished
+sprite lands within four levels of the reference on every percentile and within
+0.3 on chroma.
+
+The impression is the couple's own `assets/source/wedding-logo.png`, cut in as
+depth rather than printed as gold: a brass die leaves depth, not colour, and a
+gold mark on green wax is a sticker. `lib/sealSvg.ts`'s `sealSvg()` — a drawn
+sage disc with a blocky A and S, dead since revision 4 — has been deleted rather
+than left as a stale second definition of the page's most recognisable mark.
+
 ## Revision 4 — the cover is a photograph
 
 The client rejected revisions 1–3 as fake-looking. They were: the paper and the
@@ -118,16 +155,20 @@ into the photograph instead, twice:
 
 | Output | What |
 |---|---|
-| `public/cover/envelope-portrait.webp` | 1100×2000, 38 KB. The phone frame; cropped so the envelope's own top edge lands on the top of the picture, which is what lets the flap turn on its real hinge. |
-| `public/cover/envelope-landscape.webp` | 2000×1130, 33 KB. The desktop frame, same wax in the same place. |
+| `public/cover/envelope-portrait.webp` | 1060×1930, 51 KB. The phone frame; cropped so the envelope's own top edge lands on the top of the picture, which is what lets the flap turn on its real hinge. |
+| `public/cover/envelope-landscape.webp` | 1600×1000, 57 KB. The desktop frame, same wax in the same place. |
 | `public/cover/card-paper.webp` | 640×896, 13 KB. Inlined into the HTML as the card's paper. |
-| `assets/og/seal.png` | 320×320. The wax, cropped and masked to the disc, for the share card. Never served; inlined at build. |
-| `components/coverGeometry.ts` | Where the hinge, the two creases and the wax's break land in each frame, as percentages. `components/Envelope.module.css` cuts along these, so the cut follows the crease that is already in the photograph. |
+| `assets/og/seal.png` | 320×320. The seal sprite, downsampled, for the share card. Never served; inlined at build. |
+| `components/coverGeometry.ts` | Where the hinge, the two creases and the wax's outline land in each frame, as percentages. `components/Envelope.module.css` cuts along these, so the cut follows the crease that is already in the photograph. |
 
-Along the way it erases the stock tree impression from the wax and presses
-Advika and Sooraj's monogram in — Parfumerie Script, the same face the page
-sets. The measured constants at the top of the file belong to this photograph;
-swap it and every one of them has to be re-measured.
+The measured constants at the top of the file belong to this photograph; swap it
+and every one of them has to be re-measured.
+
+*(Revision 8 note: the impression is no longer pressed in here. It used to be
+Parfumerie Script "AS", rasterised into the wax by `press_monogram` after a
+0.70 r blur had erased the stock tree — a blur wide enough to erase the tree is
+wide enough to erase the wax, which is why the client saw it as blurred. Both
+that function and the patch it needed are gone; see revision 8 above.)*
 
 The synthetic material system (`components/material/`, `tools/bake.js`,
 `public/paper/`) has been deleted.

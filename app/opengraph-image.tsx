@@ -60,7 +60,12 @@ export default async function Image() {
           fontFamily: "Mrs Eaves",
         }}
       >
-        <img src={sealUri} width={128} height={128} alt="" />
+        {/* 162, not 128. The sprite is cut at 1.26 R (tools/seal.py) rather
+            than tight to the wax, so it carries a transparent margin for the
+            contact shadow — the wax itself is 79% of the box. Drawn at 128 the
+            seal came out a fifth smaller on the share card than it used to be;
+            162 puts the wax back at the 128 it was designed to read at. */}
+        <img src={sealUri} width={162} height={162} alt="" />
 
         <div
           style={{

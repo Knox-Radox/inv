@@ -162,14 +162,14 @@ export const invitation = {
 
     /** Alt text for the seal, which is the only meaningful illustration. */
     sealAlt:
-      "A sage-green wax seal pressed with an interlocking A and S monogram, ringed by a fine woven border.",
+      "A sage-green wax seal struck with Advika and Sooraj's monogram: an A and an S with a spray of jasmine growing through them.",
   },
 
   share: {
     title: "Advika and Sooraj",
     description: `${day.fullDateDisplay}. ${venue.name}, ${venue.locality}.`,
     imageAlt:
-      "A sage-green wax seal with an interlocking A and S monogram on embossed ivory paper, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
+      "A sage-green wax seal struck with an A and S monogram and a spray of jasmine, on ivory paper embossed with jasmine, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
     themeColor: "#FBF7F0",
   },
 

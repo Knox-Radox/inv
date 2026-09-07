@@ -1,6 +1,6 @@
 # Open questions
 
-Two open, one closed. Every fact in the brief is confirmed, so this list is
+Three open, one closed. Every fact in the brief is confirmed, so this list is
 short by design and is not padded. Nothing here is blocking the plan — the build can start and each
 of these can land later without rework, except where noted.
 
@@ -53,3 +53,38 @@ recording on your invitation.
 
 If you would rather have no audio at all, say so and the toggle comes out
 entirely; nothing else in the design depends on it.
+
+---
+
+### 4. The cover loads too slowly, and fixing it is a trade
+
+**This is a decision for you, not a bug to be fixed quietly.**
+
+The brief sets one hard performance line: the first thing on screen should paint
+within 2.5 seconds on a slow connection. It does not, and it has not since
+revision 5 — measured at 7.6 s before this revision's work and 6.2–7.0 s after.
+(The figure recorded in `docs/handoff-revision-5.md` was measured on a run where
+the envelope happened not to be armed, so it timed the invitation card rather
+than the cover. `docs/revision-8-cover.md` has the detail.)
+
+The cause is not the photograph. Everything the page needs starts downloading at
+the same moment and shares a narrow pipe, and the cover photograph finishes
+last — behind the **Parfumerie Script webfont, which is 60 KB on its own**, and
+the JavaScript.
+
+There are three ways out and each costs something:
+
+1. **Stop preloading Parfumerie.** Fastest fix by far. The cost is that
+   "Advika and Sooraj" on the cover would appear in a fallback face for a
+   moment and then snap into the script — on the very first thing anyone sees.
+2. **Cut the cover photograph further.** It has already come down from 70 KB to
+   51 KB in this revision with no visible loss. Going much further starts to
+   show, and "it looks fake" is the note that began this whole rebuild.
+3. **Accept it.** On a real phone on real WiFi or 5G this is well under a
+   second. The 2.5 s line is measured on a deliberately punishing throttle —
+   400 kbps with a 4× CPU slowdown — which is a worst case, not a typical one.
+   Most of the people opening this will be on good connections.
+
+Our recommendation is **(3) for now and (1) if you want it faster**, because a
+brief flash of a fallback face is a real cost on a page whose whole argument is
+that it looks expensive. But it is your call and we have not made it.
