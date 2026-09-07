@@ -31,11 +31,19 @@ export function Place() {
         {copy.sectionTitles.location}
       </h2>
 
+      {/*
+       * The link is named explicitly. Without it the name is the plate's own
+       * description followed by the label, so a screen reader reads a paragraph
+       * of map before hearing what the link does. The visible label leads the
+       * name, which is what WCAG 2.5.3 asks for, and the destination follows it
+       * — the one thing a guest would want to hear before opening an app.
+       */}
       <a
         className={styles.plateLink}
         href={map.href}
         target="_blank"
         rel="noreferrer"
+        aria-label={`${map.linkLabel}: ${map.venueLabel}, ${day.venue.street}, ${day.venue.city}, ${day.venue.stateCode} ${day.venue.postalCode}`}
       >
         <LazyMapPlate />
         <span className={styles.linkLabel}>{map.linkLabel}</span>

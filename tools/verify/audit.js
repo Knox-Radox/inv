@@ -71,6 +71,17 @@ const ok=(t,c,x='')=>{ if(!c) fails++; console.log(`  ${c?'PASS':'FAIL'}  ${t}${
       ok(`focus ring on ${s.tag} "${s.text}"`, visible, s.outline);
       ok(`  target >=44px  ${s.tag} "${s.text}"`, s.box[1]>=44, `${s.box[0]}x${s.box[1]}`);
     });
+    /*
+     * Scroll the page before the semantics pass. Revision 7 moved the map
+     * plate — the page's one meaningful illustration — behind the same
+     * approach gate the ornament uses, so it is not in the initial DOM at all
+     * and the label check had nothing to look at. This walks it down first, so
+     * the audit sees every SVG the page ever renders rather than only the ones
+     * that arrive with the document.
+     */
+    await p.goto(URL+'#invitation',{waitUntil:'networkidle'});
+    for (let i=0;i<70;i++){ await p.mouse.wheel(0,400); await p.waitForTimeout(40); }
+    await p.waitForTimeout(1500);
     const sem = await p.evaluate(()=>({
       h1:document.querySelectorAll('h1').length,
       h2:[...document.querySelectorAll('h2')].map(h=>h.textContent.trim()),
@@ -82,7 +93,12 @@ const ok=(t,c,x='')=>{ if(!c) fails++; console.log(`  ${c?'PASS':'FAIL'}  ${t}${
     ok('exactly one h1', sem.h1===1, String(sem.h1));
     ok('section headings present', sem.h2.length===2, sem.h2.join(' / '));
     ok('lang set', sem.lang==='en');
-    ok('meaningful svg has a label', (sem.imgAlt[0]||'').length>10, sem.imgAlt.join(''));
+    // Every meaningful SVG, not merely the first: the page now has more than
+    // one state in which one exists, and only checking [0] would pass a page
+    // whose second illustration was unlabelled.
+    ok('at least one meaningful svg', sem.imgAlt.length>0, `${sem.imgAlt.length} found`);
+    ok('every meaningful svg has a label',
+       sem.imgAlt.length>0 && sem.imgAlt.every(a=>(a||'').length>10), sem.imgAlt.join(' | '));
     ok('every decorative svg is aria-hidden', sem.decorativeHidden);
     await ctx.close();
   }

@@ -159,3 +159,19 @@ These are renders of this project's own SVG — the filters in
 `components/art/paths.ts` — baked once because running five full-size lighting
 filters live cost up to 400 ms a frame on a throttled CPU. Re-run the bake after
 changing either input.
+
+## Map data
+
+`tools/data/anna-osm.json` is a pruned extract of OpenStreetMap covering about
+15 km around the venue, fetched by `tools/osm_fetch.py` and committed so the
+build runs offline. Every road, creek and town on the map plate is traced from
+it.
+
+**© OpenStreetMap contributors, licensed under the ODbL 1.0**
+<https://www.openstreetmap.org/copyright>
+
+The plate is a Produced Work under that licence and it carries the credit as
+visible text beneath it, from `invitation.map.attribution`. The credit is not
+optional and it does not belong only in a source comment. Nothing else about the
+plate is derived from a third-party asset: every line is drawn by
+`tools/mapplate.py` from the geometry.

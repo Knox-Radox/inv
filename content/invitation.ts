@@ -231,6 +231,16 @@ export const invitation = {
      */
     attribution: "Map data © OpenStreetMap contributors",
 
+    /**
+     * Read in place of the drawing. The plate is a real illustration and is
+     * labelled as one; the link that wraps it carries its own name, so this is
+     * not read out before a guest hears what the link does.
+     */
+    plateAlt:
+      `A drawn map of the country around ${venue.name}. US 75 runs down the ` +
+      "west side past Melissa and Anna, TX 121 crosses to the south-east, and " +
+      "the Collin County Outer Loop and FM 455 run east to County Road 419, " +
+      "where the venue is marked with the couple's seal.",
   },
 } as const;
 

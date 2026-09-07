@@ -1,7 +1,7 @@
 # Open questions
 
-Three. Every fact in the brief is confirmed, so this list is short by design and
-is not padded. Nothing here is blocking the plan — the build can start and each
+Two open, one closed. Every fact in the brief is confirmed, so this list is
+short by design and is not padded. Nothing here is blocking the plan — the build can start and each
 of these can land later without rework, except where noted.
 
 ---
@@ -28,19 +28,15 @@ events.
 
 ---
 
-### 2. What the map plate should show
+### 2. What the map plate should show — **answered, revision 7**
 
-The illustration is a decorative engraved plate, not a wayfinder — no link, no
-embed, no interactivity, as agreed. But it has to draw *something*, and the brief
-asks for "approach roads" in the plural.
+*Was: which direction do guests arrive from, and is there a road to name?*
 
-We will draw County Road 419 and the venue, both of which come from the address.
-Beyond that we would rather ask than invent geography.
-
-**Which direction do most of your guests arrive from, and is there a road you
-would like named on the plate** — US-75, or another? If you would rather it stay
-abstract, we will draw unnamed approach roads with only County Road 419 and
-Artistry Venue lettered.
+Closed, and not by an answer. The client's instruction in revision 7 was that
+the plate be traced from real ground and open Google Maps, so there is nothing
+left to invent and nothing left to ask. Six roads are drawn and five of them are
+lettered — US 75, TX 121, the Collin County Outer Loop, FM 455 and County Road
+419 — because that is what is actually there. See `docs/revision-7-map.md`.
 
 ---
 

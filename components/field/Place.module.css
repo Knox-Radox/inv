@@ -73,5 +73,11 @@
   font-size: var(--text-body-s);
   line-height: 1.5;
   color: var(--ink);
-  opacity: 0.55;
+  /* 0.55 measured 3.25:1 against the field. AA wants 4.5 for text this size,
+     and a licence line a guest cannot read is not a credit. */
+  opacity: 0.72;
+  /* "OpenStreetMap" is one word and at 3x Dynamic Type it is wider than a
+     390px column, so it has to be allowed to break. It is the only string on
+     the page long enough to need this. */
+  overflow-wrap: break-word;
 }

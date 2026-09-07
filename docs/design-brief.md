@@ -246,6 +246,14 @@ in the same fine-line stitched idiom as the botanicals.
 platform deep link, no tile provider, no interactivity of any kind. It is a piece
 of art on a card, not a wayfinding tool, and it does not need to be to scale.
 
+> **Superseded at revision 7.** The client saw the plate built to this paragraph
+> and rejected it: *"the hand drawn map is of no use."* The map is now traced
+> from real OpenStreetMap geometry and the whole plate is a link that opens
+> Google Maps. The rest of this section — the engraved-plate treatment, the
+> drawn lettering, the hand-weighted line, the address as selectable text
+> beneath — still stands and is what the plate is built to.
+> See `docs/revision-7-map.md`.
+
 Because it carries no navigation function, it has to carry a decorative one, and
 that raises the bar on it: a plain vector road diagram with a pin will look like a
 placeholder. Treat it as an engraved plate — the venue named in drawn lettering,

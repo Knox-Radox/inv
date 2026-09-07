@@ -2,6 +2,13 @@
 
 ## Current state — read before anything else
 
+Revision 7 is the map. The client rejected the hand-drawn plate in one line —
+*"the hand drawn map is of no use"* — and it was worse than useless, because its
+geography was invented. Every line on it is now traced from OpenStreetMap around
+the venue, and the whole plate is a link that opens Google Maps. **Read
+`docs/revision-7-map.md`.** It reverses two settled decisions below, and both
+are corrected in place rather than left contradicting the build.
+
 Revision 6 is done. The client rejected the first builds against La Maison
 Dorée as looking fake, and their feedback supersedes parts of the brief below.
 The cause was synthesising materials in code; the cover is a photograph, and as
@@ -10,7 +17,8 @@ two faces, Parfumerie Script and Mrs Eaves. Revision 6 added the ornament
 programme — columns, a thoranam, lamps, a malai, banana stems, a jasmine bough,
 urns and a kolam — in a drawn-line-plus-watercolour-wash technique.
 
-**Start with `docs/handoff-revision-6.md`**, then `docs/revision-6-ornament.md`.
+**Start with `docs/handoff-revision-7.md`**, then `docs/revision-7-map.md`,
+then `docs/handoff-revision-6.md` and `docs/revision-6-ornament.md`.
 The client's benchmark is captured in **`docs/reference/maison-doree/`** — look
 at it before designing anything. The verification harness is in `tools/verify/`;
 every number in the docs came from it and every change should go back through
@@ -67,14 +75,21 @@ time must be a one-line edit in that file.
 The facts are real. Do not invent details, add a fictional "our story", fabricate
 a hashtag, or pad the page with sections nobody asked for.
 
-Two client decisions that are settled and not to be revisited:
+One client decision that is settled and not to be revisited:
 - **There is no RSVP.** No form, no headcount, no "let us know", no contact block.
-- **The map is purely visual.** A hand-drawn illustration only. No Open in Maps
-  button, no embed, no iframe, no deep link, no tile provider, no interactivity.
+
+**The map used to be the second.** It was "purely visual — no Open in Maps
+button, no embed, no deep link, no interactivity", and the client reversed it at
+revision 7 after seeing it built that way. The map is now traced from real
+OpenStreetMap geometry and the whole plate is a link that opens Google Maps. It
+is still a drawing and it is still hand-weighted line: what changed is that the
+geography is true and the plate is useful. No embed, no iframe and no tile
+provider still hold — nothing on the page fetches a map at runtime.
 
 The only interactive elements on the entire page are: the cover itself (the
 whole of it opens the envelope — there is no label and no visible skip link),
-the sound toggle, and add-to-calendar. If you are building a fourth, stop and ask.
+the sound toggle, add-to-calendar, and the map plate. If you are building a
+fifth, stop and ask.
 
 ## Motion budget
 
@@ -112,7 +127,11 @@ on Slow 4G is the only hard line. What survives, and is still enforced:
   system font stacks. The page's two faces are Parfumerie Script (display) and
   Mrs Eaves (everything else) and there is no third role
 - Christian or church iconography of any kind
-- Any copyrighted or unlicensed third-party asset
+- Any copyrighted or unlicensed third-party asset. The one third-party thing on
+  the page is the OpenStreetMap geometry the map plate is traced from, which is
+  ODbL and carries its credit as visible text — see `ASSETS.md`
+- Inventing geography. Every road, creek and town on the plate comes from
+  `tools/data/anna-osm.json`; if something is not in the extract it is not drawn
 
 ## Quality floor
 

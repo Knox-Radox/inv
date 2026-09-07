@@ -68,3 +68,36 @@ regression — 0.0036 to 0.1032 — was a single element, and it was the card
 cover no guest could see through. `fontdiff.js` is what ruled out the page's own
 card first, by showing every one of its blocks identical with fonts blocked and
 loaded.
+
+## Added in revision 7
+
+```
+tools/verify/mapdraw.js    "$URL" /tmp/frames   # the plate drawing itself, frame by frame
+tools/verify/scrollperf.js "$URL"               # frame pacing while scrolling the field
+```
+
+`mapdraw.js` pauses every animation on the plate and sets `currentTime` by hand,
+the way `open.js` does with the envelope, because a screenshot's repaint costs
+more than a frame and sleeping between shots mistimes all of them.
+
+It is also what caught the revision-6 plate's road never drawing at all. The
+reveal put a stroked centreline with an animated `stroke-dasharray` inside a
+`clipPath` — and **a clip is built from a path's geometry and ignores every
+paint property on it**, so the dash did nothing. On the built page the roads
+were whole in the first frame after the observer fired. A `<mask>` is painted
+rather than measured, so it honours the dash; that is the only difference
+between the two, and it is the whole fix.
+
+Two changes to the harness itself came out of the same revision:
+
+- `contrast.js` now composites `opacity` into the foreground before measuring.
+  Reading `color` alone measures text at full strength however faint it is
+  actually painted, and the OpenStreetMap credit sat at 3.25:1 while the
+  harness reported 8.4:1. It also settles one-shot animations inside the
+  sampling task and reports genuinely mid-animation text as `TICK` rather than
+  failing it — the countdown fades each digit in from `opacity: 0.2` every
+  second, and that is transient, not a contrast failure.
+- `audit.js` scrolls the page before its semantics pass and checks that *every*
+  meaningful SVG is labelled rather than only the first. The plate moved behind
+  an approach gate in revision 7 and is not in the initial DOM at all, so the
+  label check had nothing to look at.

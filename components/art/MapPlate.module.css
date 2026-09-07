@@ -278,11 +278,16 @@
    JavaScript off inside a browser that still runs CSS, sees the plate whole.
    ========================================================================== */
 
+/*
+ * The brush that reveals a road. White, so the mask passes what it covers, and
+ * wide enough to clear the widest road's outline at every point along it.
+ */
 .sweep {
   fill: none;
   stroke: #fff;
   stroke-width: 8;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 :global(.map-drawing) .sweep {

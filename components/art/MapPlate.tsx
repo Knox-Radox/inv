@@ -26,11 +26,10 @@ import styles from "./MapPlate.module.css";
  * Only one or two roads are ever animating at once, which is what keeps this
  * inside the same frame budget as revision 6's single road.
  *
- * The <svg> is `aria-hidden`. The plate illustrates information the page
- * already gives in text, and it lives inside the Google Maps link: described
- * with `role="img"`, the link's accessible name became a paragraph of map
- * before it reached "Open in Google Maps". A screen reader gets the heading,
- * the link, the address and the credit — every fact, and the one action.
+ * The plate is a real illustration, so it is labelled as one. Inside a link
+ * that alone would have made the link's accessible name a paragraph of map
+ * before it reached "Open in Google Maps", so Place names the link explicitly
+ * and this description stops contributing to it.
  */
 /**
  * Set on the <svg> when the plate comes into view, and matched with `:global()`
@@ -89,8 +88,8 @@ export default function MapPlate({ className }: { className?: string }) {
       viewBox={`0 0 ${frame.w} ${frame.h}`}
       fill="none"
       style={{ "--seal-x": `${venue.x}px`, "--seal-y": `${venue.y}px` } as React.CSSProperties}
-      /* aria-hidden: see the note above the component. */
-      aria-hidden="true"
+      role="img"
+      aria-label={map.plateAlt}
     >
       <defs>
         <clipPath id={clip}>
@@ -126,14 +125,28 @@ export default function MapPlate({ className }: { className?: string }) {
         </mask>
 
         {/*
-         * A road is a filled outline, so it cannot be dashed on. Each is
-         * revealed by sweeping a thick stroked copy of its own centreline
-         * through a clip — the same construction revision 6 used for its one
-         * road, with the length baked in so nothing measures the DOM.
+         * A road is a filled outline, so it cannot be dashed on itself. Each is
+         * revealed by sweeping a thick stroked copy of its own centreline, with
+         * the length baked in so nothing measures the DOM.
+         *
+         * A **mask**, not a clip. Revision 6 put this path inside a `clipPath`
+         * and its one road never drew: a clip is built from a path's geometry
+         * and ignores every paint property on it, so `stroke-dasharray` there
+         * does nothing at all. Measured on the built page, the roads were whole
+         * in the first frame after the observer fired. A mask is painted, so
+         * the dash is honoured.
          */}
         {MAP.roads.map((road, r) =>
           road.runs.map((run, i) => (
-            <clipPath id={runId(r, i)} key={runId(r, i)}>
+            <mask
+              id={runId(r, i)}
+              key={runId(r, i)}
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="0"
+              width={frame.w}
+              height={frame.h}
+            >
               <path
                 className={styles.sweep}
                 d={run.c}
@@ -144,7 +157,7 @@ export default function MapPlate({ className }: { className?: string }) {
                   } as React.CSSProperties
                 }
               />
-            </clipPath>
+            </mask>
           )),
         )}
       </defs>
@@ -218,7 +231,7 @@ export default function MapPlate({ className }: { className?: string }) {
         {MAP.roads.map((road, r) => (
           <g key={road.label} className={styles[ROAD_CLASS[r] ?? "road0"]}>
             {road.runs.map((run, i) => (
-              <g clipPath={`url(#${runId(r, i)})`} key={runId(r, i)}>
+              <g mask={`url(#${runId(r, i)})`} key={runId(r, i)}>
                 <path className={styles.road} d={run.d} />
               </g>
             ))}
