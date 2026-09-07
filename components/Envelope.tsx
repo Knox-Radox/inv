@@ -60,6 +60,13 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
 
   const open = useCallback(() => {
     if (opening) return;
+    // The card inside the envelope is laid out at the viewport, and the page's
+    // own card is at the top of the document. The crossfade at the end assumes
+    // those are the same place, which is only true at scroll 0 — so the
+    // document goes to the top now, under an opaque cover, where no one can
+    // see it move. Without this the opening ended by dissolving a card at the
+    // top of the screen into a page scrolled halfway down it.
+    window.scrollTo(0, 0);
     setOpening(true);
     failsafe.current = window.setTimeout(finish, 9000);
   }, [opening, finish]);
@@ -73,6 +80,46 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
   }, [finish]);
 
   useEffect(() => () => window.clearTimeout(failsafe.current), []);
+
+  /*
+   * Hold the document at the top for as long as the cover is up.
+   *
+   * The cover is fixed and full bleed, so scrolling behind it shows the guest
+   * nothing — it only decides where the page will be standing when the
+   * envelope goes, and it decided badly: a flick on the sealed envelope, and
+   * the opening ended by dissolving into a page already scrolled past the
+   * card. On a desktop the moving scrollbar beside a full-bleed photograph
+   * gave it away before the tap.
+   *
+   * Deliberately not `overflow: hidden` — not on `body` and not on `html`
+   * either. docs/design-plan.md § The lockout, guarantee 1: nothing may make
+   * this page unscrollable in a way that outlives the script that set it.
+   * A CSS lock survives a dead script; these listeners are the script, so if
+   * it dies the page scrolls. That is the property that matters, and it is why
+   * the guard is built from events rather than from a class.
+   *
+   * `wheel` and `touchmove` are refused outright rather than corrected after
+   * the fact, so there is no snap-back to see. The `scroll` pin behind them
+   * catches what they cannot: a restored scroll position on reload,
+   * find-in-page, and the keyboard — which is left alone, because taking the
+   * arrow keys off a guest is a worse failure than a scrolled cover.
+   */
+  useEffect(() => {
+    if (gone) return;
+    const pin = () => {
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+    };
+    const refuse = (e: Event) => e.preventDefault();
+    pin();
+    window.addEventListener("scroll", pin, { passive: true });
+    window.addEventListener("wheel", refuse, { passive: false });
+    window.addEventListener("touchmove", refuse, { passive: false });
+    return () => {
+      window.removeEventListener("scroll", pin);
+      window.removeEventListener("wheel", refuse);
+      window.removeEventListener("touchmove", refuse);
+    };
+  }, [gone]);
 
   if (gone) return null;
 

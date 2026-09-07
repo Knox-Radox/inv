@@ -90,7 +90,26 @@
   transform: translate(-50%, -50%);
   perspective: 1500px;
   perspective-origin: 50% var(--seal-y);
-  transform-style: preserve-3d;
+  /*
+   * Flat, deliberately, and this is the whole reason the opening ever worked.
+   *
+   * This was `preserve-3d`, which reads like the right thing to write next to
+   * a perspective and is exactly wrong here. `preserve-3d` puts every child
+   * into one shared 3D space and paints them by depth, which *replaces*
+   * z-index. The flap turns about the top of the frame, so the instant its
+   * transform became a matrix3d — about 250 ms in, three degrees of rotation —
+   * its whole body sat at negative z and sorted behind the mouth's dark. It
+   * did not fail to animate: it animated perfectly, out of sight. Measured
+   * with tools/verify/probe.js, which is why this went unseen for two
+   * revisions: at 1300 ms the flap reports rotateX(-18deg) and opacity 1, and
+   * the screenshot at that beat is a black triangle.
+   *
+   * `perspective` on this element still applies to the flap's rotation — that
+   * is the parent's job and does not need preserve-3d. What flattening buys is
+   * that the children paint in z-index order again: photo, patch, mouth, flap.
+   * Nothing here needs to share a 3D space; only one child is ever in 3D.
+   */
+  transform-style: flat;
   background: var(--ground);
 }
 
