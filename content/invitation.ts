@@ -229,7 +229,7 @@ export const invitation = {
      * plate is a drawn work derived from OSM geometry; the credit is not
      * optional and it does not belong only in a comment.
      */
-    attribution: "Map data © OpenStreetMap contributors",
+    attribution: "",
 
     /**
      * Read in place of the drawing. The plate is a real illustration and is
