@@ -99,10 +99,20 @@ Hierarchy is carried by weight and value, never by a new hue:
 - `--sage-deep` — place lettering, and the venue.
 
 The plate's boldness is spent in exactly one place: **the venue mark**. It is
-not a pin and it is not a building. It is an eight-petal jasmine bloom drawn on
-the same `rosette` construction as the urns and the thoranam — the flower the
-family actually strings — with a fine ring cut round it. It is the only mark on
-the plate at full-strength gold and the last thing to draw on.
+not a pin and it is not a building. An estate plate marks a property with its
+owner's mark, and this couple have one — the A and S monogram with jasmine
+growing through it that they use everywhere else. It sits on an ivory disc
+inside two fine rules, and it is the last thing to arrive.
+
+Two versions preceded it, and both are worth knowing about. A jasmine bloom on
+the ornament's own `rosette` construction printed as a cog at any size the plate
+could give it. The page's own drawn monogram inside its reku ring was the right
+*idea* — a seal pressed where the wedding is — and the wrong mark, because the
+wedding already has one. `tools/logo.py` cuts it: crops the artwork to the
+monogram, un-composites the ivory paper out into alpha so the gold's gradient
+survives, and pulls the hue onto `--gold` so it belongs to this palette rather
+than reading as a sticker from another set. The ring came off with the old mark;
+the artwork carries its own jasmine and two sets of ornament is a thicket.
 
 The compass rose is gone. It was as heavy as the venue and it competed. What
 replaces it is a small north arrow and a **scale bar in miles and kilometres**,

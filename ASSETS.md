@@ -175,3 +175,19 @@ visible text beneath it, from `invitation.map.attribution`. The credit is not
 optional and it does not belong only in a source comment. Nothing else about the
 plate is derived from a third-party asset: every line is drawn by
 `tools/mapplate.py` from the geometry.
+
+## The couple's mark
+
+`assets/source/wedding-logo.png` is the couple's own wedding logo, supplied by
+them: an A and S monogram with jasmine growing through it, their names, and a
+lotus, gold on ivory. It is theirs, and it is not under any third-party licence.
+
+`tools/logo.py` cuts `public/mark/monogram.webp` from it — the monogram only,
+with the ivory ground un-composited into alpha and the gold pulled onto
+`--gold`. That is what the map plate wears as its venue seal. 37 KB, fetched on
+approach with the plate and never on the critical path.
+
+The source PNG is deliberately under `assets/` and not `public/`, which serves
+what it holds. Re-run `cd tools && python3 logo.py` if the artwork changes; it
+prints the aspect and the ink's reach, and `tools/mapplate.py` sizes the seal
+from the second of those.

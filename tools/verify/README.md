@@ -77,12 +77,22 @@ tools/verify/kolamdraw.js  "$URL" /tmp/frames   # the kolam drawing itself, fram
 tools/verify/scrollperf.js "$URL"               # frame pacing while scrolling the field
 ```
 
-`mapdraw.js` and `kolamdraw.js` pause every animation on the piece and set
-`currentTime` by hand, the way `open.js` does with the envelope, because a
-screenshot's repaint costs more than a frame and sleeping between shots mistimes
-all of them. `kolamdraw.js` also strips the `settled` class first: `Painting`
-sets it once a sequence should be over and it switches every entrance animation
-off, so without that there is nothing left to set a time on.
+`mapdraw.js` pauses every animation on the plate and sets `currentTime` by hand,
+the way `open.js` does with the envelope, because a screenshot's repaint costs
+more than a frame and sleeping between shots mistimes all of them.
+
+**`kolamdraw.js` cannot do that and does not try.** `Painting` marks a layer
+`settled` once its sequence should be over and switches every entrance off in
+favour of its finished state, so by the time a harness has scrolled down to the
+kolam there is nothing left to set a time on. Removing the class restores the
+pulli, but not the line: the declaration comes back at the next style recalc
+while the `Animation` object is not constructed until the next animation update,
+and even given two frames to appear, `Stitch`'s draw-on does not come back under
+a paused clock. Three attempts at reinstating it each produced nine identical
+frames of a finished kolam, which is a harness that lies. So it captures in real
+time instead, and prints `strokeDashoffset` beside each frame — that number is
+the ground truth for how far round the line has got, and the frame intervals are
+approximate because a screenshot costs more than a frame.
 
 It is also what caught the revision-6 plate's road never drawing at all. The
 reveal put a stroked centreline with an animated `stroke-dasharray` inside a

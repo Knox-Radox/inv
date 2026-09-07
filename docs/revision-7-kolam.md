@@ -71,14 +71,19 @@ on the page and the only one that asks to be watched twice.
    rather than a kolam.
 2. **The line is drawn**, in one unbroken stroke, over 4.2 seconds. One path,
    one `stroke-dasharray`: the whole of it is a single animated element.
-3. **A point of light travels at its head** — the fingertip letting the rice
-   flour fall — on `offset-path` along the same path at the same speed. It is
-   only ever visible while the line is being drawn.
-
 `prefers-reduced-motion: reduce` gets the finished kolam, which is what a guest
 would actually see at a door.
 
-## Four things worth not relearning
+**A point of light rode the head of the line for one revision** and has been
+cut. It was meant as the fingertip letting the rice flour fall; on a gold line
+it read as a bead sliding along, and it pulled the eye off the only thing here
+that should carry the moment. A kolam being drawn does not glow. The line
+arriving *is* the hand, and it does not need help.
+
+## Five things worth not relearning
+
+**0. Nothing rides the line.** See above. It is the first thing anyone will
+think of adding and it is worse than the line alone.
 
 **1. `Painting` settles at 5,200 ms, and it will cut you off.** The kolam's
 sequence runs to 5,960 ms, and `Painting` switches every entrance animation off

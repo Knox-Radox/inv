@@ -154,13 +154,15 @@
   opacity: 0.6;
 }
 
-.reku {
-  fill: var(--gold);
-  fill-opacity: 0.55;
-}
-
-.mono {
-  fill: var(--gold);
+/*
+ * The couple's own mark. Nothing is done to it here — it arrives with its gold
+ * already pulled onto `--gold` and its ground already alpha, both in
+ * `tools/logo.py`, so the plate does not have to filter a raster at paint time.
+ */
+.mark {
+  /* The artwork is fine gold line and the plate scales it down hard; without
+     this Chrome's default filtering thins the jasmine until it breaks up. */
+  image-rendering: auto;
 }
 
 /* --- Lettering ------------------------------------------------------------ */

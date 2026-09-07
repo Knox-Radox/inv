@@ -274,15 +274,24 @@ export default function MapPlate({ className }: { className?: string }) {
           ))}
         </g>
 
-        {/* The seal. An estate plate marks a property with its owner's mark,
-            and this page already has one. Pressed last. */}
+        {/*
+         * The seal. An estate plate marks a property with its owner's mark, and
+         * this couple have one — the A and S monogram with jasmine growing
+         * through it that they use everywhere else. It is their artwork, cut
+         * for this by `tools/logo.py`; only the disc under it and the two rules
+         * round it are drawn here. Pressed last.
+         */}
         <g className={styles.seal}>
           <path className={styles.sealGround} d={venue.rim} />
-          <g transform={venue.sealTransform}>
-            <path className={styles.reku} d={venue.reku} />
-            <path className={styles.mono} d={venue.monoA} />
-            <path className={styles.mono} d={venue.monoS} />
-          </g>
+          <image
+            className={styles.mark}
+            href="/mark/monogram.webp"
+            x={venue.markX}
+            y={venue.markY}
+            width={venue.markW}
+            height={venue.markH}
+            preserveAspectRatio="xMidYMid meet"
+          />
           <path className={styles.rim} d={venue.rim} />
           <path className={styles.rimInner} d={venue.rimInner} />
         </g>

@@ -526,17 +526,18 @@ for _i, _p in enumerate(sorted(DATA["places"], key=lambda q: q["name"])):
 
 # --- The venue ---------------------------------------------------------------
 # Not a pin, and not a building — revision 6's gabled house read as a chapel,
-# which is the one thing the brief forbids. Two passes were spent on a jasmine
-# bloom before the obvious answer: an estate plate marks a property with its
-# owner's seal, and this page already has one. The A and S monogram is pressed
-# into the map where the wedding is, inside the same reku ring it wears on the
-# wax, and it is the only mark on the plate at full-strength gold.
+# which is the one thing the brief forbids. An estate plate marks a property
+# with its owner's mark, and this couple have one: the A and S monogram with
+# jasmine growing through it that they use everywhere else.
 #
-# No new construction — the geometry is the monogram's own, scaled. That is the
-# rule the revision-6 handoff put first and every piece that broke this build
-# broke it by ignoring it.
-
-import monogram as mg  # noqa: E402
+# It replaced a version of this seal that carried the page's own drawn monogram
+# inside its reku ring. That was the right idea and the wrong mark — this is the
+# one the wedding actually uses, and the ring came off with it, because the
+# artwork already carries its own ornament and two sets of it is a thicket.
+#
+# The mark itself is cut by `tools/logo.py` from the client's artwork and is
+# placed here as an image; only the disc it sits on and the two rules round it
+# are drawn.
 
 
 def _circle(cx: float, cy: float, r: float) -> str:
@@ -546,26 +547,31 @@ def _circle(cx: float, cy: float, r: float) -> str:
     )
 
 
-#: The monogram is drawn in a 100 x 100 box about (50, 50), and it reads as a
-#: mark rather than as letters at this size — which is what a seal on a map is.
-#: Its own reku ring is set to 72% of the seal's radius so the A's feet, which
-#: reach further than the ring does, still clear the rim. At parity they broke
-#: through it.
-SEAL_R = 5.6
-_MONO_SCALE = 0.72 * SEAL_R / 37.6
+#: Bigger than the drawn monogram it replaced. That one was an abstract mark and
+#: read at any size; this one has jasmine in it and needs the room.
+SEAL_R = 6.6
+
+#: The artwork's own proportions and reach, both printed by `tools/logo.py`.
+#: `_MARK_REACH` is how far its ink actually gets from the middle, as a fraction
+#: of its height — so the mark is sized to fill the disc and still clear the rim
+#: by a known margin, rather than being nudged until it looked about right.
+_MARK_ASPECT = 240 / 282
+_MARK_REACH = 0.523
+_RIM_CLEARANCE = 0.86
+
+_MARK_H = SEAL_R * _RIM_CLEARANCE / _MARK_REACH
+_MARK_W = _MARK_H * _MARK_ASPECT
 
 VENUE = {
     "x": VENUE_X,
     "y": VENUE_Y,
     "r": SEAL_R,
-    #: translate/scale that drops the monogram's own box onto the plate.
-    "sealTransform": (
-        f"translate({VENUE_X - 50 * _MONO_SCALE:.3f} {VENUE_Y - 50 * _MONO_SCALE:.3f})"
-        f" scale({_MONO_SCALE:.5f})"
-    ),
-    "monoA": mg.a.outline() + mg.SERIFS,
-    "monoS": mg.s.outline(),
-    "reku": mg.reku_ring(50, 50, 37.6, 52, 2.2, 0.25),
+    #: Where the image goes. Nudged up a hair: the A's crossbar is the mark's
+    #: optical centre and it sits below the middle of the artwork's box.
+    "markX": round(VENUE_X - _MARK_W / 2, 2),
+    "markY": round(VENUE_Y - _MARK_H / 2 - 0.15, 2),
+    "markW": round(_MARK_W, 2),
+    "markH": round(_MARK_H, 2),
     #: Two rules, as on the plate's own border, so the seal belongs to the plate
     #: rather than sitting on top of it.
     "rim": _circle(VENUE_X, VENUE_Y, SEAL_R),
@@ -589,8 +595,8 @@ VENUE = {
 
 # The venue's own name and its bloom are reserved before anything else, so no
 # road is lettered across the one thing the plate is for.
-reserve(VENUE_X - 6.6, VENUE_Y - 6.6, VENUE_X + 6.6, VENUE_Y + 6.6)  # the seal
-reserve(VENUE_X + 5.6, VENUE_Y - 5.0, VENUE_X + 36.0, VENUE_Y + 6.4)  # and its name
+reserve(VENUE_X - 7.4, VENUE_Y - 7.4, VENUE_X + 7.4, VENUE_Y + 7.4)  # the seal
+reserve(VENUE_X + 6.4, VENUE_Y - 5.0, VENUE_X + 36.0, VENUE_Y + 6.4)  # and its name
 for _t in TOWNS:
     reserve(_t["x"] - 4.0, _t["y"] - 4.0, _t["x"] + 22.0, _t["y"] + 4.0)
 

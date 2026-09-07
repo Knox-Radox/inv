@@ -77,11 +77,33 @@ was server-rendered inside `paths.ts` and the new one is not.
 
 ## What remains
 
-**LCP, unchanged.** Still 7.6–8.0 s on the Slow 4G profile, and still the cover
-photograph's decode cost — `docs/handoff-revision-6.md` has the full account,
-including why the 1.16 s figure recorded for revision 5 does not reproduce.
-Nothing in this revision touches it and it is still the next thing to look at.
-The lever is the photograph: a smaller crop, or a second source served at 1x.
+**LCP, unchanged — and now with an explanation for why it never reproduces.**
+
+Three runs of `vitals.js` against the *same build* in one session gave 7.56 s,
+7.99 s and **1.42 s**. The last one is not an improvement and nothing was
+changed between them. What differs is which element wins:
+
+| Run | LCP | Element |
+|---|---|---|
+| 1 | 7.56 s | `IMG.photo` — the cover photograph |
+| 2 | 7.99 s | `IMG.photo` |
+| 3 | 1.42 s | `DIV.paper` — the invitation card behind the cover |
+
+So the figure is bimodal, not noisy. When the photograph's decode lands inside
+the measurement window it is the largest paint and LCP is its decode cost; when
+it does not, the card's paper is the largest thing that did paint and LCP is
+early. **That is almost certainly what revision 5's unreproducible 1.16 s
+was** — a run that landed on the card, recorded as though it were the page's
+real number.
+
+Two things follow. Quote the *photograph* figure, because that is the one a
+guest on a slow connection actually waits through. And when measuring this,
+record the LCP element beside the number; `vitals.js` already prints it, and
+without it the two runs are indistinguishable.
+
+Nothing in this revision touches any of it, and it is still the next thing to
+look at. The lever is the photograph: a smaller crop, or a second source served
+at 1x.
 
 Also still open, unchanged:
 

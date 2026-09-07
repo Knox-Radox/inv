@@ -157,9 +157,14 @@ function Urn({ side, className }: { side: "left" | "right"; className?: string }
  *
  * The animation is the piece. The pulli go down first, from the middle outward,
  * the way a hand lays them; then the line is drawn in a single unbroken stroke
- * that takes four seconds to go round, with a point of light travelling at its
- * head — the fingertip letting the rice flour fall. One path, one dash: the
- * whole of it costs a single animated element.
+ * that takes four seconds to go round. One path, one dash — the whole of it is
+ * a single animated element.
+ *
+ * A point of light rode the head of that line for one revision, meant as the
+ * fingertip letting the rice flour fall. It is gone. On a gold line a bright
+ * dot reads as a bead sliding along rather than as a hand, and it pulled the
+ * eye off the only thing here that should carry the moment. A kolam being
+ * drawn does not glow; the line arriving *is* the hand.
  */
 const KOLAM_DOTS_AT = 620;
 const KOLAM_DOTS_SPREAD = 900;
@@ -198,50 +203,17 @@ function Kolam({ className }: { className?: string }) {
 
       {/* The line. One of them, and it comes back to where it began. */}
       {KOLAM.loops.map((l, i) => (
-        <g key={i}>
-          <Stitch
-            d={l.d}
-            length={l.len}
-            width={2.4}
-            tone="gold"
-            shadow={false}
-            pace="hand"
-            delay={KOLAM_LINE_AT}
-            duration={KOLAM_LINE_MS}
-          />
-          {/*
-           * The hand. A small warm point riding the same path at the same
-           * speed, so it sits exactly where the line is being laid down.
-           *
-           * `offset-path` rather than an animated transform, because the path
-           * is already written and nothing should have to re-derive it; and
-           * `cx`/`cy` are left at the path's own start so a browser without
-           * `offset-path` puts the point somewhere sensible instead of at the
-           * origin. It is only ever visible while the line is drawing.
-           */}
-          <circle
-            className={styles.handGlow}
-            r={8.5}
-            style={
-              {
-                "--hand-path": `path("${l.d}")`,
-                "--hand-delay": `${KOLAM_LINE_AT}ms`,
-                "--hand-duration": `${KOLAM_LINE_MS}ms`,
-              } as React.CSSProperties
-            }
-          />
-          <circle
-            className={styles.hand}
-            r={2.5}
-            style={
-              {
-                "--hand-path": `path("${l.d}")`,
-                "--hand-delay": `${KOLAM_LINE_AT}ms`,
-                "--hand-duration": `${KOLAM_LINE_MS}ms`,
-              } as React.CSSProperties
-            }
-          />
-        </g>
+        <Stitch
+          key={i}
+          d={l.d}
+          length={l.len}
+          width={2.4}
+          tone="gold"
+          shadow={false}
+          pace="hand"
+          delay={KOLAM_LINE_AT}
+          duration={KOLAM_LINE_MS}
+        />
       ))}
     </svg>
   );

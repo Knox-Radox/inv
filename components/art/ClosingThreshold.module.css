@@ -237,92 +237,6 @@
 }
 
 /*
- * The hand: a small point of light riding the line at the speed it is being
- * drawn, which is the fingertip letting the rice flour fall.
- *
- * It is only ever visible while the line is drawing. `offset-path` is not
- * animated itself — only `offset-distance` is — so this stays one property on
- * one element, and a browser without `offset-path` support simply never shows
- * it, because the opacity keyframe is what reveals it.
- */
-.hand,
-.handGlow {
-  opacity: 0;
-  offset-path: var(--hand-path);
-  offset-rotate: 0deg;
-  offset-distance: 0%;
-}
-
-/* A point of light, not a bead: ivory on the gold line, so what moves reads as
-   the place the flour is falling rather than as an object sliding along. */
-.hand {
-  fill: var(--ground);
-}
-
-/* The flour catching the light around the fingertip. */
-.handGlow {
-  fill: var(--gold-light);
-  opacity: 0;
-}
-
-:global(.painted) .handGlow {
-  animation-name: kolam-hand, kolam-glow-fade;
-}
-
-@keyframes kolam-glow-fade {
-  0% {
-    opacity: 0;
-  }
-
-  6% {
-    opacity: 0.32;
-  }
-
-  92% {
-    opacity: 0.32;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-:global(.painted) .hand,
-:global(.painted) .handGlow {
-  animation:
-    kolam-hand var(--hand-duration) linear var(--hand-delay) both,
-    kolam-hand-glow var(--hand-duration) ease-out var(--hand-delay) both;
-}
-
-@keyframes kolam-hand {
-  from {
-    offset-distance: 0%;
-  }
-
-  to {
-    offset-distance: 100%;
-  }
-}
-
-@keyframes kolam-hand-glow {
-  0% {
-    opacity: 0;
-  }
-
-  6% {
-    opacity: 1;
-  }
-
-  92% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-/*
  * The pulli are laid down, not faded in. A dot of rice flour lands and settles;
  * it does not materialise. The overshoot is that settling, and it is the same
  * two-stage curve the wax uses when the seal is pressed.
@@ -376,10 +290,4 @@
     transform: none;
   }
 
-  /* No hand. There is nothing being drawn to follow. */
-  :global(.painted) .hand,
-  :global(.painted) .handGlow {
-    animation: none;
-    opacity: 0;
-  }
 }
