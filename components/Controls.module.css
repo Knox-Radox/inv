@@ -61,6 +61,17 @@
   color: var(--ink);
 }
 
+/* The thing a guest is being asked to do, so it leads the bar and it is in the
+   page's green. Still a line of type, not a button. */
+.lead {
+  color: var(--sage-deep);
+  text-decoration-color: var(--gold);
+}
+
+.lead:hover {
+  text-decoration-color: var(--sage-deep);
+}
+
 /* --------------------------------------------------------------------------
    The calendar's two doors
    -------------------------------------------------------------------------- */

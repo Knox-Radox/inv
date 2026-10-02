@@ -61,6 +61,10 @@ export function Controls() {
     <nav className={styles.bar} aria-label={copy.controls.barLabel}>
       {audio ? <SoundToggle /> : null}
 
+      <a className={`${styles.action} ${styles.lead}`} href="#reply">
+        {copy.controls.reply}
+      </a>
+
       <span className={styles.actions}>
         <a className={styles.action} href="#stay">
           {copy.controls.stay}

@@ -89,6 +89,14 @@
   --ease-rise: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-needle: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-press-in: cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* A card drawn out by hand: it starts, travels, and is set down. Not
+     --ease-rise, which does nine tenths of its travel in the first third — on
+     the cover that had the card over the liner before the flap was out of the
+     way. Used for the card leaving the envelope, and for the reply going into
+     its own. */
+  --ease-lift: cubic-bezier(0.33, 0.1, 0.2, 1);
+  /* Slow to start and then gone: something let go of. */
+  --ease-fall: cubic-bezier(0.5, 0, 0.2, 1);
 
   color-scheme: light;
 }

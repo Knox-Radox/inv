@@ -49,11 +49,6 @@
   --tilt: 38.66deg;
   /* The wax's sprite. The wax itself is 81% of it; the rest is its shadow. */
   --seal: clamp(132px, 22vmin + 62px, 236px);
-  /* A card drawn out by hand: it starts, travels, and is set down. Not
-     --ease-rise, which does nine tenths of its travel in the first third and
-     had the card over the liner before the flap was out of the way. */
-  --ease-lift: cubic-bezier(0.33, 0.1, 0.2, 1);
-  --ease-fall: cubic-bezier(0.5, 0, 0.2, 1);
   /* How far the front has to fall for its two edges to clear the bottom
      corners of the frame: the rest of the height, plus the slope's share of
      half the width, and a little over. */

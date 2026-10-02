@@ -5,6 +5,7 @@ import { Threshold } from "../art/Threshold";
 import { Closing } from "./Closing";
 import { Countdown } from "./Countdown";
 import { Place } from "./Place";
+import { Reply } from "./Reply";
 import { Reveal } from "./Reveal";
 import { Schedule } from "./Schedule";
 import { Travel } from "./Travel";
@@ -58,6 +59,11 @@ export function Field() {
         <Reveal delay={80}>
           <Travel />
         </Reveal>
+
+        {/* Not inside a `Reveal`: this one is a form, and a form that is
+            invisible until an observer says otherwise is a form a guest can be
+            locked out of. It is simply there. */}
+        <Reply />
 
         <ClosingThreshold>
           <Reveal delay={80}>

@@ -85,12 +85,14 @@
   border-top: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
 }
 
+/* The small-caps face, for its figures: Mrs Eaves Roman's old-style one is a
+   small capital I, and a headcount of ten must not read "IO". */
 .totals dd {
   margin: 0;
+  font-family: var(--font-eaves-sc), Georgia, serif;
   font-size: var(--text-display-xl);
-  line-height: 1;
+  line-height: 1.1;
   color: var(--sage-deep);
-  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .totals dt {
@@ -174,15 +176,16 @@
 
 .counts dd {
   margin: 0;
+  font-family: var(--font-eaves-sc), Georgia, serif;
   font-size: var(--text-display-l);
   line-height: 1.2;
   color: var(--sage-deep);
-  font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* A word, not a number: set as one. At the numerals' size "declines" was the
    loudest thing on the page, on the rows that matter least to a caterer. */
 .counts .declines {
+  font-family: var(--font-eaves), Georgia, serif;
   font-size: var(--text-body);
   line-height: 2;
   color: var(--ink);
