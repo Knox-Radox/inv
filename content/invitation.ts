@@ -420,6 +420,12 @@ export const invitation = {
         "Your reply did not go through. It is saved on this device, so nothing needs retyping. Please send it again in a moment.",
     },
 
+    /**
+     * Set small under a failure, with a short reason code after it. Not for
+     * the guest: for whoever they send a screenshot to.
+     */
+    failureWhy: "For the family, the reason given was",
+
     /** The two messages a guest without JavaScript is sent back to. */
     plainSent: "Reply sent. Thank you.",
     plainProblem: "Your reply could not be read. Please check each line and send it again.",

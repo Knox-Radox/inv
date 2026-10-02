@@ -131,6 +131,7 @@ export function Reply() {
   const [phase, setPhase] = useState<"idle" | "sealing" | "editing">("idle");
   const [problems, setProblems] = useState<Problems>({});
   const [failure, setFailure] = useState<string | null>(null);
+  const [why, setWhy] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   const mode: Mode =
@@ -200,6 +201,7 @@ export function Reply() {
 
     setProblems({});
     setFailure(null);
+    setWhy(null);
     setSending(true);
 
     const abort = new AbortController();
@@ -213,8 +215,12 @@ export function Reply() {
         signal: abort.signal,
       });
       outcome = (await res.json()) as Outcome;
-    } catch {
-      outcome = { ok: false, code: "unavailable" };
+    } catch (error) {
+      // Nothing readable came back: no network, a request given up on, or an
+      // answer that was not this route's (a host's own error page).
+      const name = error instanceof Error ? error.name : "";
+      const why = name === "AbortError" ? "browser_timeout" : name === "SyntaxError" ? "not_json" : "browser_offline";
+      outcome = { ok: false, code: "unavailable", why };
     } finally {
       window.clearTimeout(timer);
     }
@@ -223,6 +229,7 @@ export function Reply() {
     if (!outcome.ok) {
       if (outcome.code === "invalid" && outcome.problems) setProblems(outcome.problems);
       setFailure(rsvp.failures[outcome.code] ?? rsvp.failures.unavailable);
+      setWhy("why" in outcome && outcome.why ? outcome.why : null);
       return;
     }
 
@@ -573,6 +580,11 @@ export function Reply() {
             <p className={styles.failure} id={`${uid}-failure`} role="alert">
               {failure}
             </p>
+            {failure && why && (
+              <p className={styles.why}>
+                {rsvp.failureWhy} <code>{why}</code>
+              </p>
+            )}
             <button type="submit" className={styles.send} aria-busy={sending || undefined}>
               {sending ? `${rsvp.sending}…` : rsvp.send}
             </button>

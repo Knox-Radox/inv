@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     p_reply: checked.reply,
     p_caller: caller(request),
   });
-  if (!sent.ok) return answer({ ok: false, code: "unavailable" });
+  if (!sent.ok) return answer({ ok: false, code: "unavailable", why: sent.trouble.why });
 
   const outcome = sent.data;
   if (outcome && outcome.ok === true) return answer({ ok: true });
