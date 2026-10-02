@@ -64,8 +64,8 @@ const eavesSmallCaps = localFont({
 });
 
 export const metadata: Metadata = {
-  // 17 characters: truncates cleanly in a WhatsApp preview, which is where most
-  // of this audience will meet it first.
+  // 15 characters (17 before revision 9's ampersand): truncates cleanly in a
+  // WhatsApp preview, which is where most of this audience will meet it first.
   title: invitation.share.title,
   description: invitation.share.description,
   // A family invitation should not be in a search index.

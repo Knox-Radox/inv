@@ -7,7 +7,7 @@
  *
  * Instants are stored as fixed UTC strings. They are never derived by parsing a
  * naive local date, so the countdown is simultaneously correct for a guest in
- * Chennai and one in Dallas. 27 November 2026 falls after the first Sunday of
+ * Chennai and one in Dallas. November 27, 2026 falls after the first Sunday of
  * November, so America/Chicago is CST (UTC-06:00) with no DST ambiguity.
  */
 
@@ -30,14 +30,14 @@ export interface Venue {
  * not here, so it can never be printed twice.
  */
 export interface Moment {
-  readonly id: "ceremony" | "reception";
+  readonly id: "muhurtham" | "reception";
   readonly label: string;
   readonly startsAt: Instant;
   /** null where the moment has no announced end ("6:00 PM onwards"). */
   readonly endsAt: Instant | null;
   /** Printed start time, exactly as it should appear on the card. */
   readonly startDisplay: string;
-  /** The qualifying line beneath the label, e.g. "until 10:30 AM". */
+  /** The qualifying line beneath the label, e.g. "until 9:30 AM". */
   readonly qualifier: string;
 }
 
@@ -48,23 +48,50 @@ export interface WeddingDay {
   readonly weekday: string;
   readonly dateDisplay: string;
   readonly fullDateDisplay: string;
+  /** The day without its weekday or year: the schedule's heading. */
+  readonly shortDateDisplay: string;
   readonly venue: Venue;
   readonly moments: readonly [Moment, Moment];
   /**
-   * The ceremony ends at 10:30 AM and the reception begins at 6:00 PM at the
-   * same venue. The design answers the shape of that gap by never breaking the
-   * thread. Whether a line of copy should also address it is the couple's to
-   * decide — see docs/open-questions.md #1. Until they supply one, none is
-   * invented and nothing renders here.
+   * The Muhurtham ends at 9:30 AM and the reception begins at 6:00 PM at the
+   * same venue: eight and a half hours, where it was seven and a half until
+   * revision 9 moved the morning's end from 10:30 AM. The design answers the
+   * shape of that gap by never breaking the thread. Whether a line of copy
+   * should also address it is the couple's to decide — see
+   * docs/open-questions.md #1. Until they supply one, none is invented and
+   * nothing renders here.
    */
   readonly gapNote: string | null;
 }
 
 export interface Countdown {
-  /** The instant the countdown runs to: the ceremony start. */
+  /** The instant the countdown runs to: the Muhurtham's start. */
   readonly target: Instant;
   /** Midnight at the end of the wedding day, local. Ends the "Today" state. */
   readonly dayEnds: Instant;
+}
+
+/**
+ * A hotel the couple recommends, as the client listed it — revision 9. Each is
+ * one link to Google Maps, and a number is tap-to-call where one was given.
+ */
+export interface Hotel {
+  readonly name: string;
+  readonly street: string;
+  readonly city: string;
+  readonly stateCode: string;
+  /**
+   * null where the client's list gave none. It is left empty rather than looked
+   * up, so print "city, state" alone for these.
+   */
+  readonly postalCode: string | null;
+  /**
+   * `display` is how the number is printed; `tel` is the same number in E.164
+   * form, for a `tel:` link. null where the list gave none.
+   */
+  readonly phone: { readonly display: string; readonly tel: string } | null;
+  /** Google Maps, built by `mapsSearchUrl` from the name and the address. */
+  readonly href: string;
 }
 
 const venue: Venue = {
@@ -80,17 +107,19 @@ const day: WeddingDay = {
   timeZone: "America/Chicago",
   utcOffset: "-06:00",
   weekday: "Friday",
-  dateDisplay: "27 November 2026",
-  fullDateDisplay: "Friday, 27 November 2026",
+  // US order throughout: the client's decision at revision 9.
+  dateDisplay: "November 27, 2026",
+  fullDateDisplay: "Friday, November 27, 2026",
+  shortDateDisplay: "November 27",
   venue,
   moments: [
     {
-      id: "ceremony",
-      label: "Ceremony",
+      id: "muhurtham",
+      label: "Muhurtham",
       startsAt: "2026-11-27T14:30:00Z", // 8:30 AM CST
-      endsAt: "2026-11-27T16:30:00Z", // 10:30 AM CST
+      endsAt: "2026-11-27T15:30:00Z", // 9:30 AM CST
       startDisplay: "8:30 AM",
-      qualifier: "until 10:30 AM",
+      qualifier: "until 9:30 AM",
     },
     {
       id: "reception",
@@ -109,35 +138,87 @@ const countdown: Countdown = {
   dayEnds: "2026-11-28T06:00:00Z", // midnight CST at the end of the day
 };
 
+const couple = {
+  first: "Advika",
+  conjunction: "&",
+  second: "Sooraj",
+  /**
+   * The ampersand is the client's revision 9 decision, made to match their
+   * wedding logo; the names were spelled out ("and") before it. They are still
+   * never reduced to initials: the monogram is where that belongs.
+   */
+  both: "Advika & Sooraj",
+} as const;
+
+/**
+ * One universal Google Maps URL, shared by the venue and every hotel so the
+ * pattern exists once. `search/?api=1` opens the Maps app where it is installed
+ * and the browser where it is not, identically on Android, iOS and desktop, so
+ * there is no platform branch to get wrong. The query is a name and a full
+ * address — what a guest would have typed — which resolves to the business
+ * rather than to a bare pin.
+ */
+function mapsSearchUrl(query: string): string {
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+}
+
+/**
+ * A hotel with its Maps link built from the name and address it carries, so the
+ * two can never disagree. A null postal code is left out of the query without
+ * a stray space or comma.
+ */
+function hotel(entry: Omit<Hotel, "href">): Hotel {
+  const postalCode = entry.postalCode ? ` ${entry.postalCode}` : "";
+  return {
+    ...entry,
+    href: mapsSearchUrl(
+      `${entry.name}, ${entry.street}, ${entry.city}, ${entry.stateCode}${postalCode}`,
+    ),
+  };
+}
+
 export const invitation = {
-  couple: {
-    first: "Advika",
-    conjunction: "and",
-    second: "Sooraj",
-    /** Spelled out, never "A & S". The monogram is where the mark belongs. */
-    both: "Advika and Sooraj",
-  },
+  couple,
 
   day,
   countdown,
 
   copy: {
-    /** The line that does the inviting. First person, plain, no exclamation. */
-    invitingLine: "Together with our families, we ask you to be with us as we marry.",
+    /**
+     * The line that does the inviting. On the card it continues the sentence
+     * the names begin — "Advika & Sooraj / request the pleasure of your company
+     * as they celebrate their wedding" — so it takes no capital and no full
+     * stop. Still no exclamation. The client's wording, from revision 9.
+     */
+    invitingLine: "request the pleasure of your company as they celebrate their wedding",
 
-    /** Said once. Never printed against each moment. */
-    sharedVenueLine: `Both at ${venue.name}.`,
+    /**
+     * Said once. Never printed against each moment. It has no full stop because
+     * the address is set directly beneath it as part of the same block — the
+     * client asked for the full address there in revision 9.
+     */
+    sharedVenueLine: `Both at ${venue.name}`,
 
-    closingNote: ["We are glad you are coming.", "See you in November."],
+    /**
+     * One sentence, from the client, as of revision 9. Still an array because
+     * the closing sets one line per entry.
+     */
+    closingNote: ["We can’t wait to celebrate this special day with the people we love most."],
+
+    /** Set beneath the note, in the body face. */
+    closingSignoff: "With love,",
+
+    /** Set beneath the sign-off, in script. The same names as everywhere else. */
+    closingSignature: couple.both,
 
     sectionTitles: {
-      schedule: "The day",
+      schedule: day.shortDateDisplay,
       location: "The place",
     },
 
     countdown: {
-      /** State A: before the ceremony. */
-      until: "until the ceremony",
+      /** State A: before the Muhurtham. */
+      until: "until the Muhurtham",
       /** State B: on the day itself. */
       todayLead: "Today",
       /** State C: after the day, forever. The keepsake state. */
@@ -153,6 +234,7 @@ export const invitation = {
       skip: "Skip to the invitation",
       open: "Open the invitation",
       replay: "Replay the opening",
+      stay: "Places to stay",
       calendar: "Add to calendar",
       calendarDone: "Added",
       sound: "Sound",
@@ -161,15 +243,13 @@ export const invitation = {
     },
 
     /** Alt text for the seal, which is the only meaningful illustration. */
-    sealAlt:
-      "A sage-green wax seal struck with Advika and Sooraj's monogram: an A and an S with a spray of jasmine growing through them.",
+    sealAlt: `A sage-green wax seal struck with ${couple.both}'s monogram: an A and an S with a spray of jasmine growing through them.`,
   },
 
   share: {
-    title: "Advika and Sooraj",
+    title: couple.both,
     description: `${day.fullDateDisplay}. ${venue.name}, ${venue.locality}.`,
-    imageAlt:
-      "A sage-green wax seal struck with an A and S monogram and a spray of jasmine, on ivory paper embossed with jasmine, above the names Advika and Sooraj and the date Friday, 27 November 2026.",
+    imageAlt: `A sage-green wax seal struck with an A and S monogram and a spray of jasmine, on ivory paper embossed with jasmine, above the names ${couple.both} and the date ${day.fullDateDisplay}.`,
     themeColor: "#FBF7F0",
   },
 
@@ -209,17 +289,12 @@ export const invitation = {
     venueLabel: venue.name,
 
     /**
-     * One universal Google Maps URL. `search/?api=1` opens the Maps app where
-     * it is installed and the browser where it is not, identically on Android,
-     * iOS and desktop, so there is no platform branch to get wrong. The query
-     * is the venue name and the full address — what a guest would have typed —
-     * which resolves to the business rather than to a bare pin.
+     * One universal Google Maps URL — see `mapsSearchUrl` for why this one. The
+     * query is the venue name and the full address.
      */
-    href:
-      "https://www.google.com/maps/search/?api=1&query=" +
-      encodeURIComponent(
-        `${venue.name}, ${venue.street}, ${venue.city}, ${venue.stateCode} ${venue.postalCode}`,
-      ),
+    href: mapsSearchUrl(
+      `${venue.name}, ${venue.street}, ${venue.city}, ${venue.stateCode} ${venue.postalCode}`,
+    ),
 
     /** Says what happens when you use it. Not "View map", not "Directions". */
     linkLabel: "Open in Google Maps",
@@ -241,6 +316,76 @@ export const invitation = {
       "west side past Melissa and Anna, TX 121 crosses to the south-east, and " +
       "the Collin County Outer Loop and FM 455 run east to County Road 419, " +
       "where the venue is marked with the couple's seal.",
+  },
+
+  /**
+   * Travel, and where to stay — revision 9. The client's own wording, verbatim:
+   * do not correct, shorten or re-punctuate it, including the hotel names and
+   * the typographic apostrophes. The hotels are in the order the client listed
+   * them, and each is one link to Google Maps; the Wyndham's number is the one
+   * that is tap-to-call. See docs/revision-9-plan.md.
+   */
+  travel: {
+    title: "Travel",
+    body: "If you’ll be joining us for our wedding weekend, we recommend flying into Dallas Fort Worth International Airport (DFW), the closest major airport for most guests traveling from out of town. Depending on travel plans, you may want to arrive by Thursday evening, November 26th to participate in the weekend’s festivities.",
+
+    stayTitle: "Where to stay",
+    stayBody:
+      "We recommend staying in Anna or McKinney, Texas, for convenient access to the wedding venue. Below are a few hotel recommendations to help you plan your stay. Availability and rates may vary, so we encourage booking accommodations early.",
+
+    /** Says what happens when you use it, as `map.linkLabel` does. */
+    hotelLinkLabel: "Open in Google Maps",
+
+    hotels: [
+      hotel({
+        name: "Wyndham Garden Anna",
+        street: "600 North Standridge Blvd",
+        city: "Anna",
+        stateCode: "TX",
+        postalCode: null,
+        phone: { display: "(469) 840-2553", tel: "+14698402553" },
+      }),
+      hotel({
+        name: "Hampton Inn & Suites McKinney",
+        street: "2008 North Central Expressway",
+        city: "McKinney",
+        stateCode: "TX",
+        postalCode: "75069",
+        phone: null,
+      }),
+      hotel({
+        name: "Home2 Suites by Hilton McKinney",
+        street: "2630 South Central Expressway",
+        city: "McKinney",
+        stateCode: "TX",
+        postalCode: "75070",
+        phone: null,
+      }),
+      hotel({
+        name: "Sheraton McKinney Hotel",
+        street: "1900 Gateway Boulevard",
+        city: "McKinney",
+        stateCode: "TX",
+        postalCode: "75070",
+        phone: null,
+      }),
+      hotel({
+        name: "Holiday Inn & Suites McKinney - N Allen by IHG",
+        street: "3220 Craig Drive",
+        city: "McKinney",
+        stateCode: "TX",
+        postalCode: "75070",
+        phone: null,
+      }),
+      hotel({
+        name: "TownePlace Suites by Marriott Dallas McKinney",
+        street: "1832 Marketplace Drive",
+        city: "McKinney",
+        stateCode: "TX",
+        postalCode: "75069",
+        phone: null,
+      }),
+    ],
   },
 } as const;
 

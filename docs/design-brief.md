@@ -36,9 +36,9 @@ All of this lives in `content/invitation.ts` as a single typed source of truth.
 
 | Field | Value |
 |---|---|
-| Couple | Advika and Sooraj |
-| Date | Friday, 27 November 2026 |
-| Ceremony | 8:30 AM – 10:30 AM |
+| Couple | Advika & Sooraj |
+| Date | Friday, November 27, 2026 |
+| Muhurtham | 8:30 AM – 9:30 AM |
 | Reception | 6:00 PM onwards, same day, same venue |
 | Venue | Artistry Venue (both events) |
 | Address | 9981 County Road 419, Anna, TX 75409 |
@@ -47,11 +47,18 @@ All of this lives in `content/invitation.ts` as a single typed source of truth.
 | RSVP | **None.** Do not build one. Do not add a "let us know" form, a headcount, or a contact-us block. |
 
 **Every fact above is confirmed.** There is nothing left to fill in. The year is
-2026; 27 November 2026 is a Friday, which is consistent with an 8:30 AM
+2026; November 27, 2026 is a Friday, which is consistent with an 8:30 AM
 muhurtham. Do not treat any of it as provisional and do not leave placeholders.
 
+> **Corrected at revision 9.** Three rows above were changed in place when the
+> family's printed invitation arrived: the morning event is the **Muhurtham**
+> and ends at **9:30 AM** (it read "Ceremony, 8:30 – 10:30 AM"), the names are
+> set with an **ampersand**, and dates are in **US order**. The printed
+> invitation's "County Road 418" was *not* taken: the venue's own site says
+> 419. See `docs/revision-9-plan.md`.
+
 **A design problem worth naming.** Two events, one venue, one day, with roughly
-seven and a half hours of nothing between them. Guests will wonder what happens
+eight and a half hours of nothing between them. Guests will wonder what happens
 in that gap and whether they are meant to leave and return. The schedule design
 has to make the shape of the day legible at a glance rather than presenting two
 disconnected times. Do not invent an answer to what happens in between — if a

@@ -34,9 +34,9 @@ function stateAt(now: number): State {
  *
  * Still computed against fixed UTC instants — identical for a guest in Chennai
  * and one in Dallas — and still three states: before, "Today", and, from
- * midnight on the 28th and forever after, "We were married on Friday, 27
- * November 2026." It never renders a zero row. The server renders the
- * ceremony time, true in every era.
+ * midnight on the 28th and forever after, "We were married on Friday,
+ * November 27, 2026." It never renders a zero row. The server renders the
+ * Muhurtham's time, true in every era.
  */
 export function Countdown() {
   const c = invitation.copy.countdown;
