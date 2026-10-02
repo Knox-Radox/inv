@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { invitation } from "@/content/invitation";
 import { PaperGrain } from "@/components/PaperGrain";
-import { SEEN_KEY } from "@/components/Envelope";
+import { SEEN_KEY } from "@/lib/seen";
 import "./globals.css";
+import "./motif.css";
 
 /**
  * The two faces the client's reference uses, and now the only two here —
@@ -110,35 +111,26 @@ export default function RootLayout({
     >
       <head>
         {/*
-         * The cover photograph, preloaded at high priority: it is the first
-         * thing a guest sees and it must not arrive after the wax.
+         * The wax, preloaded at high priority: it is the largest thing drawn
+         * on the cover and the first thing a guest looks at.
          *
-         * This preloaded `/cover/envelope.webp` until revision 6 and had done
-         * since revision 4 renamed the file. The URL 404'd on every load —
-         * a wasted round trip on the critical path, and it hid nothing because
-         * the overlay fetches its own image anyway. `media` picks the same crop
-         * the stylesheet does at the same breakpoint, so exactly one is
-         * fetched, and if the two ever disagree the preload is merely unused
-         * rather than wrong.
+         * Until revision 9 this preloaded the cover *photograph*, two crops of
+         * it, and that photograph was the page's LCP element — last in a queue
+         * behind 76 KB of fonts and 140 KB of script, at 6 to 8 seconds on a
+         * slow connection. The cover is drawn now. Its paper is a colour, its
+         * edges are two SVG lines in the document, and the one image it cannot
+         * be seen without is this 19 KB seal. The jasmine printed on the paper
+         * is deliberately *not* preloaded: it fades up when it arrives.
          */}
-        <link
-          rel="preload"
-          as="image"
-          href="/cover/envelope-portrait.webp"
-          media="(max-aspect-ratio: 1/1)"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/cover/envelope-landscape.webp"
-          media="(min-aspect-ratio: 1/1)"
-          fetchPriority="high"
-        />
+        <link rel="preload" as="image" href="/cover/wax.webp" fetchPriority="high" />
         {/*
          * Arms the envelope before first paint, so a returning guest never sees
          * it flash and a first-time guest never sees the invitation flash
          * behind it. Deliberately blocking and deliberately tiny.
+         *
+         * Not armed for a guest who has seen it, and not armed for any hash: a
+         * link to `#reply` or `#stay` is someone being sent to a place, and an
+         * envelope in the way of that is a gate.
          *
          * If this script does not run — JavaScript off, a parse error, a
          * blocked inline script — the class is never set, the overlay stays
@@ -147,7 +139,7 @@ export default function RootLayout({
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.add("js");try{if(localStorage.getItem(${JSON.stringify(SEEN_KEY)})!=="1"&&location.hash!=="#invitation")document.documentElement.classList.add("envelope-armed")}catch(e){}`,
+            __html: `document.documentElement.classList.add("js");try{if(localStorage.getItem(${JSON.stringify(SEEN_KEY)})!=="1"&&location.hash.length<2)document.documentElement.classList.add("envelope-armed")}catch(e){}`,
           }}
         />
       </head>

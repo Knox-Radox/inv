@@ -1,0 +1,121 @@
+/*
+ * The mirror-work border. The two tiles are generated — app/motif.css — and
+ * arrive as --border-h and --border-v.
+ */
+
+.border {
+  /* One flower's width, which is also the strip's thickness. */
+  --b: var(--border-b, 22px);
+  position: absolute;
+  inset: var(--border-inset, 10px);
+  pointer-events: none;
+}
+
+.edge {
+  position: absolute;
+  overflow: hidden;
+}
+
+.edge > i {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-position: 0 0;
+}
+
+/*
+ * `round` stretches the tile along the edge until a whole number fit. The
+ * tiles are two flowers long and drawn to be stretched, so on a phone that is
+ * a per cent or two and at the worst width it is six — see
+ * motif.border_tile(), which records what happened with four.
+ */
+.top > i,
+.bottom > i {
+  background-image: var(--border-h);
+  background-size: auto 100%;
+  background-repeat: round no-repeat;
+}
+
+.left > i,
+.right > i {
+  background-image: var(--border-v);
+  background-size: 100% auto;
+  background-repeat: no-repeat round;
+}
+
+/* The top and bottom strips own the corners; the sides run between them. */
+.top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--b);
+}
+
+.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--b);
+}
+
+.left {
+  left: 0;
+  top: var(--b);
+  bottom: var(--b);
+  width: var(--b);
+}
+
+.right {
+  right: 0;
+  top: var(--b);
+  bottom: var(--b);
+  width: var(--b);
+}
+
+/* --------------------------------------------------------------------------
+   Strung on, inside a sequence that has started
+   -------------------------------------------------------------------------- */
+
+/*
+ * Two threads from the top-left corner. The first runs along the top and then
+ * down the right; the second runs down the left and then along the bottom.
+ * They finish together in the bottom-right corner.
+ *
+ * `backwards`, and only a `from`: the resting state is the finished border.
+ */
+:global(.stitching) .top > i {
+  animation: string-from-left 620ms var(--ease-needle) var(--border-at, 0ms) backwards;
+}
+
+:global(.stitching) .left > i {
+  animation: string-from-top 760ms var(--ease-needle) var(--border-at, 0ms) backwards;
+}
+
+:global(.stitching) .right > i {
+  animation: string-from-top 760ms var(--ease-needle) calc(var(--border-at, 0ms) + 500ms)
+    backwards;
+}
+
+:global(.stitching) .bottom > i {
+  animation: string-from-left 620ms var(--ease-needle) calc(var(--border-at, 0ms) + 640ms)
+    backwards;
+}
+
+@keyframes string-from-left {
+  from {
+    transform: translateX(-100.5%);
+  }
+}
+
+@keyframes string-from-top {
+  from {
+    transform: translateY(-100.5%);
+  }
+}
+
+/* Reduced motion: the border is already strung. */
+@media (prefers-reduced-motion: reduce) {
+  :global(.stitching) .edge > i {
+    animation: none;
+  }
+}

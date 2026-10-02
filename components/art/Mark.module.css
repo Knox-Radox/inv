@@ -1,0 +1,24 @@
+/*
+ * The tilak is a filled drop, not a stroke, so `Stitch` cannot draw it on —
+ * and left to itself it was a red dot hanging on blank paper for a full
+ * second while the lines that give it a brow to sit on were still being
+ * drawn. Inside a sequence it waits for them.
+ */
+:global(.stitching) .tilak {
+  animation: tilak-set 360ms var(--ease-wax) var(--tilak-at, 0ms) backwards;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+@keyframes tilak-set {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.stitching) .tilak {
+    animation: none;
+  }
+}

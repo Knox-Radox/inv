@@ -185,6 +185,15 @@ export const invitation = {
 
   copy: {
     /**
+     * The invocation at the head of the card, set beneath the mark of Ganesha.
+     * The family's printed invitation opens with it, and in revision 9 the
+     * client asked for the mark "with one line": this line, and not the shloka
+     * that follows it in print. The double bars either side are set by the
+     * card, not typed here, so a screen reader is not made to read them out.
+     */
+    invocation: "Shree Ganeshay Namaha",
+
+    /**
      * The line that does the inviting. On the card it continues the sentence
      * the names begin — "Advika & Sooraj / request the pleasure of your company
      * as they celebrate their wedding" — so it takes no capital and no full

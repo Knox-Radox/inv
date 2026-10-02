@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Tokens — docs/design-plan.md § Palette
-   Seven values, unchanged from the brief's anchors. Every colour in this
-   codebase resolves to one of these; no component carries a hex literal.
+   Tokens — docs/design-plan.md § Palette, and docs/revision-9-plan.md § Tokens
+   Seven values from the brief's anchors, and three pigments the client added
+   in revision 9. Every colour in this codebase resolves to one of these; no
+   component carries a hex literal.
    ========================================================================== */
 
 :root {
@@ -23,6 +24,23 @@
   /* Revision 4: the wax is a photograph now, antique bronze. This token is the
      colour sampled from it, for the few marks that must match. */
   --wax: #b08a63;
+
+  /*
+   * Revision 9: "ivory paper, jewel inks". The family's printed invitation
+   * runs on maroon, marigold and kumkum pink, and the client asked for those
+   * colours without asking for that page. So they are **pigments**: they may
+   * fill a flower, a ring, a bead, or a line of type, and they may not fill a
+   * section. The one exception is the envelope's liner, which is arakku from
+   * edge to edge and is on screen for about two seconds.
+   *
+   * Sampled from the PDFs and pulled a few points toward this page's warmth.
+   * Arakku is lac: the maroon of a Kanjivaram's body. It is nowhere near the
+   * terracotta the brief bans, and it is 10.9:1 on the ivory, so unlike gold it
+   * may carry text.
+   */
+  --arakku: #74172a; /* the liner, the invocation, the buti's bloom, errors */
+  --marigold: #d2952c; /* the border's petals, the garland's bands. Never text. */
+  --kumkum: #c4175a; /* the ring round each mirror, the rose. Never text. */
 
   /* Type scale — § Type. Hits the mobile size at exactly 390px and the
      desktop size at exactly 1440px. The rem intercept dominates every step,
@@ -86,6 +104,9 @@
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
   --color-ink: var(--ink);
+  --color-arakku: var(--arakku);
+  --color-marigold: var(--marigold);
+  --color-kumkum: var(--kumkum);
 
   /* The reference's two faces, and the only two here. Parfumerie carries every
      display line; Mrs Eaves carries everything a guest has to read quickly.
