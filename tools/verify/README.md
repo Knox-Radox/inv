@@ -16,11 +16,12 @@ Or by hand, remembering to stop it:
 ```
 npm run build && npx next start -p 3400 &
 node tools/verify/lockout.js  http://localhost:3400/ /tmp/shots   # JS off, animations cancelled, reduced motion, body overflow
+node tools/verify/cover.js    http://localhost:3400/ /tmp/shots   # the envelope as a guest meets it: up, held, opens, remembered, a crossfade, the liner
 node tools/verify/audit.js    http://localhost:3400/              # 320-1920, reflow, 2x/3x type, keyboard, semantics
 node tools/verify/contrast.js http://localhost:3400/              # WCAG AA on rendered pixels
 node tools/verify/console.js  http://localhost:3400/ "label"      # any console/page error, 4 states, dev AND prod
 node tools/verify/perf.js     http://localhost:3400/              # frame pacing through the opening at 1x/4x/6x CPU
-node tools/verify/vitals.js   http://localhost:3400/              # LCP/CLS on Slow 4G + 4x CPU
+node tools/verify/vitals.js   http://localhost:3400/              # LCP/CLS on Slow 4G + 4x CPU, and which element the LCP is
 node tools/verify/weight.js   http://localhost:3400/              # bytes over the wire by type
 node tools/verify/beats3.js   http://localhost:3400/ /tmp/beats   # the opening, frame by frame, monotonic clock
 node tools/verify/viewport.js "http://localhost:3400/#invitation" '[[390,844,0,"m"],[1440,900,0,"d"]]' /tmp/shots
@@ -30,6 +31,13 @@ Needs `playwright` (`npm i -D playwright@1.63.0`) and a Chromium; set `CHROME`
 to its executable if it is not at the default path.
 
 Gotchas learned the hard way:
+- **In a git worktree `node_modules` has to be a real directory.** A symlink to
+  the main checkout's builds nothing: Turbopack stops with `Symlink
+  [project]/node_modules is invalid, it points out of the filesystem root`. Copy
+  it (`cp -a`, about 4 s and 620 MB) — it is already ignored, so it cannot be
+  committed by accident.
+- To pass JSON through `serve.sh`, which evals its argument, escape the quotes:
+  `serve.sh 'node tools/verify/viewport.js "$URL#invitation" [[390,844,0,\"m\"]] /tmp/shots'`.
 - **Always stop the server.** One session started a fresh `next start` per
   verification run and stopped none: 39 leaked processes, ~8 GB of RSS, and the
   machine ran out of memory. `serve.sh` exists so this cannot recur.
@@ -115,3 +123,96 @@ Two changes to the harness itself came out of the same revision:
   meaningful SVG is labelled rather than only the first. The plate moved behind
   an approach gate in revision 7 and is not in the initial DOM at all, so the
   label check had nothing to look at.
+
+## Added in revision 9
+
+```
+tools/verify/cover.js "$URL" /tmp/shots   # the envelope as a guest meets it
+```
+
+Every other script here measures a number. `cover.js` asks whether the envelope
+behaves like one, and it is the only check that opens it without setting the
+seen-flag itself: `console.js` sets the key before it loads, which is how the
+flag was written on every visit and read on none for three revisions.
+
+| | |
+|---|---|
+| (a) | A fresh visit: the overlay is displayed and the wheel cannot scroll the page |
+| (b) | A tap on the cover removes it within 6 s and stores `advika-sooraj-envelope-seen` |
+| (c) | On reload the overlay is not displayed |
+| (d) | `/#reply`, fresh: no overlay, and the page scrolls. Any hash is a destination |
+| (e) | Reduced motion: the overlay's opacity passes through a value strictly between 0 and 1 |
+| (f) | Frames at 100, 300, 1500, 2500 and 3400 ms at 390x844 and 1440x900, and the liner is on screen at 1500 |
+
+Things it does on purpose:
+
+- **(a) and (b) share a page.** A wheel that does nothing proves nothing unless
+  the same wheel is seen to scroll once the cover is gone, so the control for (a)
+  is the second half of (b). A touch drag was tried as a second control and
+  dropped: it does not scroll even an unlocked page under headless emulation, so
+  it would have passed vacuously.
+- **(f) sets the clock by hand**, as `open.js` does, and (b) and (e) run in real
+  time. A screenshot costs 300 to 700 ms and sleeping between shots mistimes
+  every one of them.
+- **The liner is tested as a share of a patch, not as a pixel, and "dark red" is
+  not `r > 90`.** The liner is block-printed in gold and the printed column runs
+  through the middle of the cover, so 50% across is the likeliest place on it to
+  land on a bloom: a 15 px median there read `rgb(118, 67, 57)`, which is neither
+  colour. And the liner is `--arakku` under a gradient that darkens it from 12%
+  to 56% toward the flap's point, so at 25% down the paint itself averages about
+  `rgb(88, 18, 32)` and only a third of its pixels clear 90 on red. The test is
+  that at least half of a 20% by 4% patch is `r >= 70, g < 60, b < 70` with red
+  40 above green; at 1500 ms that is 88% at 390 wide and 93% at 1440, against 1%
+  or less at every other beat. The share that would also clear `r > 90` is
+  printed beside it.
+
+It was run against revision 8's build before it was trusted, because a check that
+cannot fail is not a check. Against `e049e31` it fails (c), (d), (e) and (f), the
+four faults revision 9 set out to fix, and passes (a) and (b), which were never
+broken. Against revision 9 it passes everything.
+
+Changes to what was already here, each because the cover is drawn now rather than
+photographed:
+
+- `audit.js` asks whether every decorative SVG is hidden from assistive
+  technology by itself *or by what holds it*. The butis' row and the envelope's
+  front and flap are hidden at the container, so sixteen SVGs carried no
+  attribute of their own and the check failed a page that was correct.
+- `contrast.js` measures an element's own text nodes rather than skipping any
+  element that has a child. The invocation is `<span>||</span> Shree Ganeshay
+  Namaha <span>||</span>` and the names on the cover are text either side of an
+  ampersand span; the old guard measured the bars and never the words.
+- `probe.js` reports the liner, the ground, the card, the front, the flap, the
+  wax and the names, in place of the throat, the mouth and the photograph.
+  `open.js` and `probe.js` run to 4500 ms because the dissolve runs from 3650 to
+  4500, `seam.js` reads the last frame before it (3650), and `animlog.js` waits
+  long enough to see it end.
+- `vitals.js` prints whether the cover was armed and whether the LCP element is on
+  the cover or on the page behind it. At revision 9 the answer is the page: the
+  element is the card's paper, an inlined data URI, so LCP equals FCP, and says
+  nothing about when the wax, the printed paper or the names' face arrive. Its
+  size table counts text after decompression and is labelled so; `weight.js` has
+  the gzipped figures.
+- `crop.js` walks the page down before it crops and carries its own `#invitation`,
+  as `mapdraw.js` does. It had been photographing sections before they revealed
+  and a plate before it mounted.
+- `weight.js` counts every script fetched by `networkidle` plus 1.5 s, which is
+  not the same as the scripts the HTML asks for. The ornament chunk (about 65 KB
+  gzipped) is lazy and joins the first visit whenever the second ornament stage
+  is inside `LazyDecor`'s 700 px approach margin, which depends on the viewport.
+  Read the two numbers apart: what hydration needs, and what has arrived by the
+  time the page is quiet.
+
+Retired: **`ink.js`**. It measured the ink fraction of Parfumerie in four
+specimen blocks, `#s0` to `#s3`, once, to settle whether the script was lighter
+than the reference's (`docs/handoff-revision-5.md`: it is not, 6.70% against
+6.52%). The blocks went with the specimen page and the script now waits 30 s for
+an element that does not exist and errors. The answer is recorded;
+`git show 12bb136:tools/verify/ink.js` has the script if the question comes back.
+
+Also here, not described above: `animlog.js` (every animation start and end in
+the opening, and the moment the overlay is removed), `cls.js` (layout-shift
+sources with no throttle; silent when there are none), `crop.js` (one PNG per
+`<section>`), `seam.js` (does the replica card in the envelope land exactly where
+the page's own card is, at the last frame before the dissolve) and `shot.js`
+(screenshots at any sizes, `full` for the whole page, `rm` for reduced motion).

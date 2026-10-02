@@ -88,7 +88,12 @@ const ok=(t,c,x='')=>{ if(!c) fails++; console.log(`  ${c?'PASS':'FAIL'}  ${t}${
       landmarks:[...document.querySelectorAll('main,article,section,address,nav')].map(e=>e.tagName).join(','),
       lang:document.documentElement.lang,
       imgAlt:[...document.querySelectorAll('svg[role="img"]')].map(s=>s.getAttribute('aria-label')?.slice(0,40)),
-      decorativeHidden:[...document.querySelectorAll('svg:not([role="img"])')].every(s=>s.getAttribute('aria-hidden')==='true'),
+      // Hidden by itself or by what holds it. Revision 9 hides the butis' row and
+      // the whole of the envelope's front and flap at the container, so the SVGs
+      // inside carry no attribute of their own and are still out of the
+      // accessibility tree. Asking each one for its own was asking for markup, not
+      // for the guarantee.
+      decorativeHidden:[...document.querySelectorAll('svg:not([role="img"])')].every(s=>!!s.closest('[aria-hidden="true"]')),
     }));
     ok('exactly one h1', sem.h1===1, String(sem.h1));
     ok('section headings present', sem.h2.length===2, sem.h2.join(' / '));

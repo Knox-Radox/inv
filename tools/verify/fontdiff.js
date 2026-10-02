@@ -11,7 +11,9 @@ const measure = async (b, block) => {
     const c = document.querySelector('#invitation [class*="content"]');
     const out = {};
     for (const el of c.children) {
-      const cls = String(el.className).replace(/.*__/, '').slice(0, 14);
+      // getAttribute, not className: the card's mark is an SVG, whose className
+      // is an object and used to print as "[object SVGAni".
+      const cls = String(el.getAttribute('class')).replace(/.*__/, '').slice(0, 14);
       const b = el.getBoundingClientRect();
       out[cls] = { h: Math.round(b.height), lines: Math.round(b.height / parseFloat(getComputedStyle(el).lineHeight || 1)) };
     }

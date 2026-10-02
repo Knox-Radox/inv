@@ -4,7 +4,9 @@ const fs = require('fs');
 const EXE = process.env.CHROME || '/home/adv/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome';
 const [url, out, size] = process.argv.slice(2);
 const [w, h] = size.split('x').map(Number);
-const STOPS = [0, 200, 400, 650, 900, 1200, 1600, 2000, 2400, 2900, 3400, 3900];
+// The cover dissolves from 3650 to 4500 ms (Envelope.module.css), so the last two
+// stops are the dissolve nearly done and the page with nothing over it.
+const STOPS = [0, 200, 400, 650, 900, 1200, 1600, 2000, 2400, 2900, 3400, 3900, 4300, 4500];
 (async () => {
   const b = await chromium.launch({ headless: true, executablePath: EXE, args: ['--force-color-profile=srgb'] });
   const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: w < 600, hasTouch: w < 600 });

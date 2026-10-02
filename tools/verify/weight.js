@@ -30,6 +30,6 @@ const EXE=process.env.CHROME||'/home/adv/.cache/ms-playwright/chromium-1228/chro
   console.log(`  ${'TOTAL'.padEnd(12)} ${String(seen.size).padStart(4)}  ${(tr/1024).toFixed(1).padStart(7)} KB  ${(tg/1024).toFixed(1).padStart(7)} KB`);
   const js=by.script?by.script.gz/1024:0;
   console.log(`\n  JS over the wire: ${js.toFixed(1)} KB gz  ${js<150?'PASS (budget ~150 KB)':'OVER BUDGET'}`);
-  console.log(`  Images/video:     ${((by.image?.gz||0)+(by.media?.gz||0))/1024} KB   (photographs and baked sheets, lazy below the fold)`);
+  console.log(`  Images/video:     ${(((by.image?.gz||0)+(by.media?.gz||0))/1024).toFixed(1)} KB   (the wax and the printed paper, the cloth, and the washes the ornament mounts)`);
   await b.close();
 })().catch(e=>{console.error('FAIL',e.message.slice(0,200));process.exit(1);});

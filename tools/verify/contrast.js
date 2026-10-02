@@ -44,7 +44,15 @@ const parse=s=>s.match(/[\d.]+/g).slice(0,3).map(Number);
       a*=parseFloat(getComputedStyle(n).opacity||'1');n=n.parentElement;}return a;};
     const out=[];const seen=new Set();
     document.querySelectorAll('h1,h2,p,span,time,address,a,button').forEach(e=>{
-      const t=(e.textContent||'').trim(); if(!t||e.children.length) return;
+      /*
+       * The words an element sets itself — its own text nodes — and not those of
+       * what it contains. An element with a child used to be skipped outright,
+       * which dropped every line that has a span in the middle of it: revision
+       * 9's invocation is `<span>||</span> Shree Ganeshay Namaha <span>||</span>`
+       * and the names on the cover are text either side of an ampersand span.
+       * The bars were measured and the maroon words between them never were.
+       */
+      const t=[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').trim(); if(!t) return;
       const cs=getComputedStyle(e);
       const key=cs.color+'|'+bgOf(e)+'|'+cs.fontSize+'|'+cs.fontWeight+'|'+alphaOf(e).toFixed(2);
       if(seen.has(key))return; seen.add(key);
