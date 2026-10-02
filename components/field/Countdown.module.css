@@ -53,7 +53,7 @@
 /* A new value settles in rather than snapping. */
 .digit {
   display: inline-block;
-  animation: digit-in 260ms var(--ease-needle) both;
+  animation: digit-in 260ms var(--ease-needle) backwards;
 }
 
 @keyframes digit-in {

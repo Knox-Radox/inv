@@ -21,6 +21,10 @@ const DROP = 0.12;
  * be unique in the document because the card is rendered twice, once on the
  * page and once inside the envelope.
  *
+ * Every colour is set in the stylesheet, none in an attribute. An SVG shape
+ * whose fill cannot be read is not left unpainted, it is painted black, so
+ * each one here is a plain declaration with nothing a browser can decline.
+ *
  * Flat pigment with a gradient rather than a clipped wash sheet. The card is
  * the first thing after the cover, so nothing on it may wait on a second
  * image, and at eighteen pixels a bloom has no room for granulation anyway.
@@ -32,8 +36,8 @@ export function Butis({ id, className }: { id: string; className?: string }) {
       <svg className={styles.block} width="0" height="0" focusable="false">
         <defs>
           <linearGradient id={`${id}-bloom`} x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0" stopColor="var(--arakku)" />
-            <stop offset="1" stopColor="var(--kumkum)" />
+            <stop offset="0" className={styles.bloomFoot} />
+            <stop offset="1" className={styles.bloomTip} />
           </linearGradient>
           <g id={`${id}-buti`}>
             {BUTI.leaves.map((lf, i) => (
@@ -47,7 +51,13 @@ export function Butis({ id, className }: { id: string; className?: string }) {
             ))}
             {BUTI.blooms.map((bl, i) => (
               <g key={`b${i}`}>
-                <path d={bl.sil} fill={`url(#${id}-bloom)`} className={styles.bloom} />
+                <path
+                  d={bl.sil}
+                  className={styles.bloom}
+                  // The gradient, and a pigment to fall back on. A paint that
+                  // cannot be resolved with nothing after it is black.
+                  style={{ fill: `url(#${id}-bloom) var(--kumkum)` }}
+                />
                 {bl.folds.map((f, k) => (
                   <path key={k} d={f.d} className={styles.fold} />
                 ))}

@@ -44,9 +44,6 @@
   margin-inline: auto;
   perspective: 900px;
   perspective-origin: 50% 0%;
-  /* The envelope's own shadow on the cloth. On the wrapper, because every
-     piece inside it is clipped to a shape and a clip takes a box-shadow off. */
-  filter: drop-shadow(0 10px 14px rgb(58 48 30 / 0.2)) drop-shadow(0 1px 1px rgb(58 48 30 / 0.16));
 }
 
 /* --- Inside --------------------------------------------------------------- */
@@ -55,6 +52,16 @@
   position: absolute;
   inset: 0;
   border-radius: 2px;
+  /*
+   * The envelope's own shadow on the cloth. It was a `drop-shadow` filter on
+   * the wrapper, which follows every clipped piece — and is computed again on
+   * every frame anything inside it moves, which during the sealing is every
+   * frame. The back is the one piece that is a plain rectangle and the whole
+   * of the envelope's outline at rest, so it casts the shadow as a box.
+   */
+  box-shadow:
+    0 10px 26px rgb(58 48 30 / 0.2),
+    0 1px 2px rgb(58 48 30 / 0.16);
   background-color: var(--arakku);
   background-image:
     linear-gradient(to bottom, rgb(34 6 12 / 0.1), rgb(34 6 12 / 0.5) 58%),
@@ -137,7 +144,8 @@
 .edge path,
 .flapOut path {
   fill: none;
-  stroke: color-mix(in srgb, var(--sage-deep) 74%, var(--ground));
+  /* --sage-deep, a quarter of the way to --ground. Written out, as on the cover. */
+  stroke: #6c7f6f;
   stroke-width: 1.1;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;

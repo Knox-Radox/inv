@@ -190,7 +190,9 @@
 /* The pen. --sage-deep let down a little: at full strength a line this long
    reads as a rule, and it is meant to read as a drawn edge. */
 .ink {
-  stroke: color-mix(in srgb, var(--sage-deep) 78%, var(--ground));
+  /* --sage-deep, a fifth of the way to --ground. Written out: a stroke a
+     browser cannot read is no stroke, and this one is the envelope's edge. */
+  stroke: #647968;
   stroke-width: 1.5;
 }
 

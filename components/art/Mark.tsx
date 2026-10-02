@@ -52,7 +52,6 @@ export function Mark({ className, beat = 0 }: { className?: string; beat?: numbe
       <path
         className={styles.tilak}
         d={MARK.tilak}
-        fill="var(--arakku)"
         // After the crown and the brow, which are the first three strokes.
         style={{ "--tilak-at": `${beat + 520}ms` } as React.CSSProperties}
       />

@@ -19,11 +19,16 @@
   padding-bottom: clamp(20px, 4vh, 44px);
 }
 
-/* White blossoms behind the last words, softened and pulled to the right. */
 /*
- * The blossoms behind the last words. Masked to nothing on every side: as a
- * plain image it read as a photograph pasted into the corner, which is the
- * "one image out of place at the bottom" the client saw.
+ * The blossoms behind the last words, softened and pulled to the right. They
+ * fade to nothing on every side: as a plain image it read as a photograph
+ * pasted into the corner, which is the "one image out of place at the bottom"
+ * the client saw.
+ *
+ * The softening, the warmth and the fade are in the file — `blossoms()` in
+ * tools/paint.py — for the reason written beside `.backdrop` in
+ * Field.module.css. A filter and a mask here were run by the browser; this is
+ * a picture.
  */
 .blossoms {
   position: absolute;
@@ -31,18 +36,6 @@
   top: -22%;
   width: 132%;
   height: auto;
-  opacity: 0.26;
-  filter: sepia(0.28) saturate(0.62) blur(1.5px);
-  /* The ellipse has to reach transparent *inside* the element or the element's
-     own edge does the cutting: at 62% wide centred at 62% it ran off the right
-     and bottom of the box and the photograph showed a hard rectangular corner
-     on any screen wide enough to see it. */
-  mask-image: radial-gradient(
-    ellipse 42% 44% at 50% 48%,
-    #000 0%,
-    rgb(0 0 0 / 0.5) 54%,
-    transparent 88%
-  );
   pointer-events: none;
 }
 

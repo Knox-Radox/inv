@@ -29,8 +29,21 @@
  * scale and the drift are what make it read as wet, and dropping them leaves
  * a picture being turned up like a dimmer.
  */
-:global(.painted) .wash {
-  animation: bloom var(--bloom-dur, 1500ms) var(--ease-rise) var(--bloom-delay, 0ms) both;
+/*
+ * `backwards`, not `both`, and the painted state is the resting state.
+ *
+ * With `both` the finished animation went on holding the wash at its last
+ * keyframe for as long as the page was open, and a browser keeps anything
+ * under a live animation on a GPU layer of its own. Every flower on the
+ * garland, every bead, every leaf of the thoranam was a separate layer for
+ * good — about a hundred of them in one section — and every drawn line that
+ * crossed one was promoted to keep its place in the stack. The animation now
+ * supplies the start and nothing else, exactly as `Stitch` does: when it ends
+ * the wash is ordinary paint again.
+ */
+:global(html.js .painted) .wash {
+  opacity: 1;
+  animation: bloom var(--bloom-dur, 1500ms) var(--ease-rise) var(--bloom-delay, 0ms) backwards;
   transform-box: fill-box;
   transform-origin: var(--bloom-origin, 50% 100%);
 }
@@ -119,8 +132,10 @@
   opacity: 0;
 }
 
-:global(.painted) .kindle {
-  animation: kindle 620ms var(--ease-wax) var(--kindle-delay, 0ms) both;
+/* `backwards` for the same reason as the wash, above. */
+:global(html.js .painted) .kindle {
+  opacity: 1;
+  animation: kindle 620ms var(--ease-wax) var(--kindle-delay, 0ms) backwards;
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }
@@ -151,8 +166,8 @@
     opacity: 1;
   }
 
-  :global(.painted) .wash,
-  :global(.painted) .kindle,
+  :global(html.js .painted) .wash,
+  :global(html.js .painted) .kindle,
   :global(.astir) .sway,
   :global(.astir) .flame {
     animation: none;

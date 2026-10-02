@@ -4,8 +4,13 @@
   transform: translateY(22px);
 }
 
+/*
+ * `backwards`: the keyframes hold the section down until its turn and then
+ * let go of it. Under `both` every section that had risen stayed on a GPU
+ * layer of its own for the life of the page — see Ornament.module.css.
+ */
 .in {
-  animation: reveal-rise 1000ms var(--ease-needle) var(--reveal-delay, 0ms) both;
+  animation: reveal-rise 1000ms var(--ease-needle) var(--reveal-delay, 0ms) backwards;
 }
 
 @keyframes reveal-rise {
@@ -24,7 +29,7 @@
     transform: none;
   }
   .in {
-    animation: reveal-fade 300ms ease-out both;
+    animation: reveal-fade 300ms ease-out backwards;
   }
   @keyframes reveal-fade {
     from {

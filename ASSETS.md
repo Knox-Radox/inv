@@ -364,8 +364,8 @@ without attribution; the source is recorded anyway.
 
 | File | What | Source | Shipped |
 |---|---|---|---|
-| `public/photos/jasmine-branch.jpg` | Mock-orange branch against a wall; the field's backdrop, warmed and blurred | [Unsplash photo-1612380635121](https://unsplash.com/photos/1612380635121-411eda9ecbb9) | 1000×1500, 79 KB |
-| `public/photos/jasmine-cluster.jpg` | White blossoms; behind the closing note | [Unsplash photo-1623171403798](https://unsplash.com/photos/1623171403798-51cc000d569a) | 1100×736, 42 KB |
+| `assets/source/jasmine-branch.jpg` → `public/photos/backdrop.webp` | Mock-orange branch against a wall; the field's backdrop. Warmed, softened and faded by `backdrop()` in `tools/paint.py` (800×1200, 24 KB served) | [Unsplash photo-1612380635121](https://unsplash.com/photos/1612380635121-411eda9ecbb9) | 1000×1500, 79 KB |
+| `assets/source/jasmine-cluster.jpg` → `public/photos/blossoms.webp` | White blossoms; behind the closing note. Treated by `blossoms()` in `tools/paint.py` (880×589, 19 KB served) | [Unsplash photo-1623171403798](https://unsplash.com/photos/1623171403798-51cc000d569a) | 1100×736, 42 KB |
 
 Both are still referenced and lazy-loaded: the branch by `components/field/Field.tsx`
 and the cluster by `components/field/Closing.tsx`. Both are mock-orange

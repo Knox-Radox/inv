@@ -4,7 +4,16 @@
   z-index: 40;
   pointer-events: none;
   opacity: 0.035;
-  mix-blend-mode: multiply;
+  /*
+   * No blend mode. This was `multiply` until revision 9, and on paper this
+   * pale the two are the same picture: at 3.5% a grey speck darkens ivory by
+   * the same point and a half either way. They are not the same cost. A blend
+   * mode on a fixed layer over the whole page makes the compositor read the
+   * finished screen back and blend against it on every frame of every scroll
+   * and every animation beneath it, which is the slowest thing a phone's GPU
+   * is ever asked to do, and on some of them it turns the moving layers
+   * underneath black.
+   */
   background-repeat: repeat;
   background-size: 200px 200px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
