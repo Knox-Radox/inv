@@ -1,6 +1,14 @@
 """
 Blind-embossed jasmine for the cover paper — revision 8.
 
+**As of revision 9 nothing presses this any more.** The cover is painted, and
+tools/paint.py uses two things from here: `boughs()`, which decides where every
+spray on the sheet falls, and `flatten()`, which turns their paths into
+polylines. The sprays are in the same places they were when they were
+embossed. The relief itself — `Plate`, `field()`, `press()` — is kept because
+it is the record of how the emboss was made, and tools/cover.py, which called
+it, is gone. What follows is as it was written.
+
 The client's reference is cotton paper with florals pressed into it to all four
 edges, tone on tone, lit from the upper left. Ours was featureless ivory, and
 that gap is most of "the envelope looks very plain".

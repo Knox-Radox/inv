@@ -79,9 +79,9 @@ A guest who comes back sees it sealed, with what they answered beneath it and
 Three rules hold all of it up.
 
 **1. The public key reaches nothing.** Row-level security is on for all three
-tables and there are no policies. The five functions are the only way in, and
-EXECUTE on each is granted to `service_role` alone — the role the *secret* key
-maps to. Postgres grants EXECUTE on every new function to everybody and
+tables and there are no policies. The functions are the only way in, and
+EXECUTE on each of the four the server calls is granted to `service_role`
+alone — the role the *secret* key maps to. The other two are granted to nobody. Postgres grants EXECUTE on every new function to everybody and
 Supabase's API roles inherit it, so `supabase/schema.sql` takes that back in so
 many words. `tools/rsvp/roles.sql` recreates those permissive defaults on a bare
 Postgres precisely so the test has something to prove.
@@ -115,7 +115,9 @@ Eight replies in ten minutes and forty in a day from one sender; six hundred an
 hour from everybody; five thousand rows in the table, ever. They are counters
 in Postgres, bumped inside the same function that takes the reply. The sender
 is a keyed hash of the IP address (`lib/rsvp/server.ts`); the address itself is
-never sent on or stored.
+never sent on or stored, and the hash is erased after two days (`rsvp_sweep`,
+which the daily keep-alive also runs, so it goes two days after the *last*
+reply and not only when the next one arrives).
 
 There is also a field no person can see or reach. Something that fills it in is
 told its reply was sent, and nothing is kept.
@@ -161,7 +163,7 @@ Its words are not in `content/invitation.ts`. That file is every string a
 
 ## How it is tested
 
-`tools/rsvp/test.mjs` — 46 checks. It runs against PostgREST 14, which is what
+`tools/rsvp/test.mjs` — 49 checks. It runs against PostgREST 14, which is what
 Supabase runs, on a Postgres given Supabase's roles and Supabase's defaults.
 
 - With no key, and with the public key: cannot submit, list, touch the counters
@@ -171,6 +173,8 @@ Supabase runs, on a Postgres given Supabase's roles and Supabase's defaults.
 - Nine things the database refuses even from its own server, including a key
   with SQL in it.
 - The ninth reply in ten minutes is turned away, and another sender is not.
+- Two days on, the keep-alive has erased the sender's hash from the history
+  and left the reply.
 - Through the site's route: field-by-field refusals, an oversized body, the
   honeypot, a post from another origin, a plain form post, the rate limit
   passed on as 429, and that the history holds a hash where an address would be.
@@ -183,9 +187,10 @@ Supabase runs, on a Postgres given Supabase's roles and Supabase's defaults.
 
 The guest count rendered as the top arc of a `2` and nothing else.
 
-The Mrs Eaves files carry their descender with the wrong sign:
+Mrs Eaves Roman carries its descender with the wrong sign:
 `hhea.descent = +250` and `sTypoDescender = +250`, where both should be
-negative. A browser therefore believes the face is 367 units tall instead of
+negative. (So do the Bold, Italic and ligature cuts in `assets/fonts/`. The
+Small Caps cut does not: it says −267, correctly.) A browser therefore believes the face is 367 units tall instead of
 867 — about a third of an em. Ordinary text overflows that box and nobody ever
 sees; an `<input>` *clips* to it, and at `line-height: 1` that left five pixels
 of digit.

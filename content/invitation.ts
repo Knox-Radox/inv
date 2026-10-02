@@ -315,9 +315,14 @@ export const invitation = {
     linkLabel: "Open in Google Maps",
 
     /**
-     * Required by the ODbL, and rendered as visible text under the plate. The
-     * plate is a drawn work derived from OSM geometry; the credit is not
-     * optional and it does not belong only in a comment.
+     * The OpenStreetMap credit, printed under the plate when it is not empty.
+     *
+     * **It is empty, and that is the client's decision, not an oversight.** The
+     * plate is a drawn work derived from OSM geometry, which is ODbL, and the
+     * licence requires a visible credit. The client emptied this string
+     * (e049e31) and, asked directly at revision 9, chose to leave it so.
+     * `ASSETS.md` records that plainly. To put the site back inside the
+     * licence, set this to "Map data © OpenStreetMap contributors".
      */
     attribution: "",
 

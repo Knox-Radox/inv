@@ -146,7 +146,8 @@ Changing `REPLIES_PASSCODE` in Vercel (and redeploying) signs everybody out.
   **Settings → Deployment Protection**, or use the production URL.
 - **What is stored**: the name, the phone or email, the two headcounts, the
   names of the others, the two notes, and the time. A guest's IP address is
-  never stored: it is hashed with a secret, and only to count attempts.
+  never stored. A keyed hash of it is kept for two days, to count attempts and
+  to show if a reply was changed by somebody else, and is then erased.
 - **What can read it**: only the site's server, with the secret key. Nothing a
   guest's browser can reach will read a reply back, and the site does not say
   whether a phone number has already replied.
@@ -156,7 +157,7 @@ Changing `REPLIES_PASSCODE` in Vercel (and redeploying) signs everybody out.
 
 `tools/rsvp/local.sh` stands up what Supabase provides — a Postgres with
 Supabase's three API roles and PostgREST in front of it — and
-`tools/rsvp/test.mjs` runs 46 checks against it and against the site's route:
+`tools/rsvp/test.mjs` runs 49 checks against it and against the site's route:
 
 ```
 tools/rsvp/local.sh up
