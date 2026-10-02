@@ -328,7 +328,11 @@ export function Reply() {
         className={styles.card}
         method="post"
         action="/api/rsvp"
-        noValidate
+        // The card checks itself once its script is running, in its own words.
+        // Until then — and for a guest whose script never arrives — the
+        // browser's own checking is left on, so a plain form post is not sent
+        // with the name blank.
+        noValidate={hydrated}
         onSubmit={submit}
         hidden={mode !== "card"}
         aria-describedby={failure ? `${uid}-failure` : undefined}

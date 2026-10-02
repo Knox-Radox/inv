@@ -167,6 +167,9 @@
   position: absolute;
   inset: 0;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
+  /* Both spellings, written out: Safari took the unprefixed one late, and a
+     flap that shows both its faces at once is the failure this would be. */
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 

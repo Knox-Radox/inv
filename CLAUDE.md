@@ -2,7 +2,41 @@
 
 ## Current state — read before anything else
 
-Revision 8 is the cover. The client looked at it against the reference and
+Revision 9 is the suite. The family's printed invitation arrived as two Canva
+PDFs, and with it the client reversed more in one message than in the eight
+revisions before it. Twenty decisions were put to them first; all twenty are in
+`docs/revision-9-plan.md`. Six things this file used to say the opposite of,
+each corrected in place below:
+
+- **There is an RSVP.** A reply card in the formal register of a printed one,
+  sealed in wax when it is sent; Supabase behind it; `/replies` for the family.
+- **The cover is drawn, not photographed.** The envelope, its liner and its
+  seal are painted by `tools/paint.py` in the page's own line-and-wash. The
+  photograph, and `coverGeometry.ts`, are gone.
+- **Three pigments joined the palette** — arakku, marigold, kumkum — as
+  *pigment*: a flower, a ring, a bead, a line of type. Never a section's
+  ground. The envelope's liner is the one exception.
+- **One mark of Ganesha**, at the head of the card, with its one line. The ban
+  on deity imagery is lifted for that and nothing else.
+- **The page has travel and hotels**, and the bar leads to them.
+- **The map's OpenStreetMap credit is off**, at the client's instruction. That
+  is a licence obligation unmet, and `ASSETS.md` says so plainly.
+
+The idea that holds it together: **the guest opens the couple's envelope, and
+at the end they seal their own.** The opening and the sealing are the same
+gesture run forwards and backwards, with the same paper, liner and wax.
+
+The lesson is revision 8's again, twice over. The maroon liner — the one
+saturated surface the whole colour scheme is organised around — was on screen
+for *no frames*, with every timing correct, until a contact sheet showed it.
+And the envelope's edge ran forty pixels ahead of its own cut, because a
+transform is composited and a `clip-path` is not. **Look at the frames.**
+
+**Read `docs/handoff-revision-9.md` first**, then `docs/revision-9-plan.md`,
+`docs/revision-9-cover.md` and `docs/revision-9-rsvp.md`.
+
+Revision 8 was the photographed cover, which revision 9 retired; what it
+learned still stands. The client looked at it against the reference and
 returned five faults, and the lesson in all of them is one line long:
 **a measurement of the right number is not a look at the result.**
 
@@ -16,16 +50,15 @@ blur wide enough to erase the one is wide enough to erase the other. The
 "unnatural semicircle" was not the patch everyone would blame — it was the
 flap's own cut, wrapped around a circle a quarter wider than the wax.
 
-The photograph now carries **no wax at all**: the paper is reconstructed and
-blind-embossed edge to edge, and the wax is a sprite that rides inside the flap.
-**Read `docs/revision-8-cover.md`** — including its "what went wrong on the way"
-section, which is the most useful part.
+`docs/revision-8-cover.md` has the rest — its "what went wrong on the way"
+section is the most useful part, and it is about a cover that no longer exists
+only in the sense that the next one made the same kind of mistake.
 
-One number still fails and failed before: **LCP**. It is put to the client in
-`docs/open-questions.md` #4 rather than fixed, because every fix is a trade they
-should make. If you re-measure it, check the reported LCP *element* first — the
-harness is bimodal and the figure recorded for revision 5 is the card, not the
-cover.
+LCP failed through revisions 5 to 8 because the cover photograph was last in a
+queue behind the fonts and the script. The cover is no longer an image that has
+to arrive. If you re-measure it, record the LCP *element* beside the number —
+the harness was bimodal, and the figure recorded for revision 5 was the card,
+not the cover. `docs/handoff-revision-9.md` has the current numbers.
 
 Revision 7 is the map and the kolam.
 
@@ -49,9 +82,9 @@ two faces, Parfumerie Script and Mrs Eaves. Revision 6 added the ornament
 programme — columns, a thoranam, lamps, a malai, banana stems, a jasmine bough,
 urns and a kolam — in a drawn-line-plus-watercolour-wash technique.
 
-**Start with `docs/revision-8-cover.md`**, then `docs/handoff-revision-7.md`
-and `docs/revision-7-map.md`, then `docs/handoff-revision-6.md` and
-`docs/revision-6-ornament.md`.
+After the revision 9 documents: `docs/revision-8-cover.md`,
+`docs/handoff-revision-7.md` and `docs/revision-7-map.md`, then
+`docs/handoff-revision-6.md` and `docs/revision-6-ornament.md`.
 The client's benchmark is captured in **`docs/reference/maison-doree/`** — look
 at it before designing anything. The verification harness is in `tools/verify/`;
 every number in the docs came from it and every change should go back through
@@ -83,7 +116,11 @@ Invoke the `frontend-design` skill for all UI work.
 - Next.js (App Router) + TypeScript, strict mode
 - Tailwind v4 with the palette exposed as CSS custom properties, not hard-coded
   hex values scattered through components
-- `motion/react` for orchestration; plain CSS for anything CSS can do alone
+- Plain CSS for all motion. `motion/react` was planned for orchestration and
+  never installed; nothing here has needed it
+- Supabase (Postgres) for the RSVP, reached **only from the server**, with
+  plain `fetch` to its REST API and only ever to call a function. No
+  supabase-js, and no database key with a `NEXT_PUBLIC_` name
 - `next/font` with self-hosted, subset faces. Cut by `tools/fonts.sh` from the
   originals in `assets/fonts/` — never `public/`, which serves what it holds
 - `next/og` for the share card
@@ -161,6 +198,11 @@ on Slow 4G is the only hard line. What survives, and is still enforced:
 
 - `#F4F1EA` or any near-neighbour as the ground colour
 - Terracotta / warm-clay accents, especially anything near `#D97757`
+- Arakku, marigold or kumkum **as a ground**. Revision 9 added them as
+  pigments — they may fill a flower, a ring, a bead or a line of type — and the
+  page is still ivory. The envelope's liner is the one surface that is maroon
+  from edge to edge, and it is seen for about a second. Teal was offered with
+  the others and deliberately not used: it had no job
 - Tinted near-blacks (`#111`, `#0B0B0B`) — the darkest value is warm brown or
   deep sage
 - ALL-CAPS tracked-out eyebrow labels
@@ -175,9 +217,25 @@ on Slow 4G is the only hard line. What survives, and is still enforced:
   system font stacks. The page's two faces are Parfumerie Script (display) and
   Mrs Eaves (everything else) and there is no third role
 - Christian or church iconography of any kind
-- Any copyrighted or unlicensed third-party asset. The one third-party thing on
+- Deity imagery, **except the one mark of Ganesha** at the head of the card
+  with "|| Shree Ganeshay Namaha ||" beneath it, which the client asked for in
+  revision 9 in the words "subtle, tasteful and beautiful". No shloka, no
+  second mark, no figure. Asked in the same breath and left banned: elephants,
+  painted figures and scenes, parrots
+- A Devanagari-styled Latin face. The family's printed invitation uses one for
+  the invocation; here it is Mrs Eaves
+- Any copyrighted or unlicensed third-party asset — **including anything from
+  the family's Canva PDFs**, whose artwork is stock and whose own metadata
+  flags generated content. They were art direction; every motif taken from
+  them is redrawn from this page's primitives. The one third-party thing on
   the page is the OpenStreetMap geometry the map plate is traced from, which is
-  ODbL and carries its credit as visible text — see `ASSETS.md`
+  ODbL. Its licence requires a visible credit, and **that credit is currently
+  off at the client's instruction** — see `ASSETS.md`. Do not add a second
+  OSM-derived drawing while it is
+- A box on the reply card. Every blank is a ruled line; that is the whole
+  difference between a reply card and a form
+- Reading a reply back to a browser, or answering a first reply differently
+  from a replacement. See `docs/revision-9-rsvp.md` § Where a reply goes
 - Inventing geography. Every road, creek and town on the plate comes from
   `tools/data/anna-osm.json`; if something is not in the extract it is not drawn
 
@@ -196,7 +254,18 @@ You are not done with a component until you have looked at it. Screenshot at
 own screenshots critically rather than confirming they rendered. Run
 `prefers-reduced-motion` at least once per motion feature.
 
+**For anything that moves, look at the frames, not at the timings.** A contact
+sheet of the opening every 250 ms is what found the liner on screen for no
+frames and the envelope's edge running ahead of its cut; both had every number
+right.
+
 Run `npm run build` and `npx tsc --noEmit` clean before every commit.
+
+The RSVP has its own tests: `tools/rsvp/local.sh up`, then
+`node tools/rsvp/test.mjs <url>`. They run against PostgREST with Supabase's
+roles and Supabase's permissive defaults recreated, because a test database
+that starts locked proves nothing. Run them after touching
+`supabase/schema.sql`, `lib/rsvp/` or `app/api/rsvp/`.
 
 ## Working style
 
