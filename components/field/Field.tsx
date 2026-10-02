@@ -1,4 +1,5 @@
 import { ClosingThreshold, KolamMark } from "../art/ClosingThreshold";
+import { Replay } from "../Replay";
 import { Entrance } from "../art/Entrance";
 import { Hanging } from "../art/Hanging";
 import { Threshold } from "../art/Threshold";
@@ -74,6 +75,7 @@ export function Field() {
 
       {/* Outside `.inner` on purpose — see KolamMark. */}
       <KolamMark />
+      <Replay />
     </div>
   );
 }

@@ -73,7 +73,17 @@
    * roughly 50 px of air under the lowest leaf at every width.
    */
   padding-top: clamp(130px, 22vw, 292px);
-  padding-bottom: clamp(72px, 11vh, 132px);
+  /*
+   * And the bottom padding has to clear the fallen petals, which scale with
+   * the width too. On a desktop the scatter stands 137px tall in a band that
+   * was 99px, and one petal lay directly under "until the Muhurtham" — the
+   * third time ornament has been caught over type on this page. The band is
+   * never shorter than the petals now, whatever the viewport.
+   */
+  padding-bottom: max(
+    clamp(72px, 11vh, 132px),
+    calc(var(--petals-bottom) + var(--petals-h) + 16px)
+  );
   /*
    * Deliberately NOT `overflow: hidden`. It was, for one pass, and it clipped
    * the full-bleed ornament layer back to the 700px measure — the columns and
