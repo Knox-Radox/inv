@@ -213,3 +213,46 @@
     align-items: start;
   }
 }
+
+/* --- The check-up, when the database does not answer ----------------------- */
+
+.findings {
+  margin: clamp(18px, 3vh, 28px) 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.findings > li {
+  display: grid;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 2px solid var(--sage);
+}
+
+.findings > .wrong {
+  border-left-color: var(--arakku);
+}
+
+.findingWhat {
+  font-size: var(--text-body);
+  line-height: 1.4;
+  color: var(--sage-deep);
+}
+
+.wrong .findingWhat {
+  color: var(--arakku);
+}
+
+.findingDetail {
+  font-size: var(--text-body);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.page code {
+  font-family: inherit;
+  font-size: 0.94em;
+  color: var(--sage-deep);
+}

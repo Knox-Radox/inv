@@ -31,8 +31,9 @@ const grab = () => {
   await p.waitForTimeout(700);
   await p.click('button');
   await p.evaluate(() => document.getAnimations().forEach(a => a.pause()));
-  // The last frame before the cover fades.
-  await p.evaluate(() => document.getAnimations().forEach(a => { a.currentTime = 2700; }));
+  // The last frame before the cover fades: everything has landed and the
+  // dissolve, which runs 3650 to 4500 ms, has not begun.
+  await p.evaluate(() => document.getAnimations().forEach(a => { a.currentTime = 3650; }));
   const r = await p.evaluate(grab);
   console.log(size);
   console.log('  scrollY      ', r.scrollY);

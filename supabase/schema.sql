@@ -4,7 +4,7 @@
 -- It is safe to run again: every statement either checks first or replaces.
 -- README.md § The RSVP has the five steps around it.
 --
--- Three tables and five functions, and one rule that explains all of it:
+-- Three tables and six functions, and one rule that explains all of it:
 --
 --   NOTHING HERE CAN BE REACHED WITH THE PROJECT'S PUBLIC KEY.
 --
@@ -59,7 +59,8 @@ create table if not exists public.rsvp_history (
   received_at timestamptz not null default now(),
   reply       jsonb       not null,
   -- A keyed hash of the sender's address. It tells one sender from another; it
-  -- cannot be turned back into an address. See lib/rsvp/server.ts.
+  -- cannot be turned back into an address, and it is erased after two days
+  -- (rsvp_sweep). See lib/rsvp/server.ts.
   via         text        not null default ''
 );
 
@@ -108,6 +109,21 @@ begin
   returning r.hits into v_hits;
   return v_hits <= p_limit;
 end;
+$$;
+
+-- What is only needed while it is fresh, cleared away: the rate counters, and
+-- the hash of who sent each reply. Two days is long enough to count attempts
+-- and to see that a reply was changed by somebody else; after that the history
+-- keeps what was said and forgets who by.
+create or replace function public.rsvp_sweep()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.rsvp_rate where slot < now() - interval '2 days';
+  update public.rsvp_history set via = ''
+   where via <> '' and received_at < now() - interval '2 days';
 $$;
 
 -- Take one reply.
@@ -202,7 +218,7 @@ begin
   insert into public.rsvp_history (reply_id, revision, reply, via)
   values (v_id, v_rev, p_reply - 'contactKey', p_caller);
 
-  delete from public.rsvp_rate where slot < now() - interval '2 days';
+  perform public.rsvp_sweep();
 
   -- Deliberately the same answer for a first reply and for a replacement. If
   -- it said which, the form could be used to find out whether a phone number
@@ -247,15 +263,19 @@ as $$
 $$;
 
 -- A real query, for the daily request that keeps a free project from being
--- paused: Supabase pauses a project that has had no activity for a week.
+-- paused: Supabase pauses a project that has had no activity for a week. It
+-- sweeps as well, so the sender hashes go two days after the *last* reply and
+-- not only when the next one happens to arrive.
 create or replace function public.rsvp_ping()
 returns jsonb
-language sql
+language plpgsql
 security definer
 set search_path = ''
-stable
 as $$
-  select jsonb_build_object('ok', true, 'replies', (select count(*) from public.rsvp_replies));
+begin
+  perform public.rsvp_sweep();
+  return jsonb_build_object('ok', true, 'replies', (select count(*) from public.rsvp_replies));
+end;
 $$;
 
 -- Postgres gives EXECUTE on a new function to everybody, and Supabase's API
@@ -265,12 +285,14 @@ revoke all on function public.rsvp_submit(jsonb, text)         from public, anon
 revoke all on function public.rsvp_list()                      from public, anon, authenticated;
 revoke all on function public.rsvp_gate(text)                  from public, anon, authenticated;
 revoke all on function public.rsvp_ping()                      from public, anon, authenticated;
+revoke all on function public.rsvp_sweep()                     from public, anon, authenticated, service_role;
 
 grant execute on function public.rsvp_submit(jsonb, text) to service_role;
 grant execute on function public.rsvp_list()              to service_role;
 grant execute on function public.rsvp_gate(text)          to service_role;
 grant execute on function public.rsvp_ping()              to service_role;
--- rsvp_hit is granted to nobody: only the functions above call it.
+-- rsvp_hit and rsvp_sweep are granted to nobody: only the functions above
+-- call them.
 
 commit;
 

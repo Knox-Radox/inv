@@ -386,8 +386,8 @@
  * has only old-style ones, and its old-style one is a small capital I: ten
  * guests read as "IO".
  *
- * And the line-height is not a matter of taste. The Mrs Eaves files carry
- * their descender with the wrong sign (hhea.descent = +250), so the browser
+ * And the line-height is not a matter of taste. Mrs Eaves Roman carries its
+ * descender with the wrong sign (hhea.descent = +250), so the browser
  * believes the face is a third of an em tall. Ordinary text just overflows
  * that box and nobody sees; an <input> *clips* to it, and at `line-height: 1`
  * this numeral was the top arc of a 2 and nothing else. A taller line box
@@ -456,6 +456,19 @@
   display: none;
 }
 
+/* The reason code, for whoever a guest sends a screenshot to. */
+.why {
+  max-width: 36ch;
+  font-size: var(--text-body-s);
+  line-height: 1.45;
+  opacity: 0.74;
+  overflow-wrap: anywhere;
+}
+
+.why code {
+  font-family: inherit;
+}
+
 /* The one filled control on the page. It is the thing the whole card is for. */
 .send {
   min-height: 52px;
@@ -518,7 +531,7 @@
 }
 
 .section[data-mode="sealed"] .after {
-  animation: said 520ms ease-out both;
+  animation: said 520ms ease-out backwards;
 }
 
 @keyframes said {

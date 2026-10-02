@@ -16,7 +16,8 @@ const EXE=process.env.CHROME||'/home/adv/.cache/ms-playwright/chromium-1228/chro
   const btn=await p.$('button');
   console.log('button text:', await btn.textContent());
   await btn.click();
-  await p.waitForTimeout(3200);
+  // The cover is gone at about 4.5 s; wait past it so the removal is logged.
+  await p.waitForTimeout(5200);
   const ev=await p.evaluate(()=>window.__ev);
   ev.filter(e=>!String(e[2]).includes('draw-on')).forEach(e=>console.log('  ', e.join('  ')));
   await b.close();

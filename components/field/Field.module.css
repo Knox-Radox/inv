@@ -8,16 +8,21 @@
 }
 
 /*
- * The photograph. Warmed to the palette, softened, and kept far back. It
- * drifts by a few pixels over half a minute, which is enough to be alive and
- * not enough to be noticed as motion.
- */
-/*
- * The backdrop runs the whole field, not just its foot — an earlier version
- * pinned it a viewport down to keep it off the LCP path, which left the page
- * bare at the top and a photograph appearing from nowhere at the bottom, which
- * is exactly what the client saw. It is masked to nothing at both ends
- * instead, so it has no edge anywhere.
+ * The photograph: warmed to the palette, softened, kept far back, and faded
+ * to nothing at both ends so it has no edge anywhere. It runs the whole field —
+ * an earlier version pinned it a viewport down to keep it off the LCP path,
+ * which left the page bare at the top and a photograph appearing from nowhere
+ * at the bottom, which is exactly what the client saw.
+ *
+ * All of that treatment is in the file now (`backdrop()` in tools/paint.py)
+ * and only its strength is here. Until revision 9 it was a `filter`, a `mask-image`,
+ * an opacity and a forty-second drift under `will-change`, and that one rule
+ * was most of why the page was slow. The drift made this a layer of its own,
+ * as tall as the page, filtered and masked again on every frame; and because
+ * it lies under everything, everything over it was given a layer too — 162 of
+ * them on a phone, measured, three the height of the page. The drift was
+ * written to be "not enough to be noticed as motion", so it is gone, and this
+ * is a picture.
  */
 .backdrop {
   position: absolute;
@@ -27,17 +32,6 @@
   object-fit: cover;
   object-position: 68% 32%;
   opacity: 0.2;
-  filter: sepia(0.3) saturate(0.72) blur(2px);
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgb(0 0 0 / 0.5) 12%,
-    #000 34%,
-    #000 72%,
-    transparent 100%
-  );
-  will-change: transform;
-  animation: drift 40s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
@@ -53,15 +47,6 @@
     color-mix(in srgb, var(--ground-deep) 30%, transparent) 100%
   );
   pointer-events: none;
-}
-
-@keyframes drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1.02);
-  }
-  to {
-    transform: translate3d(-1.6%, 1.2%, 0) scale(1.06);
-  }
 }
 
 .inner {
@@ -98,8 +83,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .backdrop {
-    animation: none;
-  }
-}

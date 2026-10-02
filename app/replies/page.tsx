@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { invitation } from "@/content/invitation";
 import type { Listed } from "@/lib/rsvp/list";
-import { SESSION_COOKIE, call, configured, passcodeSet, sessionValid } from "@/lib/rsvp/server";
+import {
+  SESSION_COOKIE,
+  call,
+  configured,
+  diagnose,
+  passcodeSet,
+  sessionValid,
+} from "@/lib/rsvp/server";
 import styles from "./replies.module.css";
 
 /**
@@ -48,17 +55,21 @@ function Shell({ children }: { children: React.ReactNode }) {
 export default async function Replies({
   searchParams,
 }: {
-  searchParams: Promise<{ wrong?: string; wait?: string; down?: string }>;
+  searchParams: Promise<{ wrong?: string; wait?: string }>;
 }) {
   const jar = await cookies();
   const flags = await searchParams;
 
-  if (!configured() || !passcodeSet()) {
+  // Without a passcode nobody can be let in, so this much is said to anyone:
+  // which of the settings this deployment was built without. Names only.
+  if (!passcodeSet()) {
     return (
       <Shell>
         <p className={styles.lede}>
-          This page is not switched on yet. It needs the database&rsquo;s address and key and a
-          passcode set in Vercel: README.md, &ldquo;The RSVP&rdquo;, has the steps.
+          This page is not switched on yet: this deployment has no <code>REPLIES_PASSCODE</code>
+          {configured() ? "" : ", and no database address or key either"}. Set them in Vercel
+          (Settings, Environment Variables) for this environment and redeploy. README.md,
+          &ldquo;The RSVP&rdquo;, has the steps.
         </p>
       </Shell>
     );
@@ -81,18 +92,16 @@ export default async function Replies({
             type="password"
             autoComplete="current-password"
             required
-            aria-describedby={flags.wrong || flags.wait || flags.down ? "gate-problem" : undefined}
+            aria-describedby={flags.wrong || flags.wait ? "gate-problem" : undefined}
           />
           <button className={styles.button} type="submit">
             Open
           </button>
-          {(flags.wrong || flags.wait || flags.down) && (
+          {(flags.wrong || flags.wait) && (
             <p className={styles.problem} id="gate-problem" role="alert">
               {flags.wait
                 ? "Too many tries in a few minutes. Please wait ten minutes, then try again."
-                : flags.down
-                  ? "The replies cannot be reached just now. Please try again in a minute."
-                  : "That is not the passcode."}
+                : "That is not the passcode."}
             </p>
           )}
         </form>
@@ -102,11 +111,35 @@ export default async function Replies({
 
   const list = await call<Listed>("rsvp_list");
   if (!list.ok) {
+    // Behind the passcode, so it can be specific: what is set, what kind of
+    // thing each value is, and what the database said when it was asked.
+    const findings = await diagnose();
     return (
       <Shell>
         <p className={styles.problem} role="alert">
-          The replies cannot be reached just now. Nothing is lost: please try again in a minute.
+          The replies cannot be read, and guests&rsquo; replies are not being taken either. This
+          is why:
         </p>
+        <ul className={styles.findings}>
+          {findings.map((f) => (
+            <li key={f.what} className={f.ok ? styles.fine : styles.wrong}>
+              <span className={styles.findingWhat}>
+                {f.what}: {f.ok ? "fine" : "needs attention"}
+              </span>
+              <span className={styles.findingDetail}>{f.detail}</span>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.lede}>
+          A deployment only sees the settings that existed when it was built: after changing one
+          in Vercel, redeploy. Reload this page to check again. Every failed attempt is also
+          written to the log (Vercel, Logs) on a line beginning <code>rsvp:</code>.
+        </p>
+        <form method="post" action="/replies/leave">
+          <button className={styles.linkButton} type="submit">
+            Sign out
+          </button>
+        </form>
       </Shell>
     );
   }

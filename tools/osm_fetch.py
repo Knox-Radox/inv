@@ -13,8 +13,10 @@ deliberately does not draw — see docs/revision-7-map.md § The concept. What i
 kept is the handful of named roads a guest would actually say out loud, the
 waterways, the larger lakes, and the town nodes.
 
-Map data © OpenStreetMap contributors, licensed under the ODbL. The credit is
-rendered on the plate itself; see components/field/Place.tsx.
+Map data © OpenStreetMap contributors, licensed under the ODbL. The licence
+asks for that credit to be shown with the drawing. components/field/Place.tsx
+prints it from `map.attribution` in content/invitation.ts — which the client
+has emptied, so at present it is not shown. ASSETS.md records that.
 """
 
 import json

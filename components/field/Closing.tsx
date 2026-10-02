@@ -22,7 +22,7 @@ export function Closing() {
       {/* eslint-disable-next-line @next/next/no-img-element -- decorative */}
       <img
         className={styles.blossoms}
-        src="/photos/jasmine-cluster.jpg"
+        src="/photos/blossoms.webp"
         alt=""
         loading="lazy"
         decoding="async"

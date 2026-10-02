@@ -19,6 +19,10 @@ const SERVICE = env.SUPABASE_SECRET_KEY;
 const ANON = sh("anon");
 const SITE = process.argv[2];
 
+const psql = (sql) =>
+  execFileSync("psql", ["-h", process.env.PGHOST ?? "127.0.0.1", "-p", process.env.PGPORT ?? "54329",
+    "-U", process.env.PGUSER ?? "postgres", "-d", process.env.RSVP_DB ?? "rsvp_local", "-Atc", sql], { encoding: "utf8" }).trim();
+
 let failed = 0;
 const ok = (name, pass, detail = "") => {
   if (!pass) failed++;
@@ -114,6 +118,14 @@ ok("the ninth wrong passcode in ten minutes is turned away", gate.body === false
 const ping = await rpc("rsvp_ping", {}, SERVICE);
 ok("the keep-alive is a real query", ping.body?.ok === true && typeof ping.body.replies === "number", JSON.stringify(ping.body));
 
+// 8. Two days on, the history keeps what was said and forgets who by.
+ok("a fresh reply's history carries its sender's hash", psql("select count(*) from rsvp_history where via <> ''") !== "0");
+psql("update rsvp_history set received_at = now() - interval '3 days'");
+await rpc("rsvp_ping", {}, SERVICE);
+ok("…and after two days the keep-alive has erased it", psql("select count(*) from rsvp_history where via <> ''") === "0");
+ok("…without touching the reply", psql("select count(*) from rsvp_history where reply->>'name' is not null") !== "0");
+ok("the sweep itself can be called by nobody", (await rpc("rsvp_sweep", {}, SERVICE)).status >= 400);
+
 if (SITE) {
   console.log(`\n— the site's route, at ${SITE} —`);
   const post = async (body, headers = {}) => {
@@ -168,8 +180,7 @@ if (SITE) {
   for (let i = 0; i < 9; i++) limited = await post(card({ contact: `guest${i}@example.com` }), { "x-forwarded-for": "203.0.113.99" });
   ok("the route passes the rate limit on as 429", limited.status === 429 && limited.json?.code === "slow_down", `${limited.status} ${JSON.stringify(limited.json)}`);
 
-  const hist = execFileSync("psql", ["-h", process.env.PGHOST ?? "127.0.0.1", "-p", process.env.PGPORT ?? "54329", "-U", process.env.PGUSER ?? "postgres", "-d", "rsvp_local", "-Atc",
-    "select count(*), count(*) filter (where via ~ '^[A-Za-z0-9_-]{32}$'), count(*) filter (where via like '%203.0.113%') from rsvp_history where lower(btrim(reply->>'contact')) = 'kamala@example.com'"], { encoding: "utf8" }).trim();
+  const hist = psql("select count(*), count(*) filter (where via ~ '^[A-Za-z0-9_-]{32}$'), count(*) filter (where via like '%203.0.113%') from rsvp_history where lower(btrim(reply->>'contact')) = 'kamala@example.com'");
   ok("history keeps both versions, and a hash where an address would be", hist === "2|2|0", hist);
 }
 

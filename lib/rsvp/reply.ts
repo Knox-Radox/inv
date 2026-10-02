@@ -138,6 +138,15 @@ export function check(raw: unknown): Checked {
 export type Outcome =
   | { ok: true }
   | { ok: false; code: "invalid"; problems?: Partial<Record<Field, Problem>> }
-  | { ok: false; code: "closed" | "slow_down" | "busy" | "unavailable" };
+  | {
+      ok: false;
+      code: "closed" | "slow_down" | "busy" | "unavailable";
+      /**
+       * Why, as a short code for whoever looks after the site — `timeout`,
+       * `http_404_PGRST202`. Never the database's own words: those stay in
+       * the server's log and on the family's page.
+       */
+      why?: string;
+    };
 
 export type FailureCode = Exclude<Outcome, { ok: true }>["code"];

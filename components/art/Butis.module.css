@@ -23,8 +23,11 @@
   margin-top: calc(var(--drop) * clamp(36px, 12vw, 58px) * 1.32);
 }
 
+/* --sage, a fifth of the way to --sage-deep. Written out rather than mixed:
+   a browser that does not know `color-mix()` drops the declaration, and a
+   leaf with no fill is a black leaf. */
 .leaf {
-  fill: color-mix(in srgb, var(--sage) 78%, var(--sage-deep));
+  fill: #788b75;
   stroke: var(--sage-deep);
   stroke-width: 0.5;
   stroke-opacity: 0.7;
@@ -44,6 +47,14 @@
   stroke-linecap: round;
 }
 
+.bloomFoot {
+  stop-color: var(--arakku);
+}
+
+.bloomTip {
+  stop-color: var(--kumkum);
+}
+
 .bloom {
   stroke: var(--arakku);
   stroke-width: 0.6;
@@ -60,7 +71,8 @@
 
 .cup {
   fill: var(--marigold);
-  stroke: color-mix(in srgb, var(--marigold) 60%, var(--ink));
+  /* --marigold, two fifths of the way to --ink. */
+  stroke: #906a29;
   stroke-width: 0.5;
   stroke-opacity: 0.7;
 }

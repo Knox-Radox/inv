@@ -4,6 +4,10 @@
  * second while the lines that give it a brow to sit on were still being
  * drawn. Inside a sequence it waits for them.
  */
+.tilak {
+  fill: var(--arakku);
+}
+
 :global(.stitching) .tilak {
   animation: tilak-set 360ms var(--ease-wax) var(--tilak-at, 0ms) backwards;
   transform-box: fill-box;

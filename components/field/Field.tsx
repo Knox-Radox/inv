@@ -18,9 +18,10 @@ import styles from "./Field.module.css";
  *
  * Everything below the card's woven edge, hung off the thread's left datum,
  * each section rising into view as the guest reaches it. Behind it, on wide
- * screens, a soft photograph of a jasmine branch drifts very slowly — the
- * ornament the client asked for, kept far enough back that the type stays
- * quiet on top of it.
+ * screens, a soft photograph of a jasmine branch — the ornament the client
+ * asked for, kept far enough back that the type stays quiet on top of it. It
+ * is treated in tools/paint.py, not here, and it does not move: see
+ * Field.module.css.
  */
 export function Field() {
   return (
@@ -29,7 +30,7 @@ export function Field() {
           backdrop; next/image's layout machinery buys nothing here. */}
       <img
         className={styles.backdrop}
-        src="/photos/jasmine-branch.jpg"
+        src="/photos/backdrop.webp"
         alt=""
         loading="lazy"
         decoding="async"

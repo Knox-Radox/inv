@@ -19,7 +19,7 @@ import styles from "./Place.module.css";
  * The drawing itself arrives on approach and never on the server — see
  * LazyMapPlate. This section stays a server component around it, so with
  * JavaScript off a guest still gets the heading, the link, the address and the
- * credit: every fact, and the one action.
+ * credit, when there is one: every fact, and the one action.
  */
 
 export function Place() {
@@ -56,11 +56,13 @@ export function Place() {
       </address>
 
       {/*
-       * Required by the ODbL. The plate is a drawn work derived from OSM road
-       * and water geometry, and the credit is not optional — it belongs on the
-       * page a guest sees, not only in a comment in the tool that traced it.
+       * The OpenStreetMap credit. The plate is derived from OSM geometry and
+       * the ODbL asks for this line; it is printed whenever
+       * `map.attribution` holds one. It currently holds nothing, at the
+       * client's instruction — see the note there and in ASSETS.md — and an
+       * empty paragraph is not left in the document to mark the spot.
        */}
-      <p className={styles.credit}>{map.attribution}</p>
+      {map.attribution && <p className={styles.credit}>{map.attribution}</p>}
     </section>
   );
 }

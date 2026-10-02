@@ -11,6 +11,9 @@
 #
 #   PGHOST PGPORT PGUSER   default 127.0.0.1 54329 postgres
 #   POSTGREST              default `postgrest` on the PATH
+#   REST_PORT  RSVP_DB     default 54330 and rsvp_local. Set both to run a
+#                          second one beside the first without either seeing
+#                          the other's replies.
 #
 # The database is dropped and recreated every time. It holds nothing real.
 set -euo pipefail
@@ -19,8 +22,8 @@ cd "$(dirname "$0")/../.."
 export PGHOST="${PGHOST:-127.0.0.1}" PGPORT="${PGPORT:-54329}" PGUSER="${PGUSER:-postgres}"
 POSTGREST="${POSTGREST:-postgrest}"
 REST_PORT="${REST_PORT:-54330}"
-DB=rsvp_local
-RUN="${TMPDIR:-/tmp}/rsvp-local"
+DB="${RSVP_DB:-rsvp_local}"
+RUN="${TMPDIR:-/tmp}/rsvp-local-$REST_PORT"
 # Signs the two test tokens below. It protects nothing: the database is local
 # and empty, and this string appears nowhere else.
 SECRET="local-only-secret-for-tools-rsvp-0123456789abcdef"

@@ -222,8 +222,11 @@
   opacity: 0;
 }
 
-:global(.painted) .round {
-  animation: round-in 1200ms var(--ease-rise) 420ms both;
+/* `backwards`, and painted is the resting state: see the wash in
+   Ornament.module.css for why nothing here may hold its last keyframe. */
+:global(html.js .painted) .round {
+  opacity: 1;
+  animation: round-in 1200ms var(--ease-rise) 420ms backwards;
 }
 
 @keyframes round-in {
@@ -345,8 +348,9 @@
   opacity: 0;
 }
 
-:global(.painted) .petal {
-  animation: petal-fall 900ms var(--ease-rise) var(--fall-delay, 0ms) both;
+:global(html.js .painted) .petal {
+  opacity: 1;
+  animation: petal-fall 900ms var(--ease-rise) var(--fall-delay, 0ms) backwards;
 }
 
 @keyframes petal-fall {
@@ -371,7 +375,7 @@
     opacity: 1;
   }
 
-  :global(.painted) .petal {
+  :global(html.js .painted) .petal {
     animation: none;
     transform: rotate(var(--tilt)) scaleY(var(--squash));
   }
@@ -386,12 +390,14 @@
   opacity: 0;
 }
 
-:global(.painted) .kindleGlow {
-  animation: glow-in 900ms ease-out var(--kindle-delay, 0ms) both;
+:global(html.js .painted) .kindleGlow {
+  opacity: 1;
+  animation: glow-in 900ms ease-out var(--kindle-delay, 0ms) backwards;
 }
 
-:global(.painted) .kindleFlame {
-  animation: flame-in 620ms var(--ease-wax) var(--kindle-delay, 0ms) both;
+:global(html.js .painted) .kindleFlame {
+  opacity: 1;
+  animation: flame-in 620ms var(--ease-wax) var(--kindle-delay, 0ms) backwards;
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }
@@ -485,9 +491,9 @@
     opacity: 1;
   }
 
-  :global(.painted) .round,
-  :global(.painted) .kindleGlow,
-  :global(.painted) .kindleFlame,
+  :global(html.js .painted) .round,
+  :global(html.js .painted) .kindleGlow,
+  :global(html.js .painted) .kindleFlame,
   :global(.astir) .flameBody,
   :global(.astir) .leaf {
     animation: none;

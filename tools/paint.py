@@ -25,6 +25,7 @@ And the line goes on last, in one weight that swells and thins with the hand.
 
     python3 tools/paint.py            # writes the three cover assets
     python3 tools/paint.py --proof D  # also writes look-at-me PNGs into D
+    python3 tools/paint.py --only photos   # wax | sprigs | card | photos | liner
 
 Writes public/cover/sprigs.webp      the jasmine printed on the envelope's paper
        public/cover/wax.webp         the seal, sage, struck with the wedding logo
@@ -598,6 +599,78 @@ def card_paper() -> Image.Image:
 
 
 # ---------------------------------------------------------------------------
+# The two photographs behind the field, treated here rather than in the browser
+# ---------------------------------------------------------------------------
+#
+# Until revision 9 these were plain JPEGs with the treatment written in CSS:
+# `filter: sepia() saturate() blur()`, a `mask-image`, an opacity, and on the
+# long one a forty-second drift. It looked right and it cost a great deal. The
+# drifting one was promoted to its own layer the height of the whole page, with
+# a filter and a mask to run on it every frame, and everything that overlapped
+# it was promoted too: 162 layers on a phone, three of them page-tall.
+#
+# Nothing about the treatment changes from frame to frame, so it is done once,
+# here, and the page is handed a finished picture with its fade in the alpha.
+
+PHOTOS = ROOT / "public" / "photos"
+
+
+def _css_filter(rgb: np.ndarray, sepia: float, saturate: float) -> np.ndarray:
+    """`sepia(a) saturate(s)` as the Filter Effects spec defines them, in sRGB."""
+    a = 1.0 - sepia
+    sep = np.array([
+        [0.393 + 0.607 * a, 0.769 - 0.769 * a, 0.189 - 0.189 * a],
+        [0.349 - 0.349 * a, 0.686 + 0.314 * a, 0.168 - 0.168 * a],
+        [0.272 - 0.272 * a, 0.534 - 0.534 * a, 0.131 + 0.869 * a],
+    ])
+    s = saturate
+    sat = np.array([
+        [0.213 + 0.787 * s, 0.715 - 0.715 * s, 0.072 - 0.072 * s],
+        [0.213 - 0.213 * s, 0.715 + 0.285 * s, 0.072 - 0.072 * s],
+        [0.213 - 0.213 * s, 0.715 - 0.715 * s, 0.072 + 0.928 * s],
+    ])
+    return np.clip(rgb @ sep.T @ sat.T, 0.0, 1.0)
+
+
+def _ramp(t: np.ndarray, stops: list[tuple[float, float]]) -> np.ndarray:
+    """A CSS gradient's alpha along `t`, from (position, alpha) stops."""
+    return np.interp(t, [p for p, _ in stops], [v for _, v in stops])
+
+
+def backdrop() -> np.ndarray:
+    """The mock-orange branch that runs the length of the field.
+
+    `object-fit: cover` on a box far taller than the picture fits its height,
+    so a fade written down the picture is a fade down the field.
+    """
+    im = Image.open(ROOT / "assets" / "source" / "jasmine-branch.jpg").convert("RGB")
+    im = im.resize((800, 1200), Image.LANCZOS)
+    rgb = _css_filter(np.asarray(im, dtype=np.float64) / 255.0, sepia=0.3, saturate=0.72)
+    rgb = ndimage.gaussian_filter(rgb, sigma=(1.2, 1.2, 0))
+    h, w, _ = rgb.shape
+    # The fade only. How strongly it shows is left to the stylesheet, which
+    # holds it further back on a phone than on a desktop, and a plain
+    # `opacity` on a still picture costs nothing.
+    fade = _ramp(np.linspace(0, 1, h), [(0, 0), (0.12, 0.5), (0.34, 1), (0.72, 1), (1, 0)])
+    alpha = np.broadcast_to(fade[:, None], (h, w))
+    return np.dstack([rgb, alpha])
+
+
+def blossoms() -> np.ndarray:
+    """The white blossoms behind the closing note, faded out on every side."""
+    im = Image.open(ROOT / "assets" / "source" / "jasmine-cluster.jpg").convert("RGB")
+    im = im.resize((880, 589), Image.LANCZOS)
+    rgb = _css_filter(np.asarray(im, dtype=np.float64) / 255.0, sepia=0.28, saturate=0.62)
+    rgb = ndimage.gaussian_filter(rgb, sigma=(2.6, 2.6, 0))
+    h, w, _ = rgb.shape
+    # radial-gradient(ellipse 42% 44% at 50% 48%, #000 0, 50% at 54%, clear at 88%)
+    yy, xx = np.mgrid[0:h, 0:w]
+    r = np.hypot((xx / w - 0.50) / 0.42, (yy / h - 0.48) / 0.44)
+    alpha = 0.26 * _ramp(r, [(0, 1), (0.54, 0.5), (0.88, 0)])
+    return np.dstack([rgb, alpha])
+
+
+# ---------------------------------------------------------------------------
 def main() -> None:
     proof = Path(sys.argv[sys.argv.index("--proof") + 1]) if "--proof" in sys.argv else None
     only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
@@ -628,6 +701,16 @@ def main() -> None:
         card.save(COVER / "card-paper.webp", "WEBP", quality=74, method=6)
         print(f"  card-paper.webp  {card.size[0]}x{card.size[1]}  "
               f"{(COVER / 'card-paper.webp').stat().st_size / 1024:6.1f} KB")
+
+    if want("photos"):
+        for name, arr in (("backdrop", backdrop()), ("blossoms", blossoms())):
+            save_rgba(arr, PHOTOS / f"{name}.webp", quality=62)
+            h, w, _ = arr.shape
+            print(f"  {name}.webp  {w}x{h}  {(PHOTOS / f'{name}.webp').stat().st_size / 1024:6.1f} KB")
+            if proof:
+                a = arr[..., 3:4] * (0.2 if name == "backdrop" else 1.0)
+                on = np.broadcast_to(np.array([240, 233, 219]) / 255.0, (h, w, 3)) * (1 - a) + arr[..., :3] * a
+                Image.fromarray((on * 255).astype(np.uint8)).save(proof / f"{name}.png")
 
     if want("liner"):
         ln = liner()

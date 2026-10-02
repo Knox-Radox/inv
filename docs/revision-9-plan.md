@@ -222,8 +222,9 @@ Defaults taken where the client was not asked, each one line to change:
 ### What is stored, and who can read it
 
 Name, phone or email, two numbers, the names, the two notes, and the time. The
-caller's IP address is **never stored**: it is hashed with a secret and kept
-for a day, only to count attempts.
+caller's IP address is **never stored**. A keyed hash of it is kept for two
+days — to count attempts, and so the history can show that a reply was changed
+by somebody else — and then erased.
 
 Nothing can be read back through the public site. The page never asks the
 database what it holds — a guest's own reply is remembered on their own phone —
