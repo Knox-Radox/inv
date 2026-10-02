@@ -42,6 +42,12 @@
   stroke: #7e5f35;
 }
 
+/* Revision 9: the line round a rose. A rose outlined in leaf green is a rose
+   somebody coloured in. */
+.arakku {
+  stroke: var(--arakku);
+}
+
 .shadow {
   stroke: var(--sage-deep);
   opacity: 0.18;

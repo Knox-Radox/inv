@@ -162,7 +162,8 @@ def blob(points: list[Point], tol: float = 0.1) -> str:
     return curve1(chain(points + [points[0]])) + "Z"
 
 
-def rosette(cx: float, cy: float, r: float, petals: int, rot: float, seed: int) -> dict:
+def rosette(cx: float, cy: float, r: float, petals: int, rot: float, seed: int,
+            valley: float = 0.60) -> dict:
     """A small flower seen face on, as **one closed outline** with its length.
 
     Built for the malai, where the first pass drew every petal as two margins
@@ -190,7 +191,10 @@ def rosette(cx: float, cy: float, r: float, petals: int, rot: float, seed: int) 
             pts.append((cx + math.cos(a + half * u) * tip_r, cy + math.sin(a + half * u) * tip_r))
         # The valley is over half the tip radius. Much below that and the
         # petals stop being lobes and start being points.
-        vr = r * (0.60 + 0.05 * next(rng))
+        # `valley` is how far in the notch between two petals comes. A jasmine
+        # is five separate petals and wants it deep; a rose or a marigold is a
+        # ball of them and wants a scalloped edge, not a cog's.
+        vr = r * (valley + 0.05 * next(rng))
         pts.append((cx + math.cos(a + half) * vr, cy + math.sin(a + half) * vr))
     c = chain(pts + [pts[0]])
     return {"d": curve1(c) + "Z", "len": round(path_length(c), 1)}
@@ -543,9 +547,11 @@ def _thoranam():
             }
         )
 
-        # A jasmine cluster every sixth tie, hung below the leaf line on its
-        # own thread so it is not lost behind a leaf. The flower the page
-        # already knows, doing the job a marigold would otherwise do.
+        # A marigold every sixth tie, hung below the leaf line on its own
+        # thread so it is not lost behind a leaf. Until revision 9 this was a
+        # jasmine "doing the job a marigold would otherwise do", because the
+        # brief allowed no new hue; the client has since asked for the
+        # marigold itself.
         if i % 6 == 3:
             drop = tie_len + L * (0.52 + r1 * 0.2)
             cx_, cy_ = place(drop, W * 1.9)
@@ -555,7 +561,9 @@ def _thoranam():
             # One closed outline, not six leaf shapes. Same lesson as the
             # malai: at this size the strokes meeting at the centre are most
             # of the ink and the flower reads as an insect.
-            ring = rosette(cx_, cy_, 11.5, 6, r1 * 6.28, 500 + i * 11)
+            # Nine lobes rather than six: a marigold is a pompom, and at six
+            # it is still a jasmine painted orange.
+            ring = rosette(cx_, cy_, 12.5, 11, r1 * 6.28, 500 + i * 11, valley=0.84)
             clusters.append(
                 {
                     "stalk": {**stalk, "w": 0.5},
@@ -770,19 +778,46 @@ LAMP_R = _lamp(50.0, scale=0.93, tall=0.86, seed=23)
 
 
 # ---------------------------------------------------------------------------
-# 5. The jasmine malai — docs/revision-6-ornament.md, piece 5
+# 5. The malai — docs/revision-6-ornament.md, piece 5; banded in revision 9
 # ---------------------------------------------------------------------------
 # The strung garland. Not a wreath and not a spray: a malai is a *line* of
 # flowers, which is why jasmine was the page's motif in the first place — see
 # the note at the top of tools/jasmine.py.
 #
 # It hangs down the field past both moments of the day, which is the same
-# argument the running thread makes about the seven and a half hours between
-# the ceremony and the reception, made in the other material: the day is one
+# argument the running thread makes about the eight and a half hours between
+# the Muhurtham and the reception, made in the other material: the day is one
 # thing, and nothing about it breaks in the middle.
 #
-# Authored in a 130 x 940 box, bleeding off the top.
-MALAI_W, MALAI_H = 130.0, 940.0
+# Until revision 9 it was jasmine from end to end and finished in a bunch of
+# leaves, because the brief allowed no hue the page did not already have. The
+# family's printed invitation hangs its garlands the way they are actually
+# strung — jasmine, a cuff of gold beads, roses, beads, marigold, and a brass
+# bell at the foot — and the client asked for those. So it is banded now, and
+# it ends in the bell.
+#
+# Authored in a 130 x 968 box, bleeding off the top.
+MALAI_W, MALAI_H = 130.0, 968.0
+
+#: What is strung where, by distance down the string. The bead cuffs are short
+#: on purpose: they are punctuation between the flowers, not a band of their own.
+MALAI_BANDS = (
+    (0.000, 0.270, "jasmine"),
+    (0.270, 0.312, "bead"),
+    (0.312, 0.462, "rose"),
+    (0.462, 0.504, "bead"),
+    (0.504, 0.704, "jasmine"),
+    (0.704, 0.746, "bead"),
+    (0.746, 0.896, "marigold"),
+    (0.896, 0.938, "bead"),
+    (0.938, 1.001, "jasmine"),
+)
+
+
+def _ring(cx: float, cy: float, r: float, n: int = 8) -> str:
+    """A bead: a circle as one closed outline `Wash` can clip to."""
+    return blob([(cx + math.cos(2 * math.pi * k / n) * r, cy + math.sin(2 * math.pi * k / n) * r)
+                 for k in range(n)])
 
 
 def _malai():
@@ -794,11 +829,18 @@ def _malai():
         makes it read as a vine rather than as something under its own weight."""
         return 62.0 + 11.0 * math.sin(t * 3.05 + 0.4) + 4.5 * math.sin(t * 7.7 + 1.2)
 
-    top, bot = -20.0, h - 96.0
+    top, bot = -20.0, h - 124.0
     cord_pts = [(cord_x(i / 22), top + (bot - top) * i / 22) for i in range(23)]
     cord = {**line(cord_pts), "w": 1.0}
 
+    def kind_at(t: float) -> str:
+        for t0, t1, kind in MALAI_BANDS:
+            if t0 <= t < t1:
+                return kind
+        return "jasmine"
+
     flowers: list[dict] = []
+    beads: list[dict] = []
     # Dense. A malai is a *rope* of flowers, packed so they touch and overlap;
     # thirty-two spaced along a metre of string read as a chain of asterisks
     # with the cord showing through between them, which is a zip, not a
@@ -809,6 +851,16 @@ def _malai():
         t = (i + 0.5) / count
         y = top + (bot - top) * t
         r1, r2, r3 = next(rng), next(rng), next(rng)
+        kind = kind_at(t)
+        if kind == "bead":
+            # A cuff: three beads abreast, touching, level across the string.
+            for k, off in enumerate((-11.6, 0.0, 11.6)):
+                bx, by = cord_x(t) + off, y + (0.0 if k == 1 else 1.4)
+                beads.append({
+                    "sil": _ring(bx, by, 6.0), "cx": round(bx, 1), "cy": round(by, 1),
+                    "r": 6.0, "t": round(t, 4),
+                })
+            continue
         # Strung flowers alternate to either side of the string, which is what
         # gives a malai its thickness. The offset is not regular: a garland
         # tied by hand bunches.
@@ -816,10 +868,24 @@ def _malai():
         cx_ = cord_x(t) + side * (4.5 + r1 * 8.0)
         cy_ = y + (r2 - 0.5) * 6.0
         rad = 16.5 + r1 * 6.0
-        n = 5 if r3 < 0.5 else 6
-        ring = rosette(cx_, cy_, rad, n, r2 * 6.28, 900 + i * 13)
+        if kind == "rose":
+            # Rounder and fuller than a jasmine: more lobes, shallower.
+            ring = rosette(cx_, cy_, rad * 0.98, 7, r2 * 6.28, 900 + i * 13, valley=0.80)
+        elif kind == "marigold":
+            ring = rosette(cx_, cy_, rad * 1.0, 12, r2 * 6.28, 900 + i * 13, valley=0.84)
+        else:
+            ring = rosette(cx_, cy_, rad, 5 if r3 < 0.5 else 6, r2 * 6.28, 900 + i * 13)
+        # A rose and a marigold are petals inside petals: a second, smaller
+        # outline turned against the first says so in one stroke.
+        whorl = None
+        if kind == "rose":
+            whorl = rosette(cx_, cy_, rad * 0.52, 5, r2 * 6.28 + 0.6, 1700 + i * 7, valley=0.74)
+        elif kind == "marigold":
+            whorl = rosette(cx_, cy_, rad * 0.58, 9, r2 * 6.28 + 0.3, 1700 + i * 7, valley=0.80)
         flowers.append(
             {
+                "kind": kind,
+                "whorl": whorl,
                 "sil": ring["d"],
                 "len": ring["len"],
                 "cx": round(cx_, 1),
@@ -834,22 +900,39 @@ def _malai():
             }
         )
 
-    # A malai ends in a bunch, not in a last flower. Three buds and two leaves
-    # on short pedicels, which is how the string is finished off and tied.
+    # The bell. A garland hung in a doorway ends in one, so that it speaks
+    # when someone comes through — which is what an invitation is for. A turned
+    # object, so it is the lathe: a small crown, a shoulder, a waist, and a
+    # mouth that flares.
     tx, ty = cord_x(1.0), bot
-    tail: list[dict] = []
-    tail_sils: list[str] = []
-    for k, (ang, ln) in enumerate(((-104.0, 46.0), (-84.0, 62.0), (-64.0, 40.0))):
-        a = math.radians(ang + 180)
-        tip = (tx + math.cos(a) * ln, ty + math.sin(a) * ln)
-        pl = leafshape((tx, ty), tip, ln * 0.13, lbulge=1.0, rbulge=0.86)
-        tail_sils.append(pl["sil"])
-        tail += [{**pl["left"], "w": 0.7}, {**pl["right"], "w": 0.5}, {**pl["mid"], "w": 0.4}]
+    links = [{**line([(tx - 3.2 + (k % 2) * 1.2, ty + 4 + k * 8.5), (tx + 3.4 - (k % 2) * 1.0, ty + 7 + k * 8.5),
+                      (tx - 2.6, ty + 11.5 + k * 8.5)]), "w": 0.9} for k in range(3)]
+    y0 = ty + 30.0
+    sil, right, left = lathe(tx, [
+        (y0, 3.2), (y0 + 4.0, 5.4), (y0 + 8.0, 10.5), (y0 + 16.0, 14.8),
+        (y0 + 30.0, 17.2), (y0 + 42.0, 21.0), (y0 + 49.0, 26.8), (y0 + 52.0, 27.6),
+    ])
+    lines = [
+        {**right, "w": 1.0},
+        {**left, "w": 0.75},
+        # The lip, seen from a little below: the front of the mouth's ellipse.
+        {**line([(tx - 27.4, y0 + 51.0), (tx - 14.0, y0 + 55.2), (tx, y0 + 56.4),
+                 (tx + 14.0, y0 + 55.2), (tx + 27.4, y0 + 51.0)]), "w": 0.9},
+        # Two bands turned round the body, which is what a cast bell has.
+        {**line([(tx - 15.6, y0 + 19.0), (tx, y0 + 21.6), (tx + 15.6, y0 + 19.0)]), "w": 0.5},
+        {**line([(tx - 19.6, y0 + 39.0), (tx, y0 + 42.0), (tx + 19.6, y0 + 39.0)]), "w": 0.5},
+        # The crown it hangs by.
+        {**line([(tx - 3.0, y0 + 0.5), (tx - 4.6, y0 - 4.0), (tx, y0 - 7.0), (tx + 4.6, y0 - 4.0),
+                 (tx + 3.0, y0 + 0.5)]), "w": 0.8},
+    ]
+    clapper = _ring(tx + 0.8, y0 + 60.5, 5.2)
 
     return {
         "cord": cord,
         "flowers": flowers,
-        "tail": {"sil": "".join(tail_sils), "lines": tail, "x": round(tx, 1), "y": round(ty, 1)},
+        "beads": beads,
+        "bell": {"sil": sil, "lines": links + lines, "clapper": clapper,
+                 "x": round(tx, 1), "y": round(ty, 1), "top": round(y0, 1)},
     }
 
 
@@ -1589,7 +1672,8 @@ BOXES = {
     "malai": path_bbox(
         _paths(MALAI["cord"],
                [f["sil"] for f in MALAI["flowers"]],
-               MALAI["tail"]["sil"], MALAI["tail"]["lines"]),
+               [b["sil"] for b in MALAI["beads"]],
+               MALAI["bell"]["sil"], MALAI["bell"]["clapper"], MALAI["bell"]["lines"]),
         pad=4.0,
     ),
     "banana": _banana_box(),

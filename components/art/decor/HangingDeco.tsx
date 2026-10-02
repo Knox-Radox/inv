@@ -22,10 +22,16 @@ import styles from "../Hanging.module.css";
  * material: it is strung past both moments without a break, because the day is
  * one thing.
  *
+ * Revision 9 banded it. It was jasmine from end to end, tied off with a bunch
+ * of leaves, because the brief allowed no hue the page did not already have.
+ * The family's printed invitation hangs its garlands as they are really strung
+ * — jasmine, a cuff of gold beads, roses, beads, marigold — with a brass bell
+ * at the foot, and the client asked for exactly those.
+ *
  * | Beat | Window | What |
  * |---|---|---|
- * | 0 | 0.3 → 1.9s | The string runs down, and each flower is threaded as it passes. |
- * | 1 | 2.0 → 2.4s | The bunch at the foot, where the string is tied off. |
+ * | 0 | 0.3 → 1.9s | The string runs down, and each flower and bead is threaded as it passes. |
+ * | 1 | 1.9 → 2.6s | The bell, hung on at the foot. |
  */
 
 const MALAI = ORNAMENT.malai;
@@ -57,6 +63,13 @@ function framed(box: readonly [number, number, number, number] | readonly number
 const STRING_START = 300;
 const STRING_MS = 1600;
 
+/** What each kind of flower is painted and drawn in. */
+const BLOOM = {
+  jasmine: { sheet: "stone", tone: "sage", rim: 0.24, eye: "var(--gold)", eyeOpacity: 0.7 },
+  rose: { sheet: "rose", tone: "arakku", rim: 0.34, eye: "var(--arakku)", eyeOpacity: 0.42 },
+  marigold: { sheet: "marigold", tone: "brass", rim: 0.34, eye: "#96621C", eyeOpacity: 0.5 },
+} as const;
+
 /**
  * The malai's flowers, in four swaying segments.
  *
@@ -70,12 +83,13 @@ const STRING_MS = 1600;
  */
 const SEG_COUNT = 4;
 const SEGMENTS = Array.from({ length: SEG_COUNT }, (_, si) => {
-  const flowers = MALAI.flowers
-    .map((f, i) => ({ f, i }))
-    .filter(({ f }) => Math.min(SEG_COUNT - 1, Math.floor(f.t * SEG_COUNT)) === si);
+  const within = (t: number) => Math.min(SEG_COUNT - 1, Math.floor(t * SEG_COUNT)) === si;
+  const flowers = MALAI.flowers.map((f, i) => ({ f, i })).filter(({ f }) => within(f.t));
+  const beads = MALAI.beads.map((b, i) => ({ b, i })).filter(({ b }) => within(b.t));
   const head = flowers[0]?.f;
   return {
     flowers,
+    beads,
     ax: head?.ax ?? 0,
     ay: head?.ay ?? 0,
     sway: 6.1 + si * 1.63,
@@ -120,14 +134,15 @@ function Malai({ className }: { className?: string }) {
             // client asked for more of — the jasmine spray on the card does
             // the same.
             const cue = STRING_START + STRING_MS * f.t * 0.92;
+            const as = BLOOM[f.kind];
             return (
               <g key={i}>
                 <Wash
                   id={`malai-${i}`}
                   d={f.sil}
-                  sheet="stone"
+                  sheet={as.sheet}
                   box={[f.cx - 30, f.cy - 30, 60, 60]}
-                  rim={0.24}
+                  rim={as.rim}
                   rimWidth={1.5}
                   style={{ "--bloom-delay": `${Math.round(cue + 130)}ms` } as React.CSSProperties}
                 />
@@ -135,39 +150,84 @@ function Malai({ className }: { className?: string }) {
                   d={f.sil}
                   length={f.len}
                   width={0.62}
-                  tone="sage"
+                  tone={as.tone}
                   shadow={false}
                   delay={cue}
                   duration={340}
                 />
-                <circle cx={f.cx} cy={f.cy} r={f.r} fill="var(--gold)" opacity={0.7} />
+                {f.whorl && (
+                  <Stitch
+                    d={f.whorl.d}
+                    length={f.whorl.len}
+                    width={0.5}
+                    tone={as.tone}
+                    opacity={0.55}
+                    shadow={false}
+                    delay={cue + 160}
+                    duration={300}
+                  />
+                )}
+                <circle cx={f.cx} cy={f.cy} r={f.r} fill={as.eye} opacity={as.eyeOpacity} />
+              </g>
+            );
+          })}
+          {/* The cuffs of beads between the flowers. Brass, so no new sheet. */}
+          {seg.beads.map(({ b, i }) => {
+            const cue = STRING_START + STRING_MS * b.t * 0.92;
+            return (
+              <g key={`bead${i}`}>
+                <Wash
+                  id={`malai-bead-${i}`}
+                  d={b.sil}
+                  sheet="brass"
+                  box={[b.cx - 14, b.cy - 14, 28, 28]}
+                  rim={0.42}
+                  rimWidth={1.3}
+                  style={{ "--bloom-delay": `${Math.round(cue + 90)}ms` } as React.CSSProperties}
+                />
+                {/* The catch of light a bead has and a flower does not. */}
+                <circle cx={b.cx - 1.8} cy={b.cy - 2} r={1.5} fill="#FBF7F0" opacity={0.55} />
               </g>
             );
           })}
         </g>
       ))}
 
-      {/* The bunch the string is tied off with. A malai does not end in its
-          last flower any more than the page ends in its last sentence. */}
-      <g>
+      {/* The bell at the foot. A garland hung in a doorway ends in one, so
+          that it speaks when someone comes through. It swings on its own
+          period, a little further than the flowers above it: it is the
+          heaviest thing on the string and the last thing on it. */}
+      <g
+        className={styles.bell}
+        style={{ "--anchor": `${MALAI.bell.x}px ${MALAI.bell.y}px` } as React.CSSProperties}
+      >
         <Wash
-          id="malai-tail"
-          d={MALAI.tail.sil}
-          sheet="foliage"
-          box={[MALAI.tail.x - 60, MALAI.tail.y - 20, 120, 120]}
-          rim={0.28}
-          rimWidth={1.8}
-          style={{ "--bloom-delay": "2150ms" } as React.CSSProperties}
+          id="malai-bell"
+          d={MALAI.bell.sil}
+          sheet="brass"
+          box={[MALAI.bell.x - 44, MALAI.bell.top - 14, 88, 88]}
+          rim={0.36}
+          rimWidth={2}
+          style={{ "--bloom-delay": "2050ms" } as React.CSSProperties}
         />
-        {MALAI.tail.lines.map((ln, i) => (
+        <Wash
+          id="malai-clapper"
+          d={MALAI.bell.clapper}
+          sheet="brass"
+          box={[MALAI.bell.x - 14, MALAI.bell.top + 46, 28, 28]}
+          rim={0.46}
+          rimWidth={1.4}
+          style={{ "--bloom-delay": "2250ms" } as React.CSSProperties}
+        />
+        {MALAI.bell.lines.map((ln, i) => (
           <Stitch
             key={i}
             d={ln.d}
             length={ln.len}
             width={ln.w}
-            tone="deep"
+            tone="brass"
             shadow={false}
-            delay={2000 + i * 40}
+            delay={1900 + i * 46}
             duration={420}
           />
         ))}

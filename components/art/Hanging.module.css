@@ -1,5 +1,6 @@
 /*
- * The day's ornament — docs/revision-6-ornament.md, pieces 4 and 5.
+ * The day's ornament — docs/revision-6-ornament.md, pieces 4 and 5; the malai
+ * was banded and belled in revision 9.
  *
  * Both hang from above the section and are cut by its top edge, so they read
  * as continuing up behind the countdown rather than as two objects placed in
@@ -187,8 +188,29 @@
   }
 }
 
+/* The bell is the pendulum's bob: it turns about where it is hung, further
+   than anything above it and on a period of its own. */
+.bell {
+  transform-box: view-box;
+  transform-origin: var(--anchor);
+}
+
+:global(.astir) .bell {
+  animation: bell-swing 5.3s ease-in-out -1.7s infinite alternate;
+}
+
+@keyframes bell-swing {
+  from {
+    transform: rotate(-1.5deg);
+  }
+  to {
+    transform: rotate(1.5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  :global(.astir) .bloomOnString {
+  :global(.astir) .bloomOnString,
+  :global(.astir) .bell {
     animation: none;
     transform: none;
   }

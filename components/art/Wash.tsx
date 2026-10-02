@@ -10,7 +10,7 @@ import styles from "./Ornament.module.css";
  *    design — a wash that covers evenly is a sticker — and without a base
  *    under them every shape is translucent and overlapping mango leaves show
  *    through one another like cellophane.
- * 2. **The sheet.** A region of one of the three baked sheets, clipped to the
+ * 2. **The sheet.** A region of one of the baked sheets, clipped to the
  *    shape. `box` decides *which* region: it is the rectangle the sheet is
  *    scaled to cover, so pushing it around and resizing it lands different
  *    pigment inside the shape. No two ornaments sample the same square inch,
@@ -24,7 +24,7 @@ import styles from "./Ornament.module.css";
  * components, so there is no `useId` to reach for, and a generated id would
  * differ between the server and client renders anyway.
  */
-export type Sheet = "foliage" | "stone" | "brass";
+export type Sheet = "foliage" | "stone" | "brass" | "marigold" | "rose";
 
 /** The palest tone of each family — the paper the wash was laid on. */
 const BASE: Record<Sheet, string> = {
@@ -35,6 +35,10 @@ const BASE: Record<Sheet, string> = {
   // shading inside it can do anything.
   stone: "#E1DACA",
   brass: "#E4D3B4",
+  // Revision 9's two pigments. Paler than their sheets by a long way: the base
+  // is the paper a wash was laid on, and a rose laid on rose is a sticker.
+  marigold: "#EFD7A0",
+  rose: "#EBB9C6",
 };
 
 /** The tone a wash of each family dries to at its edge. */
@@ -42,6 +46,8 @@ const RIM: Record<Sheet, string> = {
   foliage: "#3A5542",
   stone: "#9A9A8A",
   brass: "#7E5F35",
+  marigold: "#96621C",
+  rose: "#74172A",
 };
 
 export function Wash({

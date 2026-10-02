@@ -283,7 +283,7 @@ FAMILIES = {
     # The rose strung between the jasmine: --kumkum, lifted toward pink where
     # the wash is thin and falling to --arakku where it pools.
     "rose": dict(
-        pigments=[(218, 96, 134), (196, 23, 90), (126, 24, 52)],
+        pigments=[(208, 92, 124), (180, 26, 82), (116, 23, 42)],
         seed=2087,
         coverage=(0.56, 0.94),
         grain=0.28,
