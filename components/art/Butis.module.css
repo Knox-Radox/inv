@@ -1,0 +1,87 @@
+/*
+ * The row of butis. Colours are the tokens; the two greens are the page's own
+ * sage at two strengths.
+ */
+
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(6px, 2.4vw, 16px);
+}
+
+.block {
+  position: absolute;
+}
+
+.buti {
+  flex: 0 1 clamp(36px, 12vw, 58px);
+  min-width: 0;
+  height: auto;
+  overflow: visible;
+  /* The dropped ones sit a little lower, as a walked block does. */
+  margin-top: calc(var(--drop) * clamp(36px, 12vw, 58px) * 1.32);
+}
+
+.leaf {
+  fill: color-mix(in srgb, var(--sage) 78%, var(--sage-deep));
+  stroke: var(--sage-deep);
+  stroke-width: 0.5;
+  stroke-opacity: 0.7;
+}
+
+.vein {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-width: 0.5;
+  stroke-opacity: 0.55;
+  stroke-linecap: round;
+}
+
+.stem {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-linecap: round;
+}
+
+.bloom {
+  stroke: var(--arakku);
+  stroke-width: 0.6;
+  stroke-opacity: 0.7;
+}
+
+.fold {
+  fill: none;
+  stroke: var(--arakku);
+  stroke-width: 0.5;
+  stroke-opacity: 0.6;
+  stroke-linecap: round;
+}
+
+.cup {
+  fill: var(--marigold);
+  stroke: color-mix(in srgb, var(--marigold) 60%, var(--ink));
+  stroke-width: 0.5;
+  stroke-opacity: 0.7;
+}
+
+/* --------------------------------------------------------------------------
+   Printed, inside a sequence that has started: one press of the block each.
+   -------------------------------------------------------------------------- */
+
+:global(.stitching) .buti {
+  animation: press-on 520ms var(--ease-wax) calc(var(--butis-at, 0ms) + var(--i) * 95ms) backwards;
+}
+
+@keyframes press-on {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.stitching) .buti {
+    animation: none;
+  }
+}

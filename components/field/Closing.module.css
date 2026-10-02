@@ -60,6 +60,21 @@
   display: block;
 }
 
+.signoff {
+  position: relative;
+  margin-top: clamp(18px, 3vh, 28px);
+  font-size: var(--text-body-l);
+  line-height: 1.6;
+}
+
+.signature {
+  display: block;
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+  color: var(--sage-deep);
+}
+
 /* Sits on the datum, where the thread has been running all along. */
 .knot {
   position: absolute;

@@ -3,7 +3,7 @@ const fs=require('fs');
 const EXE=process.env.CHROME||'/home/adv/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome';
 const URL=process.argv[2], OUT=process.argv[3];
 fs.mkdirSync(OUT,{recursive:true});
-const MUST = ['Advika','Sooraj','27 November 2026','Artistry Venue','Anna'];
+const MUST = ['Advika','Sooraj','November 27, 2026','Artistry Venue','Anna'];
 let fails=0;
 const ok=(t,c,extra='')=>{ if(!c) fails++; console.log(`  ${c?'PASS':'FAIL'}  ${t}${extra?'  '+extra:''}`); };
 

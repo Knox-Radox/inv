@@ -2,46 +2,62 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invitation } from "@/content/invitation";
+import { SEEN_KEY } from "@/lib/seen";
 import { InvitationCard } from "./InvitationCard";
-import { coverGeometry } from "./coverGeometry";
 import styles from "./Envelope.module.css";
 
-/** Set once the opening has been seen on this device. */
-export const SEEN_KEY = "advika-sooraj-envelope-seen";
-
-const poly = (pts: readonly (readonly [number, number])[]) =>
-  `polygon(${pts.map(([x, y]) => `${x}% ${y}%`).join(",")})`;
+/**
+ * One edge of the flap: a line a pen made, and a hairline of gold just inside
+ * it, the way the edge of a good envelope is gilded.
+ *
+ * Drawn level, in a long thin box, and laid along the edge by rotating the box
+ * — the flap's slope is the same at every screen size (Envelope.module.css,
+ * `--slope`), so the angle is a constant and the line's own wander is never
+ * stretched. `preserveAspectRatio="none"` only lengthens it.
+ */
+function Edge({ wander }: { wander: 0 | 1 }) {
+  const ink = wander
+    ? "M0 6C140 7.2 300 4.8 460 6.2S800 7 1010 5.4S1400 6.8 1600 6"
+    : "M0 6C120 4.6 260 7.4 420 5.8S760 4.8 980 6.6S1380 5.2 1600 6";
+  const gilt = wander
+    ? "M34 2.6C220 3.3 420 1.9 640 2.9S1100 2.1 1600 2.6"
+    : "M34 2.6C220 1.9 420 3.4 640 2.4S1100 3.2 1600 2.6";
+  return (
+    <svg viewBox="0 0 1600 12" preserveAspectRatio="none" focusable="false">
+      <path className={styles.ink} d={ink} />
+      <path className={styles.gilt} d={gilt} />
+    </svg>
+  );
+}
 
 /**
- * The envelope — revision 8.
+ * The envelope — revision 9, and drawn.
  *
- * Revision 4 made the cover a photograph, which answered the client's "it looks
- * fake"; revision 5 made it a macro, full bleed at every size, cropped two ways
- * by `tools/cover.py` so a phone and a desktop each get a frame made for them.
+ * Revisions 4 to 8 made the cover a photograph, because synthesising paper and
+ * wax in code had read as fake three times. The client then asked for the
+ * envelope in the hand the rest of the page is drawn in, and that is a
+ * different thing from the first three attempts: those imitated a material,
+ * and this is a picture of an envelope. `tools/paint.py` paints its three
+ * pieces — the jasmine printed on the paper, the wax, the liner — and the
+ * lines are drawn here.
  *
- * Revision 8 answered four more notes from the client, and three of them were
- * one object: the wax.
+ * What a guest sees: ivory paper printed tone on tone with jasmine, a flap
+ * whose two edges meet under a sage seal struck with the couple's own logo,
+ * and their names. They tap anywhere. The seal gives and goes up on the flap;
+ * inside, for about two seconds, is the one saturated thing on the page — a
+ * lac-maroon liner block-printed in gold. The card rises out of it, its mark
+ * is drawn and its border is strung, the envelope's front falls away, and the
+ * card that is left is the page.
  *
- * The photograph now carries **no wax at all**. `tools/cover.py` reconstructs
- * the paper across it and presses a blind-embossed jasmine relief over the
- * whole sheet, and `tools/seal.py` emits the wax separately — sage, struck with
- * the couple's own wedding logo — as `/cover/seal.webp`, which rides inside the
- * flap. What used to sit under the seal was a patch of reconstructed paper
- * composited over the photograph, and that patch is the "unnatural semicircle"
- * in the client's note.
- *
- * The opening is still the envelope's own. `tools/cover.py` measures where the
- * flap's two creases run in the photograph and where they meet the wax, and
- * emits it as `coverGeometry`; the flap is that polygon, cut along the creases
- * that are already in the picture, turning on the hinge the real flap turns on.
- * Below the creases it is cut along the **wax's own silhouette** — not a circle
- * enclosing it, which is what left a crescent of bare paper hanging off the
- * flap — so the seal goes up whole and nothing goes up with it. Then the card
- * rises out of the dark and the mouth dissolves into the page.
+ * The geometry needs no measuring any more. The flap is a triangle with its
+ * point at `--apex` and its edges at a fixed slope, written as one `polygon()`
+ * in viewport units, so the same three points serve a phone and a desktop.
+ * `coverGeometry.ts` — 758 generated lines locating two creases in two crops
+ * of a photograph — is gone with the photograph.
  *
  * There is no label and no visible skip: the whole cover is the target, which
- * is what the reference does and what a sealed envelope does. The skip link is
- * still in the document for a keyboard, it is just not decoration until then.
+ * is what a sealed envelope is. The skip link is still in the document for a
+ * keyboard.
  *
  * Still not a gate: the invitation is server-rendered and first in the
  * document, the skip link is a real anchor that works with no script, `body` is
@@ -51,7 +67,9 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
   const { couple, day, copy } = invitation;
   const [opening, setOpening] = useState(false);
   const [gone, setGone] = useState(false);
+  const [printed, setPrinted] = useState(false);
   const failsafe = useRef<number | undefined>(undefined);
+  const print = useRef<HTMLImageElement>(null);
 
   const finish = useCallback(() => {
     window.clearTimeout(failsafe.current);
@@ -71,16 +89,23 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
     // own card is at the top of the document. The crossfade at the end assumes
     // those are the same place, which is only true at scroll 0 — so the
     // document goes to the top now, under an opaque cover, where no one can
-    // see it move. Without this the opening ended by dissolving a card at the
-    // top of the screen into a page scrolled halfway down it.
-    window.scrollTo(0, 0);
+    // see it move.
+    // `instant`, because the page now sets `scroll-behavior: smooth` for the
+    // bar's links and a bare scrollTo would glide there instead.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     setOpening(true);
     failsafe.current = window.setTimeout(finish, 9000);
   }, [opening, finish]);
 
+  /*
+   * A hash means the guest was sent somewhere — `#invitation` from the skip
+   * link, `#reply` or `#stay` from the bar or from a message. The pre-paint
+   * script in app/layout.tsx does not arm the cover for any of them, and this
+   * takes it down if one arrives while it is up.
+   */
   useEffect(() => {
     const onHash = () => {
-      if (window.location.hash === "#invitation") finish();
+      if (window.location.hash.length > 1) finish();
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
@@ -89,21 +114,32 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
   useEffect(() => () => window.clearTimeout(failsafe.current), []);
 
   /*
+   * The paper's print fades up when it has arrived, rather than being waited
+   * for. The cover is whole without it — ivory, the flap, the seal, the names
+   * — and the jasmine coming up through the paper a moment later is the one
+   * thing on this page that is *supposed* to look like a wash still spreading.
+   *
+   * An effect as well as `onLoad`: an image that finished loading before
+   * hydration has already fired its event at nobody.
+   */
+  useEffect(() => {
+    if (print.current?.complete) setPrinted(true);
+  }, []);
+
+  /*
    * Hold the document at the top for as long as the cover is up.
    *
    * The cover is fixed and full bleed, so scrolling behind it shows the guest
    * nothing — it only decides where the page will be standing when the
    * envelope goes, and it decided badly: a flick on the sealed envelope, and
    * the opening ended by dissolving into a page already scrolled past the
-   * card. On a desktop the moving scrollbar beside a full-bleed photograph
-   * gave it away before the tap.
+   * card.
    *
    * Deliberately not `overflow: hidden` — not on `body` and not on `html`
    * either. docs/design-plan.md § The lockout, guarantee 1: nothing may make
    * this page unscrollable in a way that outlives the script that set it.
    * A CSS lock survives a dead script; these listeners are the script, so if
-   * it dies the page scrolls. That is the property that matters, and it is why
-   * the guard is built from events rather than from a class.
+   * it dies the page scrolls.
    *
    * `wheel` and `touchmove` are refused outright rather than corrected after
    * the fact, so there is no snap-back to see. The `scroll` pin behind them
@@ -112,18 +148,14 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
    * arrow keys off a guest is a worse failure than a scrolled cover.
    *
    * Gated on `envelope-armed`, which is the one thing that actually decides
-   * whether the cover is on screen — and not on `gone`, which was the first
-   * version of this and was wrong. A guest arriving on `/#invitation` gets the
-   * overlay hidden by CSS (`#invitation:target ~ .overlay`) while this
-   * component stays mounted, so the guard was holding the top of a page with
-   * no cover over it: a deep link that could not be scrolled. Caught by
-   * tools/verify/contrast.js, which loads exactly that URL and found seven
-   * sections stuck at opacity 0 because it could not scroll them into view.
+   * whether the cover is on screen — and not on `gone`. A guest arriving on a
+   * deep link gets no cover while this component stays mounted, and a guard
+   * keyed on `gone` held the top of a page with nothing over it.
    */
   useEffect(() => {
     if (gone || !document.documentElement.classList.contains("envelope-armed")) return;
     const pin = () => {
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (window.scrollY !== 0) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     };
     const refuse = (e: Event) => e.preventDefault();
     pin();
@@ -139,105 +171,90 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
 
   if (gone) return null;
 
-  const p = coverGeometry.portrait;
-  const l = coverGeometry.landscape;
-
-  // Both frames' geometry rides in as custom properties, and the stylesheet
-  // picks between them at the aspect-ratio breakpoint. It cannot be done the
-  // other way round: the numbers are generated from the photograph, and a
-  // media query cannot reach into a generated module.
-  const vars = {
-    "--p-ar": p.aspect,
-    "--p-hinge": `${p.hingeY}%`,
-    "--p-seal-x": `${p.sealX}%`,
-    "--p-seal-y": `${p.sealY}%`,
-    "--p-seal-ry": `${p.sealRy}%`,
-    "--p-sprite-r": `${p.spriteR}%`,
-    "--p-flap": poly(p.flap),
-    "--p-mouth": poly(p.mouth),
-    "--p-opened": poly(p.opened),
-    "--l-ar": l.aspect,
-    "--l-hinge": `${l.hingeY}%`,
-    "--l-seal-x": `${l.sealX}%`,
-    "--l-seal-y": `${l.sealY}%`,
-    "--l-seal-ry": `${l.sealRy}%`,
-    "--l-sprite-r": `${l.spriteR}%`,
-    "--l-flap": poly(l.flap),
-    "--l-mouth": poly(l.mouth),
-    "--l-opened": poly(l.opened),
-  } as React.CSSProperties;
+  const sheet = `${styles.print} ${printed ? styles.printed : ""}`;
 
   return (
     <div
       className={`envelope-overlay ${styles.overlay} ${opening ? styles.opening : ""}`}
-      style={vars}
       role="presentation"
       onAnimationEnd={(e) => {
         if (e.animationName.includes("overlay-out")) finish();
       }}
     >
       <div className={styles.frame}>
-        {/* The envelope, whole. Everything below the creases is this. */}
-        <picture>
-          <source media="(min-aspect-ratio: 1/1)" srcSet="/cover/envelope-landscape.webp" />
-          <img
-            className={styles.photo}
-            src="/cover/envelope-portrait.webp"
-            alt=""
-            /* The page's LCP element, and on a Slow 4G throttle it was racing
-               the seal sprite for the same 400 kbps. Ordered explicitly rather
-               than left to the scanner's guess: the paper is what the guest is
-               waiting to see, and the wax can land a moment later onto it. */
-            fetchPriority="high"
-          />
-        </picture>
-
-        {/* Inside: the dark, then the card, then the mouth that shows them.
-            The card sits where the page's own card sits, so when the mouth
-            dissolves at the end there is nothing to move. */}
-        <div className={styles.mouth} aria-hidden="true">
+        {/* Inside: the liner, then the page's ground, then the card. A whole
+            frame of it, covered at rest by the flap above and the front below.
+            The card sits where the page's own card sits, so once the envelope
+            is out of the way there is nothing left to move. */}
+        <div className={styles.inside} aria-hidden="true">
+          <div className={styles.liner} />
+          <div className={styles.ground} />
           <div className={`${styles.reveal} ${opening ? "stitching" : ""}`}>
             <InvitationCard replica sheetSrc={cardSheet} />
           </div>
-          {/* Over the card, not behind it: the card has to come *out* of the
-              dark, so the dark has to be on it while it is still inside. */}
-          <div className={styles.throat} />
         </div>
 
-        {/* The flap: the same photograph, cut along its own creases, turning on
-            its own hinge. Its share of the wax goes with it. */}
-        <div className={styles.flap} aria-hidden="true">
-          <picture>
-            <source media="(min-aspect-ratio: 1/1)" srcSet="/cover/envelope-landscape.webp" />
-            <img className={styles.photo} src="/cover/envelope-portrait.webp" alt="" />
-          </picture>
-          {/* The wax, laid back on the paper it was lifted from. It is a
-              sprite rather than part of the photograph so that the photograph
-              can be wax-free: what used to sit under the seal was a patch of
-              reconstructed paper composited over it, and that patch is the
-              "unnatural semicircle" the client saw the moment the flap
-              started working. There is no patch now — under the wax is the
-              same continuous sheet as everywhere else.
+        {/* The front of the envelope: its printed paper, cut along the two
+            edges the flap closes onto, and those edges drawn. It is one element
+            so that it can fall away as one — see `.front`. */}
+        <div className={styles.front} aria-hidden="true">
+          <div className={styles.frontPaper}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- it must
+                cover the frame exactly as its twin inside the flap does, and an
+                optimiser free to resize one of them would slide the two prints
+                apart. */}
+            <img
+              ref={print}
+              className={sheet}
+              src="/cover/sprigs.webp"
+              alt=""
+              decoding="async"
+              fetchPriority="low"
+              onLoad={() => setPrinted(true)}
+            />
+            {/* The shadow the closed flap throws on the paper under its edges. */}
+            <span className={`${styles.arm} ${styles.armL} ${styles.cast}`} />
+            <span className={`${styles.arm} ${styles.armR} ${styles.cast}`} />
+          </div>
+          {/* The cut edges themselves, and the shadow each throws on what is
+              inside. Outside the paper's clip, because that shadow falls past
+              the edge of the paper — which is the point of it. */}
+          <span className={`${styles.arm} ${styles.armL} ${styles.rim}`}>
+            <Edge wander={0} />
+          </span>
+          <span className={`${styles.arm} ${styles.armR} ${styles.rim}`}>
+            <Edge wander={1} />
+          </span>
+        </div>
 
-              Inside the flap, so it travels with it and needs no animation of
-              its own. Its alpha is zero past 1.20 R, inside the flap's own
-              1.31 R cut, so nothing of it is clipped. */}
-          {/* Not next/image: this has to land on exact coordinates generated
-              from the photograph, and an optimiser free to resize or re-encode
-              it would move it off them. */}
+        {/* The flap: the same printed paper, cut to the triangle, turning on the
+            top of the frame. Its two edges and the wax go with it. */}
+        <div className={styles.flap} aria-hidden="true">
+          <div className={styles.flapPaper}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className={sheet} src="/cover/sprigs.webp" alt="" decoding="async" />
+            <span className={styles.flapShade} />
+          </div>
+          <span className={`${styles.arm} ${styles.armL} ${styles.crease}`}>
+            <Edge wander={0} />
+          </span>
+          <span className={`${styles.arm} ${styles.armR} ${styles.crease}`}>
+            <Edge wander={1} />
+          </span>
+          {/* The wax. Outside the flap's clip and inside its turn: it sits
+              across the point, half on the flap and half over the paper below,
+              and it goes up whole. Not next/image — it is placed to the pixel
+              against the point of the flap. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className={styles.seal}
-            src="/cover/seal.webp"
+            src="/cover/wax.webp"
+            width={420}
+            height={420}
             alt=""
-            aria-hidden="true"
-            fetchPriority="low"
+            fetchPriority="high"
           />
-          <span className={styles.flapShade} />
         </div>
-
-        {/* Light moving across the paper: once every nine seconds at rest. */}
-        <div className={styles.gleam} aria-hidden="true" />
 
         <div className={styles.type}>
           <p className={styles.names}>

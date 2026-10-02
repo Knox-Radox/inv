@@ -10,11 +10,12 @@ import styles from "./Hanging.module.css";
  * for three passes and was cut — see the note in tools/ornament.py.
  *
  * The malai is the piece that matters. `docs/open-questions.md` #1 records that
- * the seven and a half hours between the ceremony and the reception are
- * answered by a drawing rather than by a sentence the couple has not written,
- * and the running thread has been making that argument since revision 3. The
- * garland makes it again in the other material: it is strung past both moments
- * without a break, because the day is one thing.
+ * the eight and a half hours between the Muhurtham and the reception (seven
+ * and a half until revision 9) are answered by a drawing rather than by a
+ * sentence the couple has not written, and the running thread has been making
+ * that argument since revision 3. The garland makes it again in the other
+ * material: it is strung past both moments without a break, because the day is
+ * one thing.
  *
  * | Beat | Window | What |
  * |---|---|---|

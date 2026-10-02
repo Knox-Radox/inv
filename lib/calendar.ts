@@ -52,7 +52,7 @@ function escape(text: string): string {
 }
 
 const { day, couple } = invitation;
-const [ceremony, reception] = day.moments;
+const [muhurtham, reception] = day.moments;
 const LOCATION = `${day.venue.name}, ${day.venue.street}, ${day.venue.city}, ${day.venue.stateCode} ${day.venue.postalCode}`;
 
 function describe(other: (typeof day.moments)[number]): string {
@@ -89,8 +89,8 @@ function vevent(
   moment: (typeof day.moments)[number],
   other: (typeof day.moments)[number],
 ): string[] {
-  // Reception has no announced end; two hours is the conventional placeholder a
-  // calendar needs and is not shown anywhere in the invitation itself.
+  // Reception has no announced end; four hours is the placeholder a calendar
+  // needs, and it is not shown anywhere in the invitation itself.
   const end = moment.endsAt ?? new Date(Date.parse(moment.startsAt) + 4 * 3_600_000).toISOString();
   return [
     "BEGIN:VEVENT",
@@ -112,26 +112,26 @@ export function buildIcs(): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Advika and Sooraj//Invitation//EN",
+    `PRODID:-//${escape(couple.both)}//Invitation//EN`,
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     ...VTIMEZONE,
-    ...vevent(ceremony, reception),
-    ...vevent(reception, ceremony),
+    ...vevent(muhurtham, reception),
+    ...vevent(reception, muhurtham),
     "END:VCALENDAR",
     "",
   ].join("\r\n");
 }
 
 /**
- * Google's template takes a single event, so it carries the ceremony and names
+ * Google's template takes a single event, so it carries the Muhurtham and names
  * the reception in the details.
  */
 export function googleCalendarUrl(): string {
   const p = new URLSearchParams({
     action: "TEMPLATE",
-    text: `${ceremony.label}: ${couple.both}`,
-    dates: `${utcStamp(ceremony.startsAt)}/${utcStamp(ceremony.endsAt ?? ceremony.startsAt)}`,
+    text: `${muhurtham.label}: ${couple.both}`,
+    dates: `${utcStamp(muhurtham.startsAt)}/${utcStamp(muhurtham.endsAt ?? muhurtham.startsAt)}`,
     location: LOCATION,
     details: describe(reception),
     ctz: TZID,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invitation } from "@/content/invitation";
 import { googleCalendarUrl } from "@/lib/calendar";
 import styles from "./Controls.module.css";
@@ -12,10 +12,16 @@ import styles from "./Controls.module.css";
  * height at its foot, so nothing is ever underneath it. Paper rather than
  * chrome — ground colour, one gold hairline, text labels.
  *
- * Add-to-calendar is a plain anchor to a real .ics route, so it works with
- * JavaScript disabled. The Google link is offered beside it because a large
- * share of this audience lives in Google Calendar and .ics import there is a
- * two-step affair.
+ * Revision 9 gave it more to do. The client asked for "places to stay" beside
+ * the calendar, so the bar is now the way round a page that has grown from four
+ * sections to six: it takes a guest to the hotels, and to the reply card.
+ *
+ * That left no room for the two calendar links that used to sit side by side
+ * ("Google" and "Add to calendar"), and "Google" on its own was never a good
+ * name for a link. They are one disclosure now: "Add to calendar" opens upward
+ * onto the two calendars a guest might use, each named. It is a `<details>`, so
+ * it opens with JavaScript off, and the .ics inside it is still a plain anchor
+ * to a real route.
  *
  * The sound toggle renders only when a track is actually configured. It is
  * null in content/invitation.ts pending docs/open-questions.md #3, and a
@@ -24,30 +30,86 @@ import styles from "./Controls.module.css";
 export function Controls() {
   const { copy, audio } = invitation;
   const [added, setAdded] = useState(false);
+  const calendar = useRef<HTMLDetailsElement>(null);
+
+  // A menu that opens should also close: on a tap anywhere else, and on
+  // Escape, which hands focus back to the thing that opened it.
+  useEffect(() => {
+    const away = (e: Event) => {
+      const d = calendar.current;
+      if (d?.open && e.target instanceof Node && !d.contains(e.target)) d.open = false;
+    };
+    const escape = (e: KeyboardEvent) => {
+      const d = calendar.current;
+      if (e.key !== "Escape" || !d?.open) return;
+      d.open = false;
+      d.querySelector("summary")?.focus();
+    };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
+
+  const close = () => {
+    if (calendar.current) calendar.current.open = false;
+  };
 
   return (
-    <div className={styles.bar}>
-      {audio ? <SoundToggle /> : <span />}
+    <nav className={styles.bar} aria-label={copy.controls.barLabel}>
+      {audio ? <SoundToggle /> : null}
+
+      <a className={`${styles.action} ${styles.lead}`} href="#reply">
+        {copy.controls.reply}
+      </a>
 
       <span className={styles.actions}>
-        <a
-          className={styles.action}
-          href={googleCalendarUrl()}
-          target="_blank"
-          rel="noreferrer noopener"
-        >
-          Google
+        <a className={styles.action} href="#stay">
+          {copy.controls.stay}
         </a>
-        <a
-          className={styles.action}
-          href="/invitation.ics"
-          download="advika-and-sooraj.ics"
-          onClick={() => setAdded(true)}
-        >
-          {added ? copy.controls.calendarDone : copy.controls.calendar}
-        </a>
+
+        <details ref={calendar} className={styles.calendar}>
+          <summary className={styles.action}>
+            {added ? copy.controls.calendarDone : copy.controls.calendar}
+            <Caret />
+          </summary>
+          <span className={styles.menu}>
+            <a
+              className={styles.action}
+              href={googleCalendarUrl()}
+              target="_blank"
+              rel="noreferrer noopener"
+              onClick={close}
+            >
+              {copy.controls.calendarGoogle}
+            </a>
+            <a
+              className={styles.action}
+              href="/invitation.ics"
+              download="advika-and-sooraj.ics"
+              onClick={() => {
+                setAdded(true);
+                close();
+              }}
+            >
+              {copy.controls.calendarFile}
+            </a>
+          </span>
+        </details>
       </span>
-    </div>
+    </nav>
+  );
+}
+
+/** Says "this opens", and turns over when it has. Drawn, like every other mark
+ *  here; it is a signifier for a disclosure, not an arrow glued to a link. */
+function Caret() {
+  return (
+    <svg className={styles.caret} width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true">
+      <path d="M1 4.8 4.5 1.4 8 4.8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

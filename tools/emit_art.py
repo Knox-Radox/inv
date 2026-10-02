@@ -1,10 +1,24 @@
 """
-Emits components/art/paths.ts — the generated geometry the components import.
+Emits the generated geometry the components import.
 
 Run: cd tools && python3 emit_art.py
 
+    components/art/paths.ts      the one knot on the page
+    components/art/ornament.ts   the revision 6 pieces
+    components/art/map.ts        the plate, traced from OpenStreetMap
+    components/art/motif.ts      the revision 9 buti and the mark
+    app/motif.css                the mirror-work border's two tiles
+    lib/borderTile.ts            the same two, as strings, for the share card
+
 Everything here is authored at build time so the browser never measures a path,
 never runs a solver, and never sees a number that was not decided deliberately.
+
+paths.ts used to carry a great deal more: a drawn wax seal, a drawn monogram,
+two blind-emboss reliefs, the jasmine spray above the names and the korvai band
+at the card's foot. The first three had been dead since revision 4 made the
+cover a photograph, and revision 9 took the last two off the card when it put a
+border round it. What nothing imports is no longer emitted, and the tools that
+drew it (wax.py, monogram.py, relief.py) are gone with it.
 """
 
 import sys
@@ -13,95 +27,17 @@ from pathlib import Path
 sys.setrecursionlimit(20000)
 sys.path.insert(0, str(Path(__file__).parent))
 
-import jasmine as jm  # noqa: E402
 import mapplate as mp  # noqa: E402
+import motif as mt  # noqa: E402
 import ornament as orn  # noqa: E402
-import relief as rl  # noqa: E402
-import monogram as mg  # noqa: E402
 import thread as th  # noqa: E402
-import wax as wx  # noqa: E402
 
 OUT = Path(__file__).parent.parent / "components" / "art" / "paths.ts"
 ORN_OUT = Path(__file__).parent.parent / "components" / "art" / "ornament.ts"
 MAP_OUT = Path(__file__).parent.parent / "components" / "art" / "map.ts"
-
-# The korvai ring sits inside the wax, not on its silhouette.
-REKU = mg.reku_ring(50, 50, 37.6, 52, 2.2, 0.25)
-RING_OUTER = 39.9
-RING_INNER = 34.9
-
-BLOCKS: list[tuple[str, str, str]] = [
-    (
-        "WAX_WHOLE",
-        wx.WAX_WHOLE,
-        "The wax body, intact. Perimeter is a circle perturbed by four low "
-        "harmonics with two squeeze-out lobes, so no two arcs of the edge match.",
-    ),
-    ("WAX_LEFT", wx.WAX_LEFT, "Left of the fault. Rotates and drops on beat 1."),
-    ("WAX_RIGHT", wx.WAX_RIGHT, "Right of the fault. Rotates further, and later."),
-    (
-        "WAX_RIM",
-        wx.RIM_INNER,
-        "The lip where the wax pooled — an arc from about 200 to 20 degrees only, "
-        "because a rim is visible where the light is not.",
-    ),
-    ("MONO_A", mg.a.outline() + mg.SERIFS, "The A, with its cut slab serifs."),
-    (
-        "MONO_S",
-        mg.s.outline(),
-        "The S, which is also the A's crossbar — they share the whole stroke.",
-    ),
-    ("KORVAI_REKU", REKU, "The reku temple border ringing the monogram."),
-]
-
-
-def jasmine_block() -> str:
-    """The spray, as data rather than markup: every element carries its own
-    path length so the draw-on never measures anything at runtime."""
-    import json
-
-    def part(p):
-        return {"d": p["d"], "len": p["len"]}
-
-    data = {
-        "stem": [
-            {"d": d, "len": ln, "w": w}
-            for (d, ln), w in zip(
-                (jm.seg(pts) for pts in jm.STEM_POINTS), jm.STEM_WIDTHS
-            )
-        ],
-        "leaves": [
-            {
-                "midrib": part(lf["midrib"]),
-                "lit": part(lf["lit"]),
-                "shade": part(lf["shade"]),
-                "veins": [part(v) for v in lf["veins"]],
-            }
-            for lf in jm.LEAVES
-        ],
-        "buds": [
-            {"pedicel": part(b["pedicel"]), "left": part(b["left"]), "right": part(b["right"])}
-            for b in jm.BUDS
-        ],
-        "flowers": [
-            {
-                "pedicel": part(f["pedicel"]),
-                "petals": [part(q) for q in f["petals"]],
-                "cx": f["cx"],
-                "cy": f["cy"],
-            }
-            for f in jm.FLOWERS
-        ],
-        "dive": {"d": jm.DIVE, "len": jm.DIVE_LEN},
-        "dimple": {"cx": jm.DIMPLE[0], "cy": jm.DIMPLE[1]},
-    }
-    return (
-        "/**\n"
-        " * The jasmine spray. Every element carries its own path length so the\n"
-        " * draw-on can set stroke-dasharray without reading the DOM.\n"
-        " */\n"
-        "export const JASMINE = " + json.dumps(data, indent=2) + " as const;\n"
-    )
+MOTIF_OUT = Path(__file__).parent.parent / "components" / "art" / "motif.ts"
+MOTIF_CSS = Path(__file__).parent.parent / "app" / "motif.css"
+TILE_OUT = Path(__file__).parent.parent / "lib" / "borderTile.ts"
 
 
 def write_map() -> None:
@@ -194,65 +130,110 @@ def write_ornament() -> None:
     print(f"wrote {ORN_OUT.relative_to(ORN_OUT.parent.parent.parent)}  ({ORN_OUT.stat().st_size} bytes)")
 
 
+def write_motif() -> None:
+    """components/art/motif.ts and app/motif.css — the revision 9 motifs.
+
+    Two files because they are two kinds of thing. The buti and the mark are
+    paths a component draws and can draw on, so they are geometry in a module.
+    The border is a repeat, and the only thing on the web that fits a whole
+    number of repeats to a box of any size without script is a CSS background,
+    so its tiles are data URIs in a stylesheet — where they are also written
+    once, instead of once per card in the HTML and again in the RSC payload.
+    """
+    import json
+
+    b = mt.BUTI
+    data = {
+        "buti": {
+            "box": [0, 0, mt.BUTI_W, mt.BUTI_H],
+            "stems": b["stems"],
+            "blooms": [{k: v for k, v in bl.items()} for bl in b["blooms"]],
+            "cups": [{"sil": c["sil"]} for c in b["cups"]],
+            "leaves": [{"sil": lf["sil"], "mid": lf["mid"]} for lf in b["leaves"]],
+        },
+        "mark": {"box": [0, 0, mt.MARK_W, mt.MARK_H], **mt.MARK},
+    }
+    MOTIF_OUT.write_text(
+        "\n".join(
+            [
+                "/**",
+                " * Generated motif geometry — do not edit by hand.",
+                " *",
+                " * Emitted by tools/emit_art.py from tools/motif.py. See",
+                " * docs/revision-9-plan.md for what each piece is and why.",
+                " */",
+                "",
+                "export const MOTIF = " + json.dumps(data, indent=2) + " as const;",
+                "",
+            ]
+        )
+    )
+    MOTIF_CSS.write_text(
+        "\n".join(
+            [
+                "/*",
+                " * Generated — do not edit by hand. tools/emit_art.py, from tools/motif.py.",
+                " *",
+                " * The mirror-work border's two tiles, as custom properties so that",
+                " * components/art/Border.module.css can lay them without carrying them.",
+                " * Two flowers to a tile, and stretchable: see motif.border_tile().",
+                " */",
+                ":root {",
+                f'  --border-h: url("{mt.data_uri(mt.border_tile(False))}");',
+                f'  --border-v: url("{mt.data_uri(mt.border_tile(True))}");',
+                "}",
+                "",
+            ]
+        )
+    )
+    # The same two tiles as plain strings, for the share card. Satori cannot
+    # read a stylesheet, and they must not ride in motif.ts: that module is
+    # imported by client components, and seventeen kilobytes of border would
+    # go to every guest's phone to be used by a build step.
+    TILE_OUT.write_text(
+        "\n".join(
+            [
+                "/**",
+                " * Generated — do not edit by hand. tools/emit_art.py, from tools/motif.py.",
+                " *",
+                " * The mirror-work border's two tiles as SVG strings, for",
+                " * app/opengraph-image.tsx. Build-time only: never import this from a",
+                " * client component.",
+                " */",
+                "export const BORDER_TILE_H =",
+                "  " + json.dumps(mt.border_tile(False)) + ";",
+                "",
+                "export const BORDER_TILE_V =",
+                "  " + json.dumps(mt.border_tile(True)) + ";",
+                "",
+            ]
+        )
+    )
+    for path in (MOTIF_OUT, MOTIF_CSS, TILE_OUT):
+        print(f"wrote {path.relative_to(path.parent.parent)}  ({path.stat().st_size} bytes)")
+
+
 def main() -> None:
     lines = [
         "/**",
         " * Generated geometry — do not edit by hand.",
         " *",
         " * Emitted by tools/emit_art.py. Re-run `cd tools && python3 emit_art.py`",
-        " * after changing tools/monogram.py, tools/wax.py or tools/jasmine.py.",
-        " *",
-        " * Paths are authored in a 100x100 box, simplified to a 0.07-unit tolerance",
-        " * and emitted as relative commands — see tools/pen.py.",
+        " * after changing tools/thread.py.",
         " */",
         "",
-    ]
-    for name, d, doc in BLOCKS:
-        lines.append(f"/** {doc} */")
-        lines.append(f'export const {name} =\n  "{d}";')
-        lines.append("")
-    lines.append(jasmine_block())
-    lines += [
-        "/** Blind-embossed floral relief for the envelope, as SVG markup drawn in",
-        " *  white on transparent: a height map for the lighting filter. 440x700. */",
-        "export const RELIEF_ENVELOPE =",
-        "  " + __import__("json").dumps(rl.ENVELOPE) + ";",
-        "",
-        "/** The card's relief: corners only, so the type has room. 620x900. */",
-        "export const RELIEF_CARD =",
-        "  " + __import__("json").dumps(rl.CARD) + ";",
-        "",
-    ]
-    lines += [
         "/** The one knot on the page, where the thread ties off. */",
         f'export const KNOT =\n  "{th.KNOT}";',
         f"export const KNOT_LEN = {th.KNOT_LEN};",
         f'export const KNOT_LIGHT =\n  "{th.KNOT_LIGHT}";',
         "",
-        "/** One tile of the korvai reku band along the card's bottom edge. */",
-        f'export const KORVAI_TILE = "{th.KORVAI_TILE}";',
-        f"export const KORVAI_TILE_W = {th.KORVAI_TILE_W};",
-        f"export const KORVAI_TILE_H = {th.KORVAI_TILE_H};",
-        "",
-        "/** Radii of the two hairlines either side of the reku band. */",
-        f"export const RING_OUTER = {RING_OUTER};",
-        f"export const RING_INNER = {RING_INNER};",
-        "",
-        "/** The monogram is drawn large for construction, then fitted to the ring. */",
-        f"export const MARK_SCALE = {round(mg.MARK_SCALE * 0.92, 4)};",
-        "/** Optical centring: the A's mass sits low, so the mark is lifted. */",
-        f"export const MARK_LIFT = {mg.MARK_LIFT};",
-        "",
     ]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(lines))
-    total = sum(len(d) for _, d, _ in BLOCKS)
     print(f"wrote {OUT.relative_to(OUT.parent.parent.parent)}  ({OUT.stat().st_size} bytes)")
-    for name, d, _ in BLOCKS:
-        print(f"  {name:14s} {len(d):5d} chars")
-    print(f"  {'TOTAL':14s} {total:5d} chars of path data")
     write_ornament()
     write_map()
+    write_motif()
 
 
 if __name__ == "__main__":

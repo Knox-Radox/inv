@@ -10,3 +10,6 @@ next-env.d.ts
 # Python bytecode from the tools/ scripts.
 __pycache__/
 *.pyc
+
+# Second checkouts made for agents working in parallel.
+.claude/worktrees/

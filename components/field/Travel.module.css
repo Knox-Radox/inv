@@ -1,0 +1,131 @@
+.section {
+  margin-top: clamp(56px, 10vh, 104px);
+  /* The bar's "Places to stay" lands on the sub-heading; this keeps the whole
+     section from being parked under the top of the screen when it does. */
+  scroll-margin-top: 24px;
+}
+
+.title {
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.body {
+  margin-top: clamp(20px, 3.4vh, 32px);
+  max-width: min(60ch, 100%);
+  font-size: var(--text-body);
+  line-height: 1.64;
+}
+
+/*
+ * The second heading takes the schedule's time face, not the script. Two
+ * lines of copperplate forty lines apart read as two sections; this one is a
+ * part of the one above it.
+ */
+.subtitle {
+  margin-top: clamp(44px, 7vh, 76px);
+  font-family: var(--font-eaves), Georgia, serif;
+  font-weight: 400;
+  color: var(--sage-deep);
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  scroll-margin-top: clamp(20px, 5vh, 48px);
+}
+
+.subtitle + .body {
+  margin-top: clamp(12px, 2vh, 20px);
+}
+
+.hint {
+  margin-top: clamp(14px, 2.4vh, 22px);
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  color: var(--ink);
+  /* 0.8 of 11.6:1 is still past 7:1 on the field. */
+  opacity: 0.8;
+}
+
+.hotels {
+  margin-top: clamp(20px, 3.4vh, 32px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(20px, 3.4vh, 30px) clamp(24px, 5vw, 44px);
+}
+
+/* Two abreast as soon as a name can sit on two lines rather than three. */
+@media (min-width: 620px) {
+  .hotels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.hotel {
+  --flower: 17px;
+  position: relative;
+  padding-left: calc(var(--flower) + 13px);
+}
+
+/* One flower of the border, as the mark beside each. The tile is two flowers
+   long; twice the width and anchored left shows the first of them. */
+.hotel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.36em;
+  width: var(--flower);
+  height: var(--flower);
+  background: var(--border-h) left center / 200% 100% no-repeat;
+}
+
+.hotelLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+/*
+ * The name is the link, drawn the way the plate's "Open in Google Maps" is: a
+ * gold hairline lifted clear of the descenders. An underline rather than a
+ * border, because some of these names run to three lines on a phone and a
+ * border would rule only the last.
+ */
+.hotelName {
+  font-size: var(--text-body-l);
+  line-height: 1.42;
+  color: var(--sage-deep);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.hotelLink:hover .hotelName {
+  text-decoration-color: var(--sage-deep);
+}
+
+.hotelAddress {
+  display: block;
+  margin-top: 7px;
+  font-size: var(--text-body-s);
+  line-height: 1.55;
+}
+
+/* Tall enough to be a target on its own, like every other control here. */
+.phone {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-body-s);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--sage-deep);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.phone:hover {
+  text-decoration-color: var(--sage-deep);
+}

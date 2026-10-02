@@ -12,7 +12,7 @@
   margin-top: clamp(28px, 5vh, 44px);
 }
 
-/* The gap between the two moments is the seven and a half hours. It is left
+/* The gap between the two moments is the eight and a half hours. It is left
    open on purpose, and the thread runs through it unbroken. */
 .moment {
   position: relative;
@@ -48,4 +48,12 @@
   margin-top: clamp(36px, 6vh, 56px);
   font-size: var(--text-body);
   line-height: 1.6;
+}
+
+.sharedAddress {
+  font-style: normal;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  /* Real, selectable text — the one thing a guest may need to take away. */
+  user-select: text;
 }

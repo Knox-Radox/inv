@@ -214,7 +214,9 @@
   padding-top: clamp(18px, 4vh, 54px);
   /* The page's bottom padding lives here now, because this is the page's last
      mark. It clears the fixed bar and the home indicator. */
-  padding-bottom: calc(clamp(44px, 7vh, 92px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
+  /* The first term also holds the one line of housekeeping at the very foot —
+     components/Replay.tsx — so it is never less than that line and some air. */
+  padding-bottom: calc(clamp(72px, 9vh, 104px) + var(--bar-height) + env(safe-area-inset-bottom, 0px));
 }
 
 .kolam {

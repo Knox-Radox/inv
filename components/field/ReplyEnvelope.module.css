@@ -1,0 +1,299 @@
+/*
+ * The guest's envelope. Everything is sized from one width, so the whole
+ * object scales as one drawing.
+ *
+ *   --w  the envelope's width
+ *   --h  its height
+ *   --d  how far down the flap's point comes
+ *
+ * The sealing, in milliseconds from the moment the server says yes:
+ *
+ *      0 -  300   the envelope arrives, open, with the reply standing in it
+ *    300 -  850   and stands there: the page is still scrolling up to it, and
+ *                 a guest should see their own name before it goes
+ *    850 - 1750   the reply goes down into the envelope
+ *   1700 - 2500   the flap comes over
+ *   2500 - 2900   the seal is pressed on
+ *   2900 - 3150   and the words appear beneath            (Reply.module.css)
+ *
+ * Transform and opacity only. The flap is the one thing in 3D, and it carries
+ * `preserve-3d` itself: the envelope round it stays flat, for the reason
+ * written at length in components/Envelope.module.css.
+ */
+
+.scene {
+  --w: min(300px, 74vw);
+  --h: calc(var(--w) * 0.68);
+  --d: calc(var(--h) * 0.56);
+  /* Room above for the open flap and the standing card. It closes up once the
+     envelope is sealed — see .sealed in Reply.module.css. */
+  padding-top: calc(var(--h) * 0.62);
+  transition: padding-top 520ms var(--ease-needle);
+}
+
+/* Sealed and at rest: nothing stands above the envelope, so nothing needs
+   room there. */
+.scene:not(.sealing) {
+  padding-top: 10px;
+}
+
+.envelope {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  margin-inline: auto;
+  perspective: 900px;
+  perspective-origin: 50% 0%;
+  /* The envelope's own shadow on the cloth. On the wrapper, because every
+     piece inside it is clipped to a shape and a clip takes a box-shadow off. */
+  filter: drop-shadow(0 10px 14px rgb(58 48 30 / 0.2)) drop-shadow(0 1px 1px rgb(58 48 30 / 0.16));
+}
+
+/* --- Inside --------------------------------------------------------------- */
+
+.back {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background-color: var(--arakku);
+  background-image:
+    linear-gradient(to bottom, rgb(34 6 12 / 0.1), rgb(34 6 12 / 0.5) 58%),
+    url("/cover/liner.webp");
+  background-size:
+    auto,
+    calc(var(--w) * 0.3) auto;
+  background-position:
+    0 0,
+    50% 8%;
+}
+
+/* The reply: a small sheet of the card's own paper, with the name on it. */
+.slip {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 9%;
+  height: 84%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* The name stands in the upper part: that is the part seen above the
+     pocket, and the last part to go under the flap. */
+  padding: 9% 6% 0;
+  text-align: center;
+  background: var(--ground) url("/cover/card-paper.webp") center / cover;
+  box-shadow: 0 1px 3px rgb(30 8 12 / 0.34);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.slipName {
+  max-width: 100%;
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
+  font-size: calc(var(--w) * 0.155);
+  line-height: 1.04;
+  color: var(--sage-deep);
+  text-wrap: balance;
+  /* Two lines of a long name, and no more: the card is small. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  padding: 0 0.1em 0.12em;
+}
+
+.slipLine {
+  margin-top: calc(var(--w) * 0.012);
+  font-size: calc(var(--w) * 0.05);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+/* --- The front, and its edge ---------------------------------------------- */
+
+.pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 2px;
+  clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%);
+  background-color: var(--ground);
+  background-image: url("/cover/sprigs.webp");
+  background-size: calc(var(--w) * 2.3) auto;
+  background-position: 46% 78%;
+}
+
+.edge {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.edge path,
+.flapOut path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--sage-deep) 74%, var(--ground));
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.flapOut .gilt {
+  stroke: var(--gold);
+  stroke-width: 0.9;
+  opacity: 0.8;
+}
+
+/* --- The flap ------------------------------------------------------------- */
+
+.flap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  width: 100%;
+  height: var(--d);
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+}
+
+.flapOut,
+.flapIn {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  backface-visibility: hidden;
+}
+
+/* The paper side: lit a little more than the pocket, as the cover's flap is. */
+.flapOut {
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(to bottom, rgb(255 253 248 / 0.6), rgb(255 253 248 / 0.1)),
+    url("/cover/sprigs.webp");
+  background-size:
+    auto,
+    calc(var(--w) * 2.3) auto;
+  background-position:
+    0 0,
+    46% 30%;
+}
+
+.flapOut svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The lining side, facing away until the flap stands open. */
+.flapIn {
+  transform: rotateX(180deg);
+  background-color: var(--arakku);
+  background-image:
+    linear-gradient(to top, rgb(34 6 12 / 0.34), rgb(34 6 12 / 0.06)),
+    url("/cover/liner.webp");
+  background-size:
+    auto,
+    calc(var(--w) * 0.3) auto;
+  background-position:
+    0 0,
+    50% 40%;
+}
+
+/* --- The seal ------------------------------------------------------------- */
+
+.seal {
+  position: absolute;
+  left: 50%;
+  top: var(--d);
+  z-index: 5;
+  width: calc(var(--w) * 0.36);
+  height: auto;
+  translate: -50% -52%;
+}
+
+/* --- The sealing ---------------------------------------------------------- */
+
+.sealing .envelope {
+  animation: arrive 300ms ease-out both;
+}
+
+.sealing .slip {
+  animation: go-in 900ms var(--ease-lift) 850ms both;
+}
+
+/* Open, the flap stands behind the card; closing, it comes over everything.
+   `z-index` is stepped with the turn, not eased: a flap is in front or it is
+   behind. */
+.sealing .flap {
+  animation: come-over 800ms var(--ease-flap) 1700ms both;
+}
+
+.sealing .seal {
+  animation: press-on 400ms var(--ease-wax) 2500ms both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes go-in {
+  from {
+    transform: translateY(-66%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes come-over {
+  from {
+    transform: rotateX(180deg);
+    z-index: 1;
+  }
+  1% {
+    z-index: 4;
+  }
+  to {
+    transform: rotateX(0deg);
+    z-index: 4;
+  }
+}
+
+/* Pressed, not faded: it arrives large and close and is set down. */
+@keyframes press-on {
+  from {
+    opacity: 0;
+    transform: scale(1.34);
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    transition: none;
+  }
+
+  .sealing .envelope,
+  .sealing .slip,
+  .sealing .flap,
+  .sealing .seal {
+    animation: none;
+  }
+}

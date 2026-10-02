@@ -34,6 +34,8 @@ region, which is what a real washed sheet cut up would look like.
 Writes public/wash/foliage.webp
        public/wash/stone.webp
        public/wash/brass.webp
+       public/wash/marigold.webp   revision 9
+       public/wash/rose.webp       revision 9
 """
 
 from __future__ import annotations
@@ -231,10 +233,14 @@ def sheet(
 
 
 #: The families. Every colour here is one of the tokens in app/globals.css or a
-#: shade mixed from two of them; nothing introduces a hue the page does not
-#: already have. In particular there is no saffron: a marigold thoranam would
-#: have meant a new accent colour, which §6 of the brief rules out, so the
-#: thoranam is mango leaf on a gold cord — which is also the commoner form.
+#: shade mixed from two of them.
+#:
+#: Until revision 9 that meant no saffron: a marigold thoranam would have been
+#: a new accent colour, which §6 of the brief ruled out. The client lifted it
+#: when the family's printed invitation arrived — "ivory paper, jewel inks" —
+#: so the last two sheets are the marigold and the rose that every garland in
+#: that invitation is strung with. They are pigments, not grounds: they fill a
+#: flower, and nothing larger. See docs/revision-9-plan.md § Tokens.
 FAMILIES = {
     # Mango leaf, banana, cypress, jasmine foliage. --sage and --sage-deep with
     # an olive between them, because new leaf and old leaf are not the same
@@ -263,6 +269,25 @@ FAMILIES = {
         coverage=(0.46, 0.90),
         grain=0.34,
         blooms=2,
+    ),
+    # Marigold: --marigold between a lit yellow and the burnt orange the petals
+    # go at the base. Dense, because a marigold is — it is the one flower in
+    # the garland the string never shows through.
+    "marigold": dict(
+        pigments=[(236, 184, 82), (210, 149, 44), (176, 104, 30)],
+        seed=1433,
+        coverage=(0.58, 0.94),
+        grain=0.30,
+        blooms=3,
+    ),
+    # The rose strung between the jasmine: --kumkum, lifted toward pink where
+    # the wash is thin and falling to --arakku where it pools.
+    "rose": dict(
+        pigments=[(208, 92, 124), (180, 26, 82), (116, 23, 42)],
+        seed=2087,
+        coverage=(0.56, 0.94),
+        grain=0.28,
+        blooms=3,
     ),
 }
 

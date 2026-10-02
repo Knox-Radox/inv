@@ -6,9 +6,10 @@ import styles from "./Schedule.module.css";
  * The day — docs/design-plan.md § Layout.
  *
  * Two moments on one continuous spine, at one venue. The thread does not break
- * between them, which is how the seven and a half hours between the ceremony
- * and the reception are answered: by a drawing rather than by a sentence the
- * couple has not written. See docs/open-questions.md #1.
+ * between them, which is how the eight and a half hours between the Muhurtham
+ * and the reception (seven and a half until revision 9) are answered: by a
+ * drawing rather than by a sentence the couple has not written. See
+ * docs/open-questions.md #1.
  *
  * Ordinal markers are earned here — this is a genuine sequence — and are
  * declined anyway. The thread already carries order by its direction, and the
@@ -16,7 +17,9 @@ import styles from "./Schedule.module.css";
  * the treatment the brief bans even where it is legitimate.
  *
  * The venue is named once, beneath both, because attaching an address to each
- * moment is what makes one day at one place read as two events in two.
+ * moment is what makes one day at one place read as two events in two. The
+ * client asked in revision 9 for the full address here as well, so it is set
+ * once, directly under that line, and still never against a moment.
  */
 export function Schedule() {
   const { day, copy } = invitation;
@@ -41,6 +44,12 @@ export function Schedule() {
       </ol>
 
       <p className={styles.shared}>{copy.sharedVenueLine}</p>
+
+      <address className={styles.sharedAddress}>
+        {day.venue.street}
+        <br />
+        {day.venue.city}, {day.venue.stateCode} {day.venue.postalCode}
+      </address>
     </section>
   );
 }

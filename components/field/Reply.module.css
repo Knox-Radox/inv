@@ -1,0 +1,609 @@
+/*
+ * The reply card — docs/revision-9-plan.md § The idea.
+ *
+ * A sheet of the invitation's own paper in the invitation's own border, lying
+ * on the cloth. Everything on it is a line to write on: there is not a box on
+ * this card, and that is the difference between a form and a reply card.
+ */
+
+.section {
+  position: relative;
+  margin-top: clamp(56px, 10vh, 104px);
+}
+
+.title {
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  /* The bar's "Reply" lands here. */
+  scroll-margin-top: clamp(20px, 5vh, 48px);
+}
+
+/* For a guest with no JavaScript, sent back here by the route. Shown by
+   `:target` and by nothing else. */
+.plain {
+  display: none;
+  margin-top: clamp(20px, 3.4vh, 32px);
+  font-size: var(--text-body-l);
+  line-height: 1.6;
+  color: var(--sage-deep);
+  scroll-margin-top: 30vh;
+}
+
+.plain:target {
+  display: block;
+}
+
+/* --- The sheet ------------------------------------------------------------ */
+
+.card {
+  --border-inset: clamp(8px, 2.3vw, 16px);
+  --border-b: clamp(18px, 5.2vw, 26px);
+  --frame: calc(var(--border-inset) + var(--border-b));
+  position: relative;
+  z-index: 1;
+  /*
+   * Out past the column on both sides, to the width the invitation card has,
+   * and over the thread: the running thread comes down the cloth, goes under
+   * this sheet, and comes out below it. A card lying on the cloth, not a panel
+   * set into a column.
+   */
+  margin: clamp(26px, 4.4vh, 44px) calc(-1 * var(--field-pad-right)) 0 calc(-1 * var(--content-x));
+  box-shadow:
+    0 1px 2px rgb(58 48 30 / 0.07),
+    0 16px 40px -20px rgb(58 48 30 / 0.3);
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.paper {
+  position: absolute;
+  inset: 0;
+  background: var(--ground) url("/cover/card-paper.webp") center / cover;
+}
+
+.inner {
+  position: relative;
+  padding: calc(var(--frame) + clamp(20px, 3.4vh, 34px)) calc(var(--frame) + clamp(14px, 4.2vw, 40px))
+    calc(var(--frame) + clamp(22px, 3.6vh, 36px));
+}
+
+/* The card's one printed sentence. */
+.request {
+  text-align: center;
+  font-size: var(--text-body-l);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.by {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-eaves-sc), Georgia, serif;
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  color: var(--sage-deep);
+}
+
+/* --- Lines to write on ---------------------------------------------------- */
+
+.field {
+  margin-top: clamp(22px, 3.6vh, 32px);
+}
+
+.field[hidden] {
+  display: none;
+}
+
+.label {
+  display: block;
+  padding: 0;
+  font-size: var(--text-body-s);
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/*
+ * One ruled line. 19px type, and never under 16: below that iOS zooms the
+ * page on focus and a guest is left scrolled sideways on a card.
+ *
+ * The page's focus ring is a box drawn round the control, which on a line to
+ * write on draws the one thing this card has none of. So here focus is the
+ * line itself: it doubles in weight, turns to the page's green, and the paper
+ * above it takes a breath of gold. That is a change of more than 3:1 along the
+ * whole width of the control, and under forced colours the ring comes back.
+ */
+.line,
+.lines {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 7px 0 5px;
+  font: inherit;
+  font-size: var(--text-body-l);
+  line-height: 1.5;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 46%, transparent);
+  border-radius: 0;
+  appearance: none;
+}
+
+.line {
+  min-height: 46px;
+}
+
+.line::placeholder {
+  color: color-mix(in srgb, var(--ink) 52%, transparent);
+  opacity: 1;
+}
+
+.line:focus-visible,
+.lines:focus-visible {
+  outline: none;
+  border-bottom-color: var(--sage-deep);
+  box-shadow: 0 1px 0 0 var(--sage-deep);
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--gold-light) 26%, transparent),
+    transparent 82%
+  );
+}
+
+@media (forced-colors: active) {
+  .line:focus-visible,
+  .lines:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+.line[aria-invalid="true"] {
+  border-bottom-color: var(--arakku);
+}
+
+/*
+ * A few ruled lines, for the two notes. The rules are drawn at the type's own
+ * leading, so what is written sits on them, and `field-sizing` lets the box
+ * grow with the note where a browser supports it.
+ */
+.lines {
+  --rule: color-mix(in srgb, var(--ink) 34%, transparent);
+  min-height: calc(1.9em * 2 + 12px);
+  padding: 4px 0 8px;
+  line-height: 1.9;
+  border-bottom: 0;
+  resize: none;
+  field-sizing: content;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.9em - 1px),
+    var(--rule) calc(1.9em - 1px),
+    var(--rule) 1.9em
+  );
+  background-position: 0 4px;
+  background-attachment: local;
+}
+
+.lines:focus-visible {
+  --rule: color-mix(in srgb, var(--sage-deep) 70%, transparent);
+  box-shadow: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(1.9em - 1px),
+    var(--rule) calc(1.9em - 1px),
+    var(--rule) 1.9em
+  );
+}
+
+.hint {
+  margin-top: 7px;
+  font-size: var(--text-body-s);
+  line-height: 1.45;
+  color: var(--ink);
+  opacity: 0.8;
+}
+
+/* Arakku, which is 10.9:1 on the paper: an error is the one place on this page
+   that colour is allowed to be type. */
+.problem {
+  margin-top: 7px;
+  font-size: var(--text-body-s);
+  line-height: 1.45;
+  color: var(--arakku);
+}
+
+/* --- Each event ----------------------------------------------------------- */
+
+.event,
+.party {
+  min-width: 0;
+  margin: clamp(26px, 4.2vh, 38px) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: var(--text-body-l);
+  line-height: 1.35;
+  color: var(--sage-deep);
+}
+
+.at {
+  font-variant-numeric: lining-nums;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px clamp(6px, 2vw, 16px);
+  margin: 6px -12px 0;
+}
+
+.choice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The real control, invisible and exactly as large as its label: it takes the
+   tap, the arrow keys and the form's own validation. */
+.radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.phrase {
+  position: relative;
+  padding: 9px 13px 10px;
+  font-size: var(--text-body-l);
+  line-height: 1.3;
+  white-space: nowrap;
+  transition:
+    opacity 260ms ease-out,
+    color 260ms ease-out;
+}
+
+.radio:focus-visible + .phrase {
+  outline: 2px solid var(--sage-deep);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/*
+ * The ring a guest's pen puts round their answer. It is drawn, on a stroke, at
+ * the moment they choose — motion that answers something a person did — and it
+ * is a little wider than the words, as a ring drawn by hand is.
+ */
+.ring {
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: calc(100% + 6px);
+  height: calc(100% + 4px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ring path {
+  fill: none;
+  stroke: var(--sage-deep);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  /* Not only undrawn but absent. A dash pushed all the way off a path with
+     round caps still leaves its cap behind, and every unchosen phrase on the
+     card had a full stop floating above its first letter. */
+  opacity: 0;
+}
+
+.radio:checked + .phrase {
+  color: var(--sage-deep);
+}
+
+.radio:checked + .phrase .ring path {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 560ms var(--ease-needle);
+}
+
+/* The phrase not chosen steps back, once one has been. */
+@supports selector(:has(*)) {
+  .choices:has(.radio:checked) .radio:not(:checked) + .phrase {
+    opacity: 0.52;
+  }
+}
+
+/*
+ * How many are coming — asked only of someone who has accepted. Shown by CSS,
+ * not by script, so the card behaves the same for a guest whose JavaScript
+ * never arrived. Where `:has` is not understood the line is simply always
+ * there, which is the right way to be wrong.
+ */
+.count {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 6px;
+}
+
+@supports selector(:has(*)) {
+  .event:not(:has(input[value="accept"]:checked)) .count {
+    display: none;
+  }
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--sage-deep);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ink) 32%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.step:disabled {
+  opacity: 0.34;
+  cursor: default;
+}
+
+/* With no script the two buttons would do nothing, and the number between
+   them can be typed into. */
+:global(html:not(.js)) .step {
+  display: none;
+}
+
+/*
+ * The numeral is set in the small-caps face, for its figures. Mrs Eaves Roman
+ * has only old-style ones, and its old-style one is a small capital I: ten
+ * guests read as "IO".
+ *
+ * And the line-height is not a matter of taste. The Mrs Eaves files carry
+ * their descender with the wrong sign (hhea.descent = +250), so the browser
+ * believes the face is a third of an em tall. Ordinary text just overflows
+ * that box and nobody sees; an <input> *clips* to it, and at `line-height: 1`
+ * this numeral was the top arc of a 2 and nothing else. A taller line box
+ * gives the glyph room. See docs/revision-9-rsvp.md § The numeral.
+ */
+.number {
+  width: 2.5ch;
+  min-height: 46px;
+  padding: 0;
+  font: inherit;
+  font-family: var(--font-eaves-sc), Georgia, serif;
+  font-size: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
+  line-height: 1.6;
+  text-align: center;
+  color: var(--sage-deep);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.number::-webkit-inner-spin-button,
+.number::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.party {
+  display: grid;
+  gap: 2px;
+}
+
+.party > .label {
+  margin-bottom: 2px;
+}
+
+/* --- Not for people ------------------------------------------------------- */
+
+.trap {
+  position: absolute;
+  left: -200vw;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* --- Sending it ----------------------------------------------------------- */
+
+.foot {
+  margin-top: clamp(30px, 5vh, 44px);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.failure {
+  max-width: 36ch;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--arakku);
+}
+
+.failure:empty {
+  display: none;
+}
+
+/* The one filled control on the page. It is the thing the whole card is for. */
+.send {
+  min-height: 52px;
+  min-width: 11.5rem;
+  padding: 0 34px;
+  font: inherit;
+  font-size: var(--text-body-l);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ground);
+  background: var(--sage-deep);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 200ms ease-out;
+}
+
+.send:hover {
+  background: color-mix(in srgb, var(--sage-deep) 88%, var(--ink));
+}
+
+.send:active {
+  transform: translateY(1px);
+}
+
+.send[aria-busy="true"] {
+  cursor: progress;
+  background: color-mix(in srgb, var(--sage-deep) 72%, var(--ground));
+}
+
+.privacy {
+  max-width: 34ch;
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/* --- Sent ----------------------------------------------------------------- */
+
+.keepsake {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  /* Centred on the card's own axis, not on the column's: see .card. */
+  margin: clamp(18px, 3vh, 30px) calc(-1 * var(--field-pad-right)) 0 calc(-1 * var(--content-x));
+}
+
+.after {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: clamp(22px, 3.6vh, 34px);
+  padding-inline: 20px;
+}
+
+/* The words wait for the wax. */
+.section[data-mode="sealing"] .after {
+  opacity: 0;
+}
+
+.section[data-mode="sealed"] .after {
+  animation: said 520ms ease-out both;
+}
+
+@keyframes said {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.sentTitle {
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  color: var(--sage-deep);
+}
+
+.sentTitle:focus {
+  outline: none;
+}
+
+.thanks {
+  max-width: 30ch;
+  font-size: var(--text-body-l);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+.summary {
+  margin: 10px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 2px clamp(28px, 8vw, 56px);
+}
+
+.summary dt {
+  font-size: var(--text-body-s);
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+.summary dd {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+.change {
+  margin-top: 6px;
+  min-height: 44px;
+  padding: 0 4px;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--sage-deep);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.change:hover {
+  text-decoration-color: var(--sage-deep);
+}
+
+/* --- Closed --------------------------------------------------------------- */
+
+.closed {
+  margin-top: clamp(20px, 3.4vh, 32px);
+  max-width: 40ch;
+  font-size: var(--text-body);
+  line-height: 1.64;
+}
+
+.closedLine {
+  font-size: var(--text-body-l);
+  color: var(--sage-deep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section[data-mode="sealed"] .after {
+    animation: none;
+  }
+
+  .radio:checked + .phrase .ring path {
+    transition: none;
+  }
+}

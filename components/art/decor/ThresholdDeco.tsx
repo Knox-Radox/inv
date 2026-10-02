@@ -255,9 +255,9 @@ function Thoranam({ className }: { className?: string }) {
             <Wash
               id={`th-cl-${i}`}
               d={cl.sil}
-              sheet="stone"
+              sheet="marigold"
               box={[cl.cx - 26, cl.cy - 26, 52, 52]}
-              rim={0.22}
+              rim={0.3}
               rimWidth={1.4}
               style={{ "--bloom-delay": `${Math.round(cue + 120)}ms` } as React.CSSProperties}
             />
@@ -274,12 +274,12 @@ function Thoranam({ className }: { className?: string }) {
               d={cl.sil}
               length={cl.len}
               width={0.6}
-              tone="sage"
+              tone="brass"
               shadow={false}
               delay={cue + 120}
               duration={420}
             />
-            <circle cx={cl.cx} cy={cl.cy} r={cl.r} fill="var(--gold)" opacity={0.75} />
+            <circle cx={cl.cx} cy={cl.cy} r={cl.r} fill="#96621C" opacity={0.5} />
           </g>
         );
       })}

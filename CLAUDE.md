@@ -110,21 +110,34 @@ time must be a one-line edit in that file.
 The facts are real. Do not invent details, add a fictional "our story", fabricate
 a hashtag, or pad the page with sections nobody asked for.
 
-One client decision that is settled and not to be revisited:
-- **There is no RSVP.** No form, no headcount, no "let us know", no contact block.
+**Nothing in this section is settled forever, and it used to say otherwise.**
+It listed two client decisions as "settled and not to be revisited". The client
+has since reversed both, after seeing them built, and a rule that has been
+wrong every time it was tested is not a rule. Treat what follows as the current
+state.
 
-**The map used to be the second.** It was "purely visual — no Open in Maps
+**There is an RSVP.** "There is no RSVP — no form, no headcount, no 'let us
+know', no contact block" held for eight revisions and was reversed outright at
+revision 9. It is a reply card in the formal register of a printed one, sealed
+in wax when it is sent, with a Supabase database behind it and a
+passcode-protected page at `/replies` for the family. Read
+`docs/revision-9-plan.md` § The RSVP in detail before touching any of it, and
+note two things it must never do: read a reply back to a browser, or say
+whether a phone number has already replied.
+
+**The map is real and it is a link.** It was "purely visual — no Open in Maps
 button, no embed, no deep link, no interactivity", and the client reversed it at
-revision 7 after seeing it built that way. The map is now traced from real
-OpenStreetMap geometry and the whole plate is a link that opens Google Maps. It
-is still a drawing and it is still hand-weighted line: what changed is that the
-geography is true and the plate is useful. No embed, no iframe and no tile
+revision 7 after seeing it built that way. The map is traced from real
+OpenStreetMap geometry and the whole plate opens Google Maps. It is still a
+drawing and it is still hand-weighted line. No embed, no iframe and no tile
 provider still hold — nothing on the page fetches a map at runtime.
 
-The only interactive elements on the entire page are: the cover itself (the
-whole of it opens the envelope — there is no label and no visible skip link),
-the sound toggle, add-to-calendar, and the map plate. If you are building a
-fifth, stop and ask.
+What a guest can act on, as of revision 9: the cover (the whole of it opens the
+envelope — there is no label and no visible skip link), the bar's three
+controls (Reply, Places to stay, and Add to calendar, which opens onto two
+calendars), the map plate, the six hotel links and the one phone number, and the
+reply card. There is still no contact block. If you are adding a new *kind* of
+control, stop and ask.
 
 ## Motion budget
 

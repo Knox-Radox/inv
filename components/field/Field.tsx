@@ -1,12 +1,15 @@
 import { ClosingThreshold, KolamMark } from "../art/ClosingThreshold";
+import { Replay } from "../Replay";
 import { Entrance } from "../art/Entrance";
 import { Hanging } from "../art/Hanging";
 import { Threshold } from "../art/Threshold";
 import { Closing } from "./Closing";
 import { Countdown } from "./Countdown";
 import { Place } from "./Place";
+import { Reply } from "./Reply";
 import { Reveal } from "./Reveal";
 import { Schedule } from "./Schedule";
+import { Travel } from "./Travel";
 import { Dimple, Thread } from "./Thread";
 import styles from "./Field.module.css";
 
@@ -53,6 +56,16 @@ export function Field() {
             <Place />
           </Reveal>
         </Entrance>
+        {/* No stage round this one, and no ornament: see Travel. */}
+        <Reveal delay={80}>
+          <Travel />
+        </Reveal>
+
+        {/* Not inside a `Reveal`: this one is a form, and a form that is
+            invisible until an observer says otherwise is a form a guest can be
+            locked out of. It is simply there. */}
+        <Reply />
+
         <ClosingThreshold>
           <Reveal delay={80}>
             <Closing />
@@ -62,6 +75,7 @@ export function Field() {
 
       {/* Outside `.inner` on purpose — see KolamMark. */}
       <KolamMark />
+      <Replay />
     </div>
   );
 }

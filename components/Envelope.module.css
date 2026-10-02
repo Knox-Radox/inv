@@ -1,29 +1,35 @@
 /*
- * The opening — revision 8. Full bleed, and the envelope's own hinge.
+ * The opening — revision 9. A drawn envelope, and the liner inside it.
  *
  *     0 -  240   the press: the frame takes the tap
- *   180 -  680   the wax gives — the flap lifts three degrees on --ease-break,
+ *     0 -  420   the names and the flap's shadow leave
+ *   180 -  550   the wax gives — the flap lifts three degrees on --ease-break,
  *                which is deliberately slow off the mark
- *   680 - 2460   the flap swings back and away, foreshortening on its hinge
- *   850 - 2250   the card rises out of the envelope's dark
- *   850 - 2350   the dark holds on the card, then lifts off it
- *  1250 - 2400   the jasmine is stitched on (Stitch.module.css, .stitching)
- *  1650 - 2650   the mouth opens out until it is the whole frame
- *  2750 - 3600   the cover crossfades to the page beneath, which is the same
- *                component in the same place, so nothing moves
+ *   550 - 1880   the flap swings back and away, and what is under it is the
+ *                liner: lac maroon, block-printed in gold
+ *  1350 - 2700   the card rises out of the envelope, past the liner
+ *  1560 - 2860   the page's own ground rises behind it, a second sheet
+ *  1650 - 2720   the mark is drawn at the card's head   (InvitationCard.tsx)
+ *  2050 - 3310   the border is strung round the card    (Border.module.css)
+ *  2100 - 3250   the envelope's front falls away, and what was inside it
+ *                is the whole frame
+ *  2700 - 3600   the butis are printed along the card's foot
+ *  3650 - 4500   the cover dissolves into the page beneath, which is the same
+ *                card in the same place, so nothing moves
  *
- * The wax is its own sprite (tools/seal.py) sitting inside the flap, and the
- * whole of it travels with the flap. An earlier pass sheared it along a chord
- * between the two creases and let each half go with the paper it was stuck to,
- * which is what a real seal does and what it looked like: damage. The reference
- * lifts the flap with the seal whole on it, so the cut runs around the outside
- * of the wax — around the wax's own outline, not around a circle enclosing it,
- * which is what used to hang a crescent of bare paper off the flap. Nothing
- * here is linear.
+ * The order of the middle three is the whole point and was wrong the first
+ * time. The card used to start rising at 1000 ms on a curve that does most of
+ * its travel at once, so by the time the flap was out of the way the card had
+ * already covered the liner, and the one saturated surface on the page was on
+ * screen for no frames at all. The flap is quicker now, the card waits for it,
+ * and the liner has about a second to itself.
  *
- * Every geometric number comes from tools/cover.py, which measures the creases
- * on the photograph itself: --p-* for the portrait crop, --l-* for the
- * landscape one, chosen below. Nothing in this file guesses where the paper is.
+ * Nothing here is measured from a picture any more. The flap is a triangle
+ * with its point at --apex and its edges at --slope, written once in viewport
+ * units, and the same three points serve a phone and a desktop: on a phone the
+ * edges run off the sides of the screen, on a desktop they run off the top.
+ * Every line that has to lie along an edge is drawn level and turned by the one
+ * constant angle that slope makes. Nothing here is linear.
  */
 
 .overlay {
@@ -34,32 +40,44 @@
   overflow: hidden;
   display: none;
 
-  /* Portrait is the default; the landscape crop takes over once the viewport
-     is wider than it is tall. Two crops rather than one stretched across both:
-     a phone frame letterboxed onto a desktop is most of what made the old
-     cover look cheap on a laptop. */
-  --ar: var(--p-ar);
-  --hinge: var(--p-hinge);
-  --seal-x: var(--p-seal-x);
-  --seal-y: var(--p-seal-y);
-  --seal-ry: var(--p-seal-ry);
-  --sprite-r: var(--p-sprite-r);
-  --flap-cut: var(--p-flap);
-  --mouth-cut: var(--p-mouth);
-  --opened-cut: var(--p-opened);
+  /* Where the flap's point is, from the top of the frame. A length, not a
+     percentage, because it is used in a transform as well as in a position. */
+  --apex: 46lvh;
+  /* The flap's edges, as rise over run, and the angle that is. They are the
+     same number written twice and must be changed together. */
+  --slope: 0.8;
+  --tilt: 38.66deg;
+  /* The wax's sprite. The wax itself is 81% of it; the rest is its shadow. */
+  --seal: clamp(132px, 22vmin + 62px, 236px);
+  /* How far the front has to fall for its two edges to clear the bottom
+     corners of the frame: the rest of the height, plus the slope's share of
+     half the width, and a little over. */
+  --fall: calc(100lvh - var(--apex) + 42vw + 24px);
+
+  /* The triangle, point first. Its other two corners are far off screen along
+     the two edges, so its top side is always above the frame. */
+  --flap-cut: polygon(
+    50% var(--apex),
+    calc(50% - 200vmax) calc(var(--apex) - 200vmax * var(--slope)),
+    calc(50% + 200vmax) calc(var(--apex) - 200vmax * var(--slope))
+  );
+  /* Everything the triangle is not: the envelope's front. The same two edges,
+     then down and round the foot of the frame. It starts a pixel inside the
+     flap, so the two cuts overlap and no hairline of liner shows between them. */
+  --front-cut: polygon(
+    50% calc(var(--apex) - 1px),
+    calc(50% + 200vmax) calc(var(--apex) - 1px - 200vmax * var(--slope)),
+    calc(50% + 200vmax) 400lvh,
+    calc(50% - 200vmax) 400lvh,
+    calc(50% - 200vmax) calc(var(--apex) - 1px - 200vmax * var(--slope))
+  );
 }
 
 @media (min-aspect-ratio: 1/1) {
+  /* A wider frame is a shorter one: the point sits a little higher so the
+     names beneath the wax stay off the bottom edge. */
   .overlay {
-    --ar: var(--l-ar);
-    --hinge: var(--l-hinge);
-    --seal-x: var(--l-seal-x);
-    --seal-y: var(--l-seal-y);
-    --seal-ry: var(--l-seal-ry);
-    --sprite-r: var(--l-sprite-r);
-    --flap-cut: var(--l-flap);
-    --mouth-cut: var(--l-mouth);
-    --opened-cut: var(--l-opened);
+    --apex: 41lvh;
   }
 }
 
@@ -72,189 +90,369 @@
 }
 
 /*
- * The frame is the photograph at its own proportion, scaled until it covers the
- * viewport and centred on it — object-fit: cover in a box of known aspect.
- *
- * It has to be done this way round rather than with object-fit, because the
- * flap's clip path is a percentage of the *element*: with object-fit the
- * browser crops inside the box, the picture slides against the box, and the cut
- * stops following the crease. Sized like this the two can never disagree.
+ * The frame is the screen.
  *
  * lvh, not dvh or svh: dvh reflows the whole cover when a phone's URL bar
  * moves, and svh leaves a strip uncovered when it hides. lvh always covers.
  */
 .frame {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: max(100vw, calc(100lvh * var(--ar)));
-  height: max(100lvh, calc(100vw / var(--ar)));
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh;
   perspective: 1500px;
-  perspective-origin: 50% var(--seal-y);
+  perspective-origin: 50% var(--apex);
   /*
-   * Flat, deliberately, and this is the whole reason the opening ever worked.
+   * Flat, deliberately. This was `preserve-3d` once, which reads like the
+   * right thing to write next to a perspective and is exactly wrong here: it
+   * puts every child into one shared 3D space and paints them by depth, which
+   * *replaces* z-index. The flap turns about the top of the frame, so the
+   * instant it tilted its whole body sat at negative z and sorted behind the
+   * envelope. It animated perfectly, out of sight, for two revisions.
    *
-   * This was `preserve-3d`, which reads like the right thing to write next to
-   * a perspective and is exactly wrong here. `preserve-3d` puts every child
-   * into one shared 3D space and paints them by depth, which *replaces*
-   * z-index. The flap turns about the top of the frame, so the instant its
-   * transform became a matrix3d — about 250 ms in, three degrees of rotation —
-   * its whole body sat at negative z and sorted behind the mouth's dark. It
-   * did not fail to animate: it animated perfectly, out of sight. Measured
-   * with tools/verify/probe.js, which is why this went unseen for two
-   * revisions: at 1300 ms the flap reports rotateX(-18deg) and opacity 1, and
-   * the screenshot at that beat is a black triangle.
-   *
-   * `perspective` on this element still applies to the flap's rotation — that
-   * is the parent's job and does not need preserve-3d. What flattening buys is
-   * that the children paint in z-index order again: photo, mouth, flap.
-   * Nothing here needs to share a 3D space; only one child is ever in 3D.
+   * `perspective` on this element still applies to the flap's rotation. What
+   * flattening buys is that the children paint in z-index order: inside,
+   * front, flap, type.
    */
   transform-style: flat;
-  background: var(--ground);
+  background:
+    radial-gradient(120% 70% at 50% 108%, rgb(176 141 87 / 0.07), rgb(176 141 87 / 0) 62%),
+    var(--ground);
 }
 
-.photo {
+/* --- The paper's print ---------------------------------------------------- */
+
+/*
+ * tools/paint.py's sheet of jasmine, covering the frame and centred on it. The
+ * flap carries a second copy at the same size in the same place, so the two
+ * prints are one print until the flap turns.
+ *
+ * Hidden until it has arrived, then let up slowly — see Envelope.tsx.
+ */
+.print {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: fill;
+  object-fit: cover;
+  object-position: 50% 50%;
+  opacity: 0;
+  transition: opacity 1100ms var(--ease-needle);
+}
+
+.printed {
+  opacity: 1;
+}
+
+/* --- Lines that lie along the flap's edges --------------------------------- */
+
+/*
+ * An arm: a zero-height box hinged at the flap's point and laid along one
+ * edge. Both arms are the same drawing; the left is the right one mirrored,
+ * so "below the line" means "away from the flap" on both without a second set
+ * of rules.
+ */
+.arm {
+  position: absolute;
+  left: 50%;
+  top: var(--apex);
+  width: 160vmax;
+  height: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.armR {
+  transform: rotate(calc(-1 * var(--tilt)));
+}
+
+.armL {
+  transform: scaleX(-1) rotate(calc(-1 * var(--tilt)));
+}
+
+.arm > svg {
+  position: absolute;
+  left: 0;
+  top: -6px;
+  width: 100%;
+  height: 12px;
+  overflow: visible;
+}
+
+.ink,
+.gilt {
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* The pen. --sage-deep let down a little: at full strength a line this long
+   reads as a rule, and it is meant to read as a drawn edge. */
+.ink {
+  stroke: color-mix(in srgb, var(--sage-deep) 78%, var(--ground));
+  stroke-width: 1.5;
+}
+
+/* The gilding, a hair inside the edge. */
+.gilt {
+  stroke: var(--gold);
+  stroke-width: 1;
+  opacity: 0.78;
+}
+
+/*
+ * The shadow the closed flap throws: a soft band on the paper just below each
+ * edge, darkest where the flap touches down. It is a gradient and not a blur.
+ */
+.cast::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: clamp(30px, 6vmin, 52px);
+  background: linear-gradient(
+    to bottom,
+    rgb(86 78 58 / 0.27),
+    rgb(86 78 58 / 0.1) 30%,
+    rgb(86 78 58 / 0)
+  );
 }
 
 /* --- Inside the envelope -------------------------------------------------- */
 
 /*
- * The mouth: everything the flap covers when it is shut. The card and the dark
- * behind it are only ever visible through this, so the card appears from behind
- * the envelope's front face exactly where a real card would.
+ * Everything in the envelope, as a whole frame of it. Nothing here is clipped:
+ * at rest the flap covers what is above the two edges and the front covers what
+ * is below them, and it is seen only as those two get out of the way — which
+ * is what "inside" means.
  */
-.mouth {
+.inside {
   position: absolute;
   inset: 0;
-  clip-path: var(--mouth-cut);
-  z-index: 1;
+  z-index: 0;
+  overflow: hidden;
 }
 
-/* The dark inside the envelope, lying over the card as well as behind it, so
-   the card comes out of it rather than appearing in front of it. Opacity only
-   — a filter here re-rasters every frame. */
-.throat {
+/*
+ * The liner — **the one saturated surface on the page**, seen for about two
+ * seconds. tools/paint.py prints one repeat; this lays it at the size a hand
+ * block would be on a sheet this big, and shades it toward the point, which is
+ * the deepest part of the envelope anyone can see into.
+ */
+.liner {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(120% 70% at 50% 0%, rgb(28 23 16 / 0.92), rgb(38 32 22 / 0.62) 62%,
-      rgb(46 40 28 / 0.42) 100%);
-  opacity: 0;
+  background-color: var(--arakku);
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgb(34 6 12 / 0.12),
+      rgb(34 6 12 / 0.3) calc(var(--apex) * 0.62),
+      rgb(34 6 12 / 0.56) var(--apex)
+    ),
+    url("/cover/liner.webp");
+  background-size:
+    auto,
+    clamp(118px, 15vmin + 60px, 176px) auto;
+  background-position:
+    0 0,
+    50% calc(var(--apex) * 0.4);
+}
+
+/*
+ * The page's own ground, which is not there at first: on a desktop the card is
+ * a 700px sheet with champagne either side of it, and if that champagne came up
+ * with the card the liner would be seen only as two slivers.
+ *
+ * It rises behind the card, a beat after it, as a second sheet coming out of
+ * the envelope — which is what the page is. It was a fade first, and champagne
+ * faded over lac maroon passes through a muddy pink that is on no palette this
+ * page has; a sheet with an edge passes through nothing.
+ */
+.ground {
+  position: absolute;
+  inset: 0;
+  background: var(--ground-deep);
+  box-shadow: 0 -1px 0 rgb(58 48 30 / 0.16), 0 -10px 22px -8px rgb(30 8 12 / 0.42);
+  visibility: hidden;
 }
 
 /*
  * The card, at exactly the size and place the page's own card occupies, so the
- * dissolve at the end has nothing left to move.
- *
- * This is a viewport-sized box, not `inset: 0`. The frame is sized to *cover*
- * the viewport, so on a phone it is wider than the screen — 513px on a 430px
- * one — and a card laid out inside it wrapped its lines to 513px and sat 41px
- * off to the left. `min-height: 100lvh` then re-centred it inside 932px when
- * its natural height is 859, dropping it another 37px. Both were measured, and
- * together they are what made the end of the opening land with the card
- * apparently scrolled down. The frame is centred on the viewport, so a
- * viewport-sized box centred in the frame is the viewport exactly.
+ * dissolve at the end has nothing left to move. A viewport-sized box: the
+ * frame is the viewport, and the page's card is laid out against the viewport.
  */
 .reveal {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100lvh;
-  left: calc(50% - 50vw);
-  top: calc(50% - 50lvh);
   overflow: hidden;
-  opacity: 1;
   /* Not painted until the envelope is opening. The card is behind the flap and
-     inside the mouth's clip, so it was never visible at rest — but it is still
+     behind the front, so it was never visible at rest — but it is still
      laid out, and when the fonts landed it resized behind the cover and Chrome
      charged the reflow to CLS: 0.095 of a 0.1 budget, measured, for a shift no
      guest could see. `visibility` takes it out of layout-shift accounting
      without taking it out of the document. */
   visibility: hidden;
-  /* The page's own ground. Once the mouth has opened out, this covers the
-     photograph completely and the frame already *is* the page, so the crossfade
-     at the end has nothing left to change. */
-  background: var(--ground-deep);
+}
+
+/* The replica brings no ground of its own — see .ground. On a phone its sheet
+   is the full width anyway, and that is the paper. */
+.reveal > div {
+  background-color: transparent;
+}
+
+/* --- The front of the envelope --------------------------------------------- */
+
+/*
+ * The front is one element, and it leaves by falling.
+ *
+ * The first build of this cover left the front where it was and *wiped* it
+ * away with an animated `clip-path` on the layer behind, with the cut edges
+ * following on a transform. Those two run on different threads: the transform
+ * is composited and the clip is repainted on the main thread, so under any
+ * load the edge ran a frame or two ahead of the cut and a band of envelope
+ * opened between them — forty pixels of it in a capture, and a slow phone is
+ * always under load. One element with one transform cannot disagree with
+ * itself, and it is also truer: the envelope does not dissolve from the top
+ * down, it drops out of the hand.
+ */
+.front {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.frontPaper {
+  position: absolute;
+  inset: 0;
+  clip-path: var(--front-cut);
+  background: var(--ground);
+}
+
+/*
+ * The envelope's top edge. On a phone the flap's two edges run off the sides
+ * of the screen and this is never seen; on a desktop they run off the top, so
+ * when the front falls its own top edge crosses the frame, and a sheet of paper
+ * crossing a frame with no edge and no shadow is a rectangle sliding.
+ */
+.front::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 26px;
+  background: linear-gradient(to top, rgb(30 8 12 / 0.3), rgb(30 8 12 / 0.1) 36%, rgb(30 8 12 / 0));
+}
+
+/*
+ * The cut edges, and the shadow each throws on what is inside — which falls
+ * *upward* here, into the envelope, because the front is nearer the guest than
+ * the card. Under the flap at rest, so never seen until the flap lifts.
+ */
+.rim::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(22px, 4.6vmin, 40px);
+  background: linear-gradient(
+    to top,
+    rgb(30 8 12 / 0.4),
+    rgb(30 8 12 / 0.14) 34%,
+    rgb(30 8 12 / 0)
+  );
+}
+
+/* The front has no gilding: that is the flap's. */
+.rim .gilt {
+  display: none;
 }
 
 /* --- The flap ------------------------------------------------------------- */
 
 /*
- * The flap is the same photograph, cut to the triangle above its own two
- * creases plus the whole of the wax, turning about the top of the frame.
- *
- * On the portrait crop that is the real hinge: cover.py crops so the envelope's
- * top edge lands there, and coverGeometry reports it at -0.3%. On the landscape
- * crop it cannot be — the envelope is not wide enough in the source to hold the
- * hinge in frame and still fill it — and the generated --hinge comes out at
- * -47%. Turning about that was tried and is wrong: an axis half a frame above
- * the picture converts the rotation into mostly translation, and the flap does
- * not open, it takes off. Measured, it left the viewport by 254px at 1.7s.
- *
- * So both turn about the frame's top edge, which is exactly right for portrait
- * and the closest honest place for landscape.
+ * The flap turns about the top of the frame. Nothing on this element is
+ * clipped: its paper is cut to the triangle one level down, because the wax
+ * sits across the point — half on the flap, half past it — and a clip up here
+ * would shear it along the edge.
  */
 .flap {
   position: absolute;
   inset: 0;
   z-index: 2;
-  clip-path: var(--flap-cut);
   transform-origin: 50% 0;
   backface-visibility: hidden;
   will-change: transform;
 }
 
-/*
- * The wax, laid back onto the paper it was lifted from.
- *
- * Placed from the same generated geometry as the cut, so it lands on exactly
- * the paper tools/seal.py took it out of. It sits inside .flap and so needs no
- * animation of its own: it turns on the flap's hinge because it is on the flap,
- * which is what a seal stuck to a flap does.
- *
- * The percentage is against the frame's width both ways — the sprite is square,
- * and the frame is not — so the vertical offset carries --ar.
- */
-.seal {
+.flapPaper {
   position: absolute;
-  left: calc(var(--seal-x) - var(--sprite-r));
-  top: calc(var(--seal-y) - var(--sprite-r) * var(--ar));
-  width: calc(var(--sprite-r) * 2);
-  height: auto;
-  aspect-ratio: 1;
+  inset: 0;
+  clip-path: var(--flap-cut);
+  background: var(--ground);
 }
 
-/* The underside of a lifting flap goes into shadow before it turns away. */
+/* Lit a little more than the paper under it: the flap is the nearer plane.
+   The same element is what goes into shadow as the flap lifts. */
+.flapPaper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgb(255 253 248 / 0.5),
+    rgb(255 253 248 / 0) calc(var(--apex) * 0.8)
+  );
+}
+
 .flapShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgb(46 40 28 / 0.5), rgb(46 40 28 / 0) 62%);
+  z-index: 2;
+  background: linear-gradient(to bottom, rgb(86 74 50 / 0.2), rgb(86 74 50 / 0) var(--apex));
   opacity: 0;
-  pointer-events: none;
+}
+
+/*
+ * The wax, across the point.
+ *
+ * Its centre sits a little above the point, the way a seal is put down: on the
+ * flap, lapping over onto the paper below. Inside .flap, so it turns on the
+ * flap's hinge because it is on the flap.
+ */
+.seal {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--apex) - 1.4lvh);
+  width: var(--seal);
+  height: auto;
+  aspect-ratio: 1;
+  translate: -50% -50%;
 }
 
 /* --- The type on the cover ------------------------------------------------ */
 
 /*
- * Under the wax, on the paper, at the reference's own restraint: who, and when.
- * No wash panel behind it — the crop is chosen so this lands on clean paper,
- * and a panel on a photograph is the thing that reads as a website rather than
- * as a letter. Everything else waits until the card.
+ * Under the wax, on the paper: who, and when. tools/paint.py leaves the print
+ * out here, so this lands on clean paper. Everything else waits until the card.
  */
 .type {
   position: absolute;
   left: 50%;
   translate: -50% 0;
-  top: calc(var(--seal-y) + var(--seal-ry) + 6%);
+  top: calc(var(--apex) + var(--seal) * 0.44 + 2.4lvh);
   z-index: 3;
-  width: min(88%, 30rem);
+  width: min(88%, 34rem);
   text-align: center;
   pointer-events: none;
 }
@@ -262,78 +460,59 @@
 .names {
   font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
   color: var(--sage-deep);
-  /* Its own step rather than --text-script-xl: on the cover the names answer
-     the wax, which is a fixed fraction of the frame, so they are sized against
-     the frame and not against the card's measure. Capped at both ends of the
-     clamp so 3x Dynamic Type cannot drive them into the seal. */
-  font-size: clamp(min(3.4rem, 16vw), 2.4rem + 4.6vw, min(5.5rem, 18vw));
+  /* Sized against the frame — both ways, because a phone on its side is wide
+     and very short — and held at each end so 3x Dynamic Type cannot drive the
+     names into the seal. */
+  font-size: clamp(min(2.4rem, 13vw), min(14.4vw, 9.4lvh), min(5.5rem, 18vw));
   line-height: 1.02;
   padding-right: 0.06em;
 }
 
-/* The script carries its own flourish; the conjunction only steps back. */
+/* Mrs Eaves' ampersand between two lines of copperplate — see the card. */
 .amp {
   display: block;
-  font-size: 0.4em;
-  line-height: 1.6;
-  opacity: 0.8;
+  font-family: var(--font-eaves), Georgia, serif;
+  font-size: 0.3em;
+  line-height: 1.2;
+  margin: 0.3em 0 0.04em;
+  opacity: 0.86;
 }
 
 .date {
-  margin-top: clamp(10px, 1.6vh, 18px);
+  margin-top: clamp(8px, 1.5lvh, 18px);
   font-family: var(--font-eaves-sc), Georgia, serif;
   font-size: var(--text-body-s);
   letter-spacing: 0.055em;
   color: color-mix(in srgb, var(--ink) 88%, transparent);
 }
 
-@media (min-aspect-ratio: 1/1) {
-  /* The landscape crop puts the wax lower in a shorter frame; the type sits
-     tighter under it and stays off the bottom edge. */
-  .type {
-    top: calc(var(--seal-y) + var(--seal-ry) + 2%);
-    width: min(70%, 36rem);
-  }
+/* --- Drawn on, when the cover first appears ------------------------------- */
+
+/*
+ * The two edges of the flap are drawn outward from under the wax, once, as the
+ * cover arrives. It is the page's own idiom — a line a hand is still making —
+ * and it is the only thing that moves before the tap. The wax and the names
+ * are simply there: they are what the guest came for, and the first paint is
+ * not held back for a flourish.
+ *
+ * `backwards`, and only a `from`: without the animation the edges are drawn.
+ */
+.crease > svg {
+  transform-origin: 0 50%;
+  animation: edge-drawn 900ms var(--ease-needle) 120ms backwards;
 }
 
-/* --- Light on the paper --------------------------------------------------- */
-
-.gleam {
-  position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: -60%;
-  width: 55%;
-  z-index: 3;
-  background: linear-gradient(
-    100deg,
-    rgb(255 255 255 / 0) 0%,
-    rgb(255 252 244 / 0.28) 45%,
-    rgb(255 252 244 / 0.46) 50%,
-    rgb(255 252 244 / 0.28) 55%,
-    rgb(255 255 255 / 0) 100%
-  );
-  mix-blend-mode: screen;
-  pointer-events: none;
-  animation: gleam-rest 9s var(--ease-needle) 1.6s infinite;
-}
-
-@keyframes gleam-rest {
-  0% {
-    transform: translateX(0);
-  }
-  26% {
-    transform: translateX(400%);
-  }
-  100% {
-    transform: translateX(400%);
+@keyframes edge-drawn {
+  from {
+    transform: scaleX(0.04);
+    opacity: 0;
   }
 }
 
 /* --- The target ----------------------------------------------------------- */
 
 /* The whole cover opens it. There is no label: a sealed envelope does not
-   carry instructions, and the reference's does not either. */
+   carry instructions. */
 .hit {
   position: absolute;
   inset: 0;
@@ -400,62 +579,55 @@
   animation: press 240ms var(--ease-press) both;
 }
 
-.opening .flap {
-  animation: flap-open 2280ms var(--ease-break) 180ms both;
-}
-
-.opening .flapShade {
-  animation: shade-in 1500ms ease-out 300ms both;
-}
-
-/* The mouth opens out until it is the whole frame: same polygon, same point
-   count, lower boundary dropped past the foot of the picture. Without this the
-   card stayed shut inside the V until the very end and the crossfade had to do
-   all the work of becoming the page. */
-.opening .reveal {
-  visibility: visible;
-}
-
-.opening .mouth {
-  animation: mouth-open 1000ms var(--ease-flap) 1650ms both;
-}
-
-.opening .throat {
-  animation: throat 1500ms var(--ease-press) 850ms both;
-}
-
-.opening .reveal {
-  animation: card-rise 1400ms var(--ease-rise) 850ms both;
-}
-
-.opening .type,
-.opening .gleam {
+.opening .type {
   animation: fade-out 420ms ease-out both;
 }
 
+/* The flap's shadow goes as the flap leaves the paper. */
+.opening .cast {
+  animation: fade-out 560ms ease-out 240ms both;
+}
+
+.opening .flap {
+  animation: flap-open 1700ms var(--ease-break) 180ms both;
+}
+
+.opening .flapShade {
+  animation: shade-in 1200ms ease-out 260ms both;
+}
+
+.opening .crease > svg {
+  animation: none;
+}
+
+.opening .reveal {
+  visibility: visible;
+  animation: card-rise 1350ms var(--ease-lift) 1350ms both;
+}
+
+/* The envelope's front falls away. Slow off the mark, so the page's ground
+   has come up behind the card before the front has dropped far enough to show
+   the liner anywhere else. */
+.opening .front {
+  animation: front-fall 1150ms var(--ease-fall) 2100ms both;
+}
+
+.opening .ground {
+  visibility: visible;
+  animation: ground-rise 1300ms var(--ease-lift) 1560ms both;
+}
+
 .opening {
-  animation: overlay-out 850ms ease-in 2750ms both;
+  animation: overlay-out 850ms ease-in 3650ms both;
 }
 
 /*
  * Slow off the mark, then decisive: the first movement is wax giving way, not
  * a flap opening. The last third is past 90 degrees, where the flap is facing
  * away and only its edge is left, so it is taken out on opacity rather than
- * held as a sliver.
- *
- * That opacity hold used to run to 78%, which is *after* the flap has already
- * foreshortened into the sliver it was meant to avoid: the wax bump is round
- * and the flap's edges are straight, and a rotating plane forces the straight
- * edges toward zero height much faster than the round one, so between roughly
- * 65% and 85% the silhouette is a flat bar with the bump still hanging off it
- * — not a flap closing, a shape breaking apart. Measured with
- * tools/verify/probe.js's rect heights and confirmed against the live 3D
- * transform (getBoundingClientRect on the actual rotated vertices, not a
- * screenshot — screenshots of this animation cannot be trusted paused mid-
- * scrub in every environment, this one included). It is the same on both
- * crops; it reads as a small flaw on a phone and as an unmissable one
- * stretched across a desktop viewport. So the fade starts before the
- * silhouette breaks, not after.
+ * held as a sliver — and the fade starts before the silhouette breaks, not
+ * after: the wax is round and the flap's edges are straight, and a turning
+ * plane takes the straight edges to nothing much faster than the round one.
  */
 @keyframes flap-open {
   0% {
@@ -480,13 +652,13 @@
 
 @keyframes press {
   0% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
   55% {
-    transform: translate(-50%, -50%) scale(0.994);
+    transform: scale(0.994);
   }
   100% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 
@@ -502,39 +674,38 @@
   }
 }
 
-/* Holds while the card is still inside, then lifts off it. Fading it straight
-   through left the card arriving onto bare paper: measured at 0.15 by 900ms. */
-@keyframes throat {
-  0% {
-    opacity: 1;
-  }
-  34% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Out of the dark, not up the screen: a short travel reads as a card leaving an
-   envelope, a long one reads as a panel sliding in. */
+/*
+ * Up out of the envelope. It starts a third of the frame down, which is far
+ * enough that the liner is seen above it and behind it before it covers them,
+ * and it does not fade: a card coming out of an envelope is not a ghost.
+ */
 @keyframes card-rise {
   from {
-    opacity: 0;
-    transform: translateY(7%) scale(0.972);
+    transform: translateY(34lvh);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
 
-@keyframes mouth-open {
+/* From below the foot of the frame, so its top edge follows the card's up and
+   it has covered the liner before the front has fallen far enough to show the
+   liner anywhere else. */
+@keyframes ground-rise {
   from {
-    clip-path: var(--mouth-cut);
+    transform: translateY(72lvh);
   }
   to {
-    clip-path: var(--opened-cut);
+    transform: none;
+  }
+}
+
+@keyframes front-fall {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(var(--fall));
   }
 }
 
@@ -558,24 +729,34 @@
 
 /*
  * Reduced motion keeps the object and drops the choreography: the envelope is
- * there, sealed, photographed, and tapping it crossfades to the card. Nothing
- * turns, nothing rises, and the cover still looks like a sealed envelope rather
- * than like a page with its animation switched off.
+ * there, sealed and drawn, and tapping it crossfades to the card. Nothing
+ * turns, nothing rises.
+ *
+ * The crossfade is given its duration with `!important` and on purpose.
+ * app/globals.css collapses every animation to 0.01ms under this query — which
+ * is right as a default and was silently wrong here: the 420ms fade written
+ * below it lost to that rule for three revisions, and what a guest who had
+ * asked for less motion actually got was a hard cut.
  */
 @media (prefers-reduced-motion: reduce) {
-  .gleam,
+  .print {
+    transition: none;
+  }
+
+  .crease > svg,
   .opening .frame,
-  .opening .mouth,
+  .opening .front,
+  .opening .ground,
+  .opening .cast,
   .opening .flap,
   .opening .flapShade,
-  .opening .throat,
   .opening .reveal,
-  .opening .type,
-  .opening .gleam {
+  .opening .type {
     animation: none;
   }
 
   .opening {
     animation: overlay-out 420ms ease-out both;
+    animation-duration: 420ms !important;
   }
 }

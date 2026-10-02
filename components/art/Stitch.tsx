@@ -36,7 +36,7 @@ export function Stitch({
   /** Path length, from tools/*.py. Never measured in the browser. */
   length: number;
   width: number;
-  tone?: "sage" | "gold" | "deep" | "stone" | "brass";
+  tone?: "sage" | "gold" | "deep" | "stone" | "brass" | "arakku";
   /** Milliseconds, relative to the start of the sequence. */
   delay?: number;
   duration?: number;

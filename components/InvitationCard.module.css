@@ -1,5 +1,5 @@
 /*
- * The invitation card — revision 3. Embossed paper, centred type.
+ * The invitation card — revision 9. Cotton paper in a mirror-work border.
  */
 
 .card {
@@ -12,6 +12,12 @@
 }
 
 .inner {
+  /* The border's own measurements, read by components/art/Border.module.css.
+     Declared here because the content's padding is written in terms of them
+     and custom properties only inherit downward. */
+  --border-inset: clamp(8px, 2.3vw, 16px);
+  --border-b: clamp(18px, 5.2vw, 26px);
+  --frame: calc(var(--border-inset) + var(--border-b));
   position: relative;
   width: 100%;
   max-width: var(--card-width);
@@ -33,70 +39,96 @@
   background-position: center;
 }
 
-.content,
-.edge {
-  z-index: 1;
-}
-
 .content {
   position: relative;
-  padding: clamp(48px, 9vh, 96px) clamp(28px, 7vw, 56px) clamp(56px, 9vh, 88px);
+  z-index: 1;
+  padding: calc(var(--frame) + clamp(16px, 3.4vh, 40px))
+    calc(var(--frame) + clamp(10px, 3.4vw, 36px)) calc(var(--frame) + clamp(14px, 2.6vh, 30px));
   text-align: center;
 }
 
-.spray {
+/* --- The head: the mark, and its line ------------------------------------- */
+
+.mark {
   display: block;
-  width: clamp(96px, 26vw, 140px);
+  width: clamp(40px, 12vw, 58px);
   height: auto;
-  margin: 0 auto clamp(14px, 3vh, 28px);
-  transform-origin: 50% 0;
-  animation: sway 7.5s ease-in-out infinite alternate;
+  margin: 0 auto;
 }
 
-@keyframes sway {
-  from {
-    transform: rotate(-0.9deg);
-  }
-  to {
-    transform: rotate(0.9deg);
-  }
+/*
+ * In Mrs Eaves. The printed invitation sets this line in a Devanagari-styled
+ * Latin face, which the brief bans and which is the single most "themed" thing
+ * on that sheet. Arakku rather than ink: it is the one line on the card that
+ * is not the couple speaking.
+ */
+.invocation {
+  margin-top: clamp(6px, 1.2vh, 12px);
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  letter-spacing: 0.018em;
+  color: var(--arakku);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .spray {
-    animation: none;
-  }
+.invocation > span {
+  /* The double danda. Closed up, so it reads as one mark and not as two
+     pipes, and held a little off the words. */
+  letter-spacing: -0.04em;
+  padding-inline: 0.12em;
+  opacity: 0.8;
 }
+
+/* --- The names ------------------------------------------------------------ */
 
 .names {
+  margin-top: clamp(14px, 2.6vh, 30px);
   font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
   font-weight: 400;
   color: var(--sage-deep);
   font-size: var(--text-script-xl);
   line-height: 1.02;
   letter-spacing: -0.015em;
+  /*
+   * Said here and not left to the global `h1` rule. The page's card sets the
+   * names as an `h1` and the replica inside the envelope sets them as a `p`,
+   * and the global rule gave only the first of those its `padding-right` — so
+   * for the eight tenths of a second the cover dissolves into the page, the
+   * two sets of names sat three pixels apart and the script doubled.
+   */
+  padding-right: 0.06em;
 }
 
 .name {
   display: block;
 }
 
+/*
+ * The ampersand is Mrs Eaves', not Parfumerie's. At the size a conjunction is
+ * set, the script's own is a hairline knot; this one is among the best-drawn
+ * ampersands there is, and a roman between two lines of copperplate is how an
+ * engraved card sets it. Still one face family and no third role.
+ */
 .conjunction {
   display: block;
-  font-size: 0.42em;
-  line-height: 1.5;
+  font-family: var(--font-eaves), Georgia, serif;
+  font-size: 0.27em;
+  line-height: 1.2;
+  letter-spacing: 0;
+  margin: 0.34em 0 0.06em;
+  opacity: 0.88;
 }
 
 .inviting {
-  margin: clamp(24px, 4vh, 40px) auto 0;
-  max-width: min(34ch, 100%);
+  margin: clamp(18px, 3.2vh, 34px) auto 0;
+  max-width: min(30ch, 100%);
   font-size: var(--text-body-l);
-  line-height: 1.62;
+  line-height: 1.58;
   letter-spacing: 0.002em;
+  text-wrap: balance;
 }
 
 .date {
-  margin-top: clamp(28px, 5vh, 48px);
+  margin-top: clamp(20px, 3.8vh, 42px);
   font-family: var(--font-eaves-sc), Georgia, serif;
   color: var(--sage-deep);
   font-size: var(--text-display-m);
@@ -111,7 +143,7 @@
 }
 
 .venue {
-  margin-top: clamp(20px, 3.5vh, 34px);
+  margin-top: clamp(16px, 2.8vh, 30px);
   font-size: var(--text-body);
   line-height: 1.5;
   display: grid;
@@ -122,11 +154,8 @@
   font-weight: 500;
 }
 
-.edge {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.butis {
+  margin-top: clamp(20px, 3.4vh, 40px);
 }
 
 .replica {
@@ -134,11 +163,37 @@
 }
 
 /* Above 900px the card is an object on the field: the sheet stops at the
-   620px box and the champagne surrounds it. */
+   700px box and the champagne surrounds it. */
 @media (min-width: 900px) {
   .card {
     background-color: var(--ground-deep);
     padding-top: clamp(40px, 6vh, 80px);
+  }
+
+  /*
+   * On one line. Stacked at the size the script wants on a wide sheet, the
+   * names alone were 370px of a card that then ran 180px past the bottom of a
+   * laptop screen — the date was under the bar and the venue was a scroll
+   * away, on the one card that is meant to be read whole. Side by side they
+   * are a single line of engraving, the card fits, and the roman ampersand
+   * finally has the two words either side of it that it was drawn to sit
+   * between.
+   */
+  .names {
+    font-size: clamp(5.6rem, 7.4vw, 6.75rem);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .name {
+    display: inline;
+  }
+
+  .conjunction {
+    display: inline;
+    margin: 0 0.62em 0 0.5em;
+    font-size: 0.3em;
+    vertical-align: 0.5em;
   }
 
   .inner {
@@ -147,14 +202,4 @@
       0 1px 2px rgb(58 48 30 / 0.06),
       0 18px 48px -18px rgb(58 48 30 / 0.28);
   }
-}
-
-/* Revision 5: the card no longer composes. It used to typeset itself line by
-   line as it left the envelope, which is a second orchestrated sequence on top
-   of the one the motion budget allows, and a real card comes out of an envelope
-   already printed. The jasmine still stitches — that is one of the two draw-ons
-   the budget permits — and everything else is simply there. */
-
-
-@media (prefers-reduced-motion: reduce) {
 }
