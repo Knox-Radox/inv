@@ -44,7 +44,7 @@ All of this lives in `content/invitation.ts` as a single typed source of truth.
 | Address | 9981 County Road 419, Anna, TX 75409 |
 | Timezone | America/Chicago (CST, UTC−06:00 on that date) |
 | Language | English only |
-| RSVP | **None.** Do not build one. Do not add a "let us know" form, a headcount, or a contact-us block. |
+| RSVP | A reply card, by **Sunday, November 15**. See the note below: this row said "None" until revision 9. |
 
 **Every fact above is confirmed.** There is nothing left to fill in. The year is
 2026; November 27, 2026 is a Friday, which is consistent with an 8:30 AM
@@ -56,6 +56,12 @@ muhurtham. Do not treat any of it as provisional and do not leave placeholders.
 > set with an **ampersand**, and dates are in **US order**. The printed
 > invitation's "County Road 418" was *not* taken: the venue's own site says
 > 419. See `docs/revision-9-plan.md`.
+>
+> **The RSVP row was reversed at revision 9.** It read: *"None. Do not build
+> one. Do not add a 'let us know' form, a headcount, or a contact-us block."*
+> The client then asked for one outright. It is a reply card with a headcount
+> for each event; there is still no contact block. Everything it asks, stores
+> and refuses is in `docs/revision-9-plan.md` § The RSVP in detail.
 
 **A design problem worth naming.** Two events, one venue, one day, with roughly
 eight and a half hours of nothing between them. Guests will wonder what happens
@@ -298,6 +304,9 @@ The brief asks for cinematic, slow, graceful, immersive. It does not ask for
 - Micro-interactions only where they answer something the guest actually did:
   opening the envelope, toggling sound, adding to calendar. That is the complete
   list of interactive elements on the page — the map is not one of them.
+  *(Superseded: the map became a link at revision 7, and revision 9 added the
+  reply card, the hotel links and "places to stay". `CLAUDE.md` § Content has
+  the current list.)*
 - **No** fade-and-slide-up entrance on every section. This is the most common
   generated-page tell in existence and it will flatten the hero's impact by
   making motion feel cheap and constant.

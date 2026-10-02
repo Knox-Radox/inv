@@ -1,0 +1,212 @@
+/*
+ * The replies page. The family's, not a guest's: no ornament, the invitation's
+ * two faces, and everything sized to be read across a kitchen table.
+ */
+
+.page {
+  min-height: 100svh;
+  max-width: 880px;
+  margin-inline: auto;
+  padding: clamp(40px, 8vh, 88px) clamp(20px, 6vw, 48px) clamp(64px, 10vh, 120px);
+}
+
+.title {
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+}
+
+.lede {
+  margin-top: clamp(18px, 3vh, 28px);
+  max-width: 56ch;
+  font-size: var(--text-body);
+  line-height: 1.64;
+}
+
+/* --- The passcode --------------------------------------------------------- */
+
+.gate {
+  margin-top: clamp(24px, 4vh, 40px);
+  display: grid;
+  gap: 10px;
+  max-width: 22rem;
+}
+
+.label {
+  font-size: var(--text-body-s);
+  line-height: 1.4;
+}
+
+/* 16px or more, always: iOS zooms the page on focus for anything smaller. */
+.input {
+  min-height: 48px;
+  padding: 8px 2px;
+  font: inherit;
+  font-size: var(--text-body-l);
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 55%, transparent);
+  border-radius: 0;
+}
+
+.button {
+  justify-self: start;
+  margin-top: 8px;
+  min-height: 48px;
+  padding: 0 28px;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--ground);
+  background: var(--sage-deep);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.problem {
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--arakku);
+}
+
+/* --- The numbers ---------------------------------------------------------- */
+
+.totals {
+  margin: clamp(32px, 6vh, 56px) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: clamp(20px, 4vw, 40px);
+}
+
+.totals > div {
+  display: grid;
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.totals dd {
+  margin: 0;
+  font-size: var(--text-display-xl);
+  line-height: 1;
+  color: var(--sage-deep);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.totals dt {
+  font-size: var(--text-body);
+  line-height: 1.45;
+}
+
+.actions {
+  margin-top: clamp(24px, 4vh, 40px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px clamp(20px, 5vw, 36px);
+}
+
+.link,
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--sage-deep);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.empty {
+  margin-top: clamp(32px, 6vh, 56px);
+  font-size: var(--text-body-l);
+  line-height: 1.6;
+}
+
+/* --- Each reply ----------------------------------------------------------- */
+
+.list {
+  margin-top: clamp(28px, 5vh, 48px);
+}
+
+.reply {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px 32px;
+  padding: clamp(16px, 3vh, 24px) 0;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
+}
+
+.reply p {
+  overflow-wrap: anywhere;
+}
+
+.name {
+  font-size: var(--text-body-l);
+  line-height: 1.4;
+  color: var(--sage-deep);
+}
+
+.contact {
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  user-select: all;
+}
+
+.counts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 6.5rem);
+  gap: 20px;
+}
+
+.counts dt {
+  font-size: var(--text-body-s);
+  line-height: 1.4;
+}
+
+.counts dd {
+  margin: 0;
+  font-size: var(--text-display-l);
+  line-height: 1.2;
+  color: var(--sage-deep);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* A word, not a number: set as one. At the numerals' size "declines" was the
+   loudest thing on the page, on the rows that matter least to a caterer. */
+.counts .declines {
+  font-size: var(--text-body);
+  line-height: 2;
+  color: var(--ink);
+}
+
+.more {
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-body);
+  line-height: 1.55;
+}
+
+.note {
+  white-space: pre-line;
+}
+
+.meta {
+  font-size: var(--text-body-s);
+  opacity: 0.8;
+}
+
+@media (min-width: 720px) {
+  .reply {
+    grid-template-columns: minmax(0, 1.1fr) auto minmax(0, 1.4fr);
+    align-items: start;
+  }
+}

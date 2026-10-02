@@ -245,6 +245,7 @@ export const invitation = {
       replay: "Replay the opening",
       /** Names the bar for a screen reader's list of landmarks. */
       barLabel: "On this page",
+      reply: "Reply",
       stay: "Places to stay",
       calendar: "Add to calendar",
       calendarDone: "Added",
@@ -330,6 +331,93 @@ export const invitation = {
       "west side past Melissa and Anna, TX 121 crosses to the south-east, and " +
       "the Collin County Outer Loop and FM 455 run east to County Road 419, " +
       "where the venue is marked with the couple's seal.",
+  },
+
+  /**
+   * The reply card — revision 9, and the reversal of the last decision
+   * `CLAUDE.md` still called settled. "There is no RSVP" held for eight
+   * revisions; the client asked for one outright.
+   *
+   * The wording is the formal register of a printed reply card, which the
+   * client chose over a plainer one because the card's own line is "request the
+   * pleasure of your company". Every string a guest can see is here, including
+   * what the card says when something has gone wrong: an error is copy too.
+   *
+   * See docs/revision-9-plan.md § The RSVP in detail.
+   */
+  rsvp: {
+    /**
+     * Replies are taken until the end of Sunday, November 15, Central time.
+     * The route checks this on the server's clock; the card checks it on the
+     * guest's, only to say so sooner.
+     */
+    closesAt: "2026-11-16T06:00:00Z" as Instant, // midnight CST ending Sunday the 15th
+    replyByDisplay: "Sunday, November 15",
+
+    title: "Your reply",
+    request: "The favour of a reply is requested by",
+
+    name: "Name",
+    accepts: "accepts with pleasure",
+    declines: "declines with regret",
+    attending: "Number attending",
+    fewer: "One fewer",
+    more: "One more",
+    party: "Names of those coming with you",
+    /** Read out for each line: "Guest 2", "Guest 3". */
+    partyLine: "Guest",
+    dietary: "Dietary or allergy notes, if any",
+    contact: "Phone or email",
+    contactHint: "Only so that a second reply replaces your first.",
+    note: `A note for ${couple.both}, if you wish`,
+    privacy: `Your reply goes to ${couple.both} and their families, and to no one else.`,
+
+    send: "Send reply",
+    sending: "Sending",
+    sent: "Reply sent",
+    thanks: `Thank you. ${couple.both} have your reply.`,
+    change: "Change my reply",
+    /** Set on the small card as it goes into its envelope, after the name. */
+    summaryAccepts: "attending",
+    summaryDeclines: "declines with regret",
+
+    closed: "Replies closed on",
+    closedHelp: "If your plans have changed, please tell the family directly.",
+
+    /** Per field. The card says what is wrong and how to put it right. */
+    problems: {
+      name: {
+        missing: "Please write your name.",
+        too_long: "That is longer than the line allows.",
+      },
+      contact: {
+        missing: "Please give a phone number or an email.",
+        too_long: "That is longer than the line allows.",
+        not_a_contact: "That does not look like a phone number or an email.",
+      },
+      event: {
+        missing: "Please choose one.",
+        out_of_range: "Up to ten guests can be entered on one card.",
+      },
+      party: { too_long: "One of these names is longer than the line allows." },
+      dietary: { too_long: "That is longer than the card allows." },
+      note: { too_long: "That is longer than the card allows." },
+    },
+
+    /** For the whole card, when the reply could not be sent. */
+    failures: {
+      invalid: "Please look at the lines marked above.",
+      closed: "Replies have closed.",
+      slow_down:
+        "Several replies have come from this connection in a few minutes. Please wait ten minutes, then send it again.",
+      busy: "Your reply did not go through. It is saved on this device, so nothing needs retyping. Please send it again in a moment.",
+      unavailable:
+        "Your reply did not go through. It is saved on this device, so nothing needs retyping. Please send it again in a moment.",
+    },
+
+    /** The two messages a guest without JavaScript is sent back to. */
+    plainSent: "Reply sent. Thank you.",
+    plainProblem: "Your reply could not be read. Please check each line and send it again.",
   },
 
   /**
