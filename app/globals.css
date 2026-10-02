@@ -132,6 +132,9 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* The bar's links travel down a long page; arriving is kinder than
+       jumping. Switched off again under reduced motion, below. */
+    scroll-behavior: smooth;
   }
 
   body {

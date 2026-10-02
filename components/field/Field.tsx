@@ -7,6 +7,7 @@ import { Countdown } from "./Countdown";
 import { Place } from "./Place";
 import { Reveal } from "./Reveal";
 import { Schedule } from "./Schedule";
+import { Travel } from "./Travel";
 import { Dimple, Thread } from "./Thread";
 import styles from "./Field.module.css";
 
@@ -53,6 +54,11 @@ export function Field() {
             <Place />
           </Reveal>
         </Entrance>
+        {/* No stage round this one, and no ornament: see Travel. */}
+        <Reveal delay={80}>
+          <Travel />
+        </Reveal>
+
         <ClosingThreshold>
           <Reveal delay={80}>
             <Closing />

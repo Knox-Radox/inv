@@ -243,9 +243,14 @@ export const invitation = {
       skip: "Skip to the invitation",
       open: "Open the invitation",
       replay: "Replay the opening",
+      /** Names the bar for a screen reader's list of landmarks. */
+      barLabel: "On this page",
       stay: "Places to stay",
       calendar: "Add to calendar",
       calendarDone: "Added",
+      /** The two ways in, named for the calendar a guest already uses. */
+      calendarGoogle: "Google Calendar",
+      calendarFile: "Apple or Outlook",
       sound: "Sound",
       soundOn: "Turn sound off",
       soundOff: "Turn sound on",
@@ -344,6 +349,13 @@ export const invitation = {
 
     /** Says what happens when you use it, as `map.linkLabel` does. */
     hotelLinkLabel: "Open in Google Maps",
+
+    /**
+     * Said once, above the list, instead of six times beside six names. Not
+     * the client's wording: it is the instruction for a control, written for
+     * the page, and it says what the control does.
+     */
+    hotelsHint: "Each one opens in Google Maps.",
 
     hotels: [
       hotel({

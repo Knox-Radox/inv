@@ -11,9 +11,10 @@
   bottom: 0;
   z-index: 20;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0 12px;
   min-height: var(--bar-height);
   padding: 0 clamp(16px, 5vw, 32px);
   padding-bottom: env(safe-area-inset-bottom, 0);
@@ -23,8 +24,10 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: clamp(14px, 4vw, 26px);
+  justify-content: flex-end;
+  gap: 0 clamp(12px, 4vw, 26px);
   margin-left: auto;
 }
 
@@ -56,4 +59,64 @@
 .mark {
   flex: none;
   color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   The calendar's two doors
+   -------------------------------------------------------------------------- */
+
+.calendar {
+  position: relative;
+}
+
+/* The browser's own triangle goes; the caret drawn for this page stays. */
+.calendar > summary {
+  list-style: none;
+}
+
+.calendar > summary::-webkit-details-marker {
+  display: none;
+}
+
+.caret {
+  flex: none;
+  margin-left: -2px;
+  transition: transform 180ms var(--ease-needle);
+}
+
+.calendar[open] .caret {
+  transform: rotate(180deg);
+}
+
+/*
+ * Opens upward, off the bar and onto the page, on the bar's own paper. It is
+ * the one thing on this site that floats, and it floats for as long as it takes
+ * to choose between two words.
+ */
+.menu {
+  position: absolute;
+  right: -6px;
+  bottom: calc(100% + 6px);
+  display: grid;
+  padding: 4px 16px;
+  white-space: nowrap;
+  background: var(--ground);
+  border: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
+  border-radius: 2px;
+  box-shadow: 0 10px 28px -12px rgb(58 48 30 / 0.38);
+}
+
+.menu > .action + .action {
+  border-top: 1px solid color-mix(in srgb, var(--gold) 26%, transparent);
+}
+
+.calendar[open] .menu {
+  animation: menu-up 180ms var(--ease-needle) backwards;
+}
+
+@keyframes menu-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }

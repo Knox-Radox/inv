@@ -90,7 +90,9 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
     // those are the same place, which is only true at scroll 0 — so the
     // document goes to the top now, under an opaque cover, where no one can
     // see it move.
-    window.scrollTo(0, 0);
+    // `instant`, because the page now sets `scroll-behavior: smooth` for the
+    // bar's links and a bare scrollTo would glide there instead.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     setOpening(true);
     failsafe.current = window.setTimeout(finish, 9000);
   }, [opening, finish]);
@@ -153,7 +155,7 @@ export function Envelope({ cardSheet }: { cardSheet?: string }) {
   useEffect(() => {
     if (gone || !document.documentElement.classList.contains("envelope-armed")) return;
     const pin = () => {
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (window.scrollY !== 0) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     };
     const refuse = (e: Event) => e.preventDefault();
     pin();
