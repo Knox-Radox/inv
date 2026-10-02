@@ -258,7 +258,7 @@ export const invitation = {
   share: {
     title: couple.both,
     description: `${day.fullDateDisplay}. ${venue.name}, ${venue.locality}.`,
-    imageAlt: `A sage-green wax seal struck with an A and S monogram and a spray of jasmine, on ivory paper embossed with jasmine, above the names ${couple.both} and the date ${day.fullDateDisplay}.`,
+    imageAlt: `A sage-green wax seal struck with an A and S monogram and a spray of jasmine, above the names ${couple.both} and the date ${day.fullDateDisplay}, on ivory paper inside a border of small gold flowers.`,
     themeColor: "#FBF7F0",
   },
 

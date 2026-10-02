@@ -8,6 +8,7 @@ Run: cd tools && python3 emit_art.py
     components/art/map.ts        the plate, traced from OpenStreetMap
     components/art/motif.ts      the revision 9 buti and the mark
     app/motif.css                the mirror-work border's two tiles
+    lib/borderTile.ts            the same two, as strings, for the share card
 
 Everything here is authored at build time so the browser never measures a path,
 never runs a solver, and never sees a number that was not decided deliberately.
@@ -36,6 +37,7 @@ ORN_OUT = Path(__file__).parent.parent / "components" / "art" / "ornament.ts"
 MAP_OUT = Path(__file__).parent.parent / "components" / "art" / "map.ts"
 MOTIF_OUT = Path(__file__).parent.parent / "components" / "art" / "motif.ts"
 MOTIF_CSS = Path(__file__).parent.parent / "app" / "motif.css"
+TILE_OUT = Path(__file__).parent.parent / "lib" / "borderTile.ts"
 
 
 def write_map() -> None:
@@ -184,7 +186,30 @@ def write_motif() -> None:
             ]
         )
     )
-    for path in (MOTIF_OUT, MOTIF_CSS):
+    # The same two tiles as plain strings, for the share card. Satori cannot
+    # read a stylesheet, and they must not ride in motif.ts: that module is
+    # imported by client components, and seventeen kilobytes of border would
+    # go to every guest's phone to be used by a build step.
+    TILE_OUT.write_text(
+        "\n".join(
+            [
+                "/**",
+                " * Generated — do not edit by hand. tools/emit_art.py, from tools/motif.py.",
+                " *",
+                " * The mirror-work border's two tiles as SVG strings, for",
+                " * app/opengraph-image.tsx. Build-time only: never import this from a",
+                " * client component.",
+                " */",
+                "export const BORDER_TILE_H =",
+                "  " + json.dumps(mt.border_tile(False)) + ";",
+                "",
+                "export const BORDER_TILE_V =",
+                "  " + json.dumps(mt.border_tile(True)) + ";",
+                "",
+            ]
+        )
+    )
+    for path in (MOTIF_OUT, MOTIF_CSS, TILE_OUT):
         print(f"wrote {path.relative_to(path.parent.parent)}  ({path.stat().st_size} bytes)")
 
 
