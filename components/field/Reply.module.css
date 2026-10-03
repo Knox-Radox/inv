@@ -149,7 +149,7 @@
   box-shadow: 0 1px 0 0 var(--sage-deep);
   background-image: linear-gradient(
     to top,
-    color-mix(in srgb, var(--gold-light) 26%, transparent),
+    rgb(205 174 122 / 0.26) /* --gold-light at 26% */,
     transparent 82%
   );
 }
@@ -172,7 +172,12 @@
  * grow with the note where a browser supports it.
  */
 .lines {
-  --rule: color-mix(in srgb, var(--ink) 34%, transparent);
+  /*
+   * --ink at 34%, written out. Given a `color-mix()` stop, Firefox draws a
+   * repeating gradient's hairline as a bar most of a line deep, and the note
+   * became three grey blocks.
+   */
+  --rule: rgb(46 42 36 / 0.34);
   min-height: calc(1.9em * 2 + 12px);
   padding: 4px 0 8px;
   line-height: 1.9;
@@ -191,7 +196,7 @@
 }
 
 .lines:focus-visible {
-  --rule: color-mix(in srgb, var(--sage-deep) 70%, transparent);
+  --rule: rgb(58 85 66 / 0.7); /* --sage-deep at 70%, written out as above */
   box-shadow: none;
   background-image: repeating-linear-gradient(
     to bottom,
