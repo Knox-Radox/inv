@@ -90,8 +90,8 @@ the safeguards (`docs/revision-9-rsvp.md` § Nothing is lost). Notices that a
 trigger "does not exist, skipping" are expected the first time.
 
 Then run the short check at the very bottom of that file (it is in a comment).
-The first four columns should read `false` — the public key able to do
-nothing — and the last `true`, the safeguards on.
+Every column should read `false` — the public key able to do nothing — except
+`safeguards_on`, which should read `true`.
 
 ### 3. Copy two values
 

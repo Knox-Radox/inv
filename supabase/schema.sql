@@ -505,11 +505,14 @@ grant execute on function public.rsvp_ping()              to service_role;
 
 commit;
 
--- To check it took, run this. The first four columns should say `false` and
--- the last `true`:
+-- To check it took, run this. Every column should say `false` except the last,
+-- which should say `true`. Each is named, because Supabase's results grid shows
+-- one column per name: unnamed, the three `has_function_privilege` columns
+-- arrive as one.
 --
---   select has_function_privilege('anon', 'public.rsvp_submit(jsonb, text)', 'execute'),
---          has_function_privilege('anon', 'public.rsvp_list()', 'execute'),
---          has_function_privilege('authenticated', 'public.rsvp_list()', 'execute'),
---          has_table_privilege('anon', 'public.rsvp_replies', 'select'),
---          public.rsvp_guarded();
+--   select has_function_privilege('anon', 'public.rsvp_submit(jsonb, text)', 'execute') as anon_can_submit,
+--          has_function_privilege('anon', 'public.rsvp_list()', 'execute')              as anon_can_list,
+--          has_function_privilege('anon', 'public.rsvp_history_list()', 'execute')      as anon_can_list_versions,
+--          has_function_privilege('authenticated', 'public.rsvp_list()', 'execute')     as signed_in_can_list,
+--          has_table_privilege('anon', 'public.rsvp_replies', 'select')                 as anon_can_read,
+--          public.rsvp_guarded()                                                        as safeguards_on;
