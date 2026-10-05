@@ -6,6 +6,19 @@
   font-size: var(--text-script-l);
   line-height: 1.15;
   letter-spacing: -0.005em;
+  /*
+   * Kept clear of the garland, which hangs down the right of this section
+   * (Hanging.module.css) and is measured from the viewport's edge, not from
+   * this column's. With the weekday the heading is half as long again, and at
+   * 390px it ran on underneath the flowers. Held to what is left of the line,
+   * it breaks instead, and `.part` says where.
+   */
+  max-inline-size: calc(100vw - var(--bleed-left, 0px) - var(--malai-in, 0px) - var(--malai-w, 0px) - 24px);
+}
+
+.part {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .list {

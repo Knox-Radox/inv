@@ -39,8 +39,9 @@ export async function GET() {
   const list = await call<Listed>("rsvp_list");
   if (!list.ok) return new Response(null, { status: 503 });
 
+  const [wedding, reception] = invitation.day.moments;
   const rows = [
-    ["Name", "Phone or email", "Muhurtham", "Reception", "Coming with them", "Dietary or allergy notes", "Note", "First replied (Central)", "Last changed (Central)", "Times sent"],
+    ["Name", "Phone or email", wedding.label, reception.label, "Coming with them", "Dietary or allergy notes", "Note", "First replied (Central)", "Last changed (Central)", "Times sent"],
     ...list.data.replies.map((r) => [
       r.name, r.contact, r.muhurtham, r.reception, r.party.join("; "), r.dietary, r.note,
       at(r.created_at), at(r.updated_at), r.revision,

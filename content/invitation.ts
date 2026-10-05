@@ -115,7 +115,10 @@ const day: WeddingDay = {
   moments: [
     {
       id: "muhurtham",
-      label: "Muhurtham",
+      // Still the Muhurtham in the family's print, in the database and in this
+      // file's ids. On the page it is the word every guest knows: the client's
+      // instruction, October 2026.
+      label: "Wedding",
       startsAt: "2026-11-27T14:30:00Z", // 8:30 AM CST
       endsAt: "2026-11-27T15:30:00Z", // 9:30 AM CST
       startDisplay: "8:30 AM",
@@ -214,6 +217,12 @@ export const invitation = {
      */
     closingNote: ["We can’t wait to celebrate this special day with the people we love most."],
 
+    /**
+     * The photograph above the note, said for anyone who cannot see it. What
+     * is in it, and nothing the picture does not show.
+     */
+    closingPortraitAlt: `${couple.both} walking hand in hand along a beach`,
+
     /** Set beneath the note, in the body face. */
     closingSignoff: "With love,",
 
@@ -221,13 +230,17 @@ export const invitation = {
     closingSignature: couple.both,
 
     sectionTitles: {
-      schedule: day.shortDateDisplay,
+      // With its weekday, at the client's request: this heading was the one
+      // place the date stood without it. Two parts because the heading may
+      // break between them and nowhere else: on a phone it shares its line
+      // with the garland, and "27" must never be left on a line of its own.
+      schedule: [`${day.weekday},`, day.shortDateDisplay],
       location: "The place",
     },
 
     countdown: {
       /** State A: before the Muhurtham. */
-      until: "until the Muhurtham",
+      until: "until the wedding",
       /** State B: on the day itself. */
       todayLead: "Today",
       /** State C: after the day, forever. The keepsake state. */
@@ -245,7 +258,8 @@ export const invitation = {
       replay: "Replay the opening",
       /** Names the bar for a screen reader's list of landmarks. */
       barLabel: "On this page",
-      reply: "Reply",
+      /** The same word as the heading it leads to. */
+      reply: "RSVP",
       stay: "Places to stay",
       calendar: "Add to calendar",
       calendarDone: "Added",
@@ -359,7 +373,11 @@ export const invitation = {
     closesAt: "2026-11-16T06:00:00Z" as Instant, // midnight CST ending Sunday the 15th
     replyByDisplay: "Sunday, November 15",
 
-    title: "Your reply",
+    /**
+     * The client's word for it. Four capitals cannot be set in a connecting
+     * script, so this one heading is in the body face: see Reply.module.css.
+     */
+    title: "RSVP",
     request: "The favour of a reply is requested by",
 
     name: "Name",
@@ -373,7 +391,8 @@ export const invitation = {
     partyLine: "Guest",
     dietary: "Dietary or allergy notes, if any",
     contact: "Phone or email",
-    contactHint: "Only so that a second reply replaces your first.",
+    contactHint:
+      "If your plans change, reply again with the same phone number or email. Your new reply will replace this one.",
     note: `A note for ${couple.both}, if you wish`,
     privacy: `Your reply goes to ${couple.both} and their families, and to no one else.`,
 

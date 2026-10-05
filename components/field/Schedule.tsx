@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { invitation } from "@/content/invitation";
 import { Tack } from "./Thread";
 import styles from "./Schedule.module.css";
@@ -27,7 +28,12 @@ export function Schedule() {
   return (
     <section className={styles.section} aria-labelledby="the-day">
       <h2 id="the-day" className={styles.title}>
-        {copy.sectionTitles.schedule}
+        {copy.sectionTitles.schedule.map((part, i) => (
+          <Fragment key={part}>
+            {i > 0 ? " " : null}
+            <span className={styles.part}>{part}</span>
+          </Fragment>
+        ))}
       </h2>
 
       <ol className={styles.list}>

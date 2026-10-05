@@ -20,6 +20,46 @@
 }
 
 /*
+ * The two of them, above their note. The edge is in the picture — `couple()`
+ * in tools/paint.py — so all this decides is where it goes, and a still image
+ * with no filter, mask or blend costs the page nothing to scroll past.
+ *
+ * On a phone it is the width of the screen. Its first tenth is paper, so it
+ * rises into the section's own padding, and the sand gives out under the
+ * first line of the note, so the note comes up over the last of it.
+ */
+.portrait {
+  position: relative;
+  display: block;
+  width: 100vw;
+  margin-left: calc(-1 * var(--bleed-left));
+  margin-top: calc(-1 * clamp(40px, 8vh, 72px));
+  margin-bottom: -15vw;
+  pointer-events: none;
+}
+
+.portraitImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The whole frame, set over the column and out past it on both sides, so the
+   sea thins out across the thread and the cliff into the margin. */
+@media (min-width: 600px) {
+  .portrait {
+    width: min(100vw, 820px);
+    margin-left: max(calc(-1 * var(--bleed-left)), -110px);
+    margin-bottom: calc(-0.09 * min(100vw, 820px));
+  }
+}
+
+/* The note and the signature, and the blossoms behind them. */
+.words {
+  position: relative;
+}
+
+/*
  * The blossoms behind the last words, softened and pulled to the right. They
  * fade to nothing on every side: as a plain image it read as a photograph
  * pasted into the corner, which is the "one image out of place at the bottom"

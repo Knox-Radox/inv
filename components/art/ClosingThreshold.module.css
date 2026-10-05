@@ -70,7 +70,8 @@
    * at 390/430/768/1440 and are the widest case rounded up.
    */
   content-visibility: auto;
-  contain-intrinsic-size: auto 620px;
+  /* 620px until the photograph went in above the note: 1134px at 430 now. */
+  contain-intrinsic-size: auto 1140px;
 }
 
 .deco {
