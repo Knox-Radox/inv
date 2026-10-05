@@ -119,8 +119,46 @@ never sent on or stored, and the hash is erased after two days (`rsvp_sweep`,
 which the daily keep-alive also runs, so it goes two days after the *last*
 reply and not only when the next one arrives).
 
-There is also a field no person can see or reach. Something that fills it in is
-told its reply was sent, and nothing is kept.
+There used to be a field no person could see or reach, and a reply that
+arrived with it filled in was told it had been sent and was thrown away.
+Browsers and password managers fill hidden fields, so a real guest could have
+been told "sent" when nothing was kept. It was taken out in October 2026,
+before the link went out; the limits above are what stand in front of a script.
+
+---
+
+## Nothing is lost
+
+Added in October 2026, before the link went out, and all of it in
+`supabase/schema.sql`:
+
+- **Every version is written by the database itself.** A trigger on
+  `rsvp_replies` writes each insert and update to `rsvp_history`, so a reply
+  changed by hand in Supabase's table editor is recorded too, marked
+  `by hand`, with a new revision number. `rsvp_submit` only says who sent it.
+- **Nothing can be deleted by accident.** A DELETE or TRUNCATE on either table
+  is refused, from anywhere, and a version in the history can never be
+  rewritten. The only changes allowed are the two the database makes itself:
+  the sender's hash blanked after two days, and the link to a reply that was
+  deliberately removed.
+- **Removing something on purpose says so first**: `set local rsvp.deliberate
+  = 'yes'` in the same transaction (README § The RSVP, step 5). Even then the
+  removed reply's versions stay in the history. The link from a version to its
+  reply was ON DELETE CASCADE until this change, so one delete in the table
+  editor would have taken every version with it.
+- **The family can take a copy of everything**: `/replies` has a second
+  download, every version of every reply, oldest first, with the one that
+  counts marked.
+- **The page says when the guards are off.** `rsvp_list` reports whether all
+  seven triggers are in place and enabled; `/replies` shows a warning when
+  they are not, and the keep-alive logs one.
+- **The card tries twice.** When a reply could not get through — a dropped
+  connection, a database slow to answer — the card waits a moment and sends it
+  once more before asking the guest to. A reply sent twice is one reply.
+
+Supabase keeps **no backups on the free plan**. Its own advice is to export
+regularly; the second download is that export. The Pro plan keeps daily
+backups for seven days and restores them from the dashboard.
 
 ---
 
@@ -129,7 +167,7 @@ told its reply was sent, and nothing is kept.
 | What | What the guest sees | What happens to the reply |
 |---|---|---|
 | A line is blank or malformed | That line marked, in words; focus goes to the first | Nothing sent |
-| No network, the database paused, a timeout | "Your reply did not go through. It is saved on this device…" | Kept on the device; the same button sends it again |
+| No network, the database paused, a timeout | Tried once more by itself; if that fails too, "Your reply did not go through. It is saved on this device…" | Kept on the device; the same button sends it again |
 | Too many from one connection | Asked to wait ten minutes | Kept on the device |
 | After November 15 | "Replies closed on Sunday, November 15." | The server refuses, whatever the browser's clock says |
 | JavaScript never loaded | A plain form that posts itself, and a plain "Reply sent" | Stored the same way |
@@ -137,7 +175,9 @@ told its reply was sent, and nothing is kept.
 
 A free Supabase project **pauses after a week without activity**, and a
 wedding's replies arrive in a burst and stop. `vercel.json` has Vercel call
-`/api/keepalive` once a day, which runs a real query through the same door.
+`/api/keepalive` three times a day, which runs a real query through the same
+door: Supabase counts "a few requests to the database each day" as activity,
+and Vercel's free plan runs each scheduled job at most once a day.
 A paused project answers HTTP 540 or does not resolve at all; both are
 "unavailable" to the route, and the guest is told the truth.
 
@@ -146,8 +186,9 @@ A paused project answers HTTP 540 or does not resolve at all; both are
 ## The family's page
 
 `/replies`, behind `REPLIES_PASSCODE`. Two headcounts, every reply, the dietary
-notes, the notes to the couple, and a CSV. It is the only page that is rendered
-per request and the only code that reads the database.
+notes, the notes to the couple, and two CSVs: the replies as they stand, and
+every version of every reply. It is the only page that is rendered per request
+and the only code that reads the database.
 
 - The passcode is compared as a digest, in constant time. Every attempt is
   counted *before* it is looked at, and the ninth in ten minutes is refused.
@@ -163,7 +204,7 @@ Its words are not in `content/invitation.ts`. That file is every string a
 
 ## How it is tested
 
-`tools/rsvp/test.mjs` — 49 checks. It runs against PostgREST 14, which is what
+`tools/rsvp/test.mjs` — 64 checks. It runs against PostgREST 14, which is what
 Supabase runs, on a Postgres given Supabase's roles and Supabase's defaults.
 
 - With no key, and with the public key: cannot submit, list, touch the counters
@@ -175,9 +216,15 @@ Supabase runs, on a Postgres given Supabase's roles and Supabase's defaults.
 - The ninth reply in ten minutes is turned away, and another sender is not.
 - Two days on, the keep-alive has erased the sender's hash from the history
   and left the reply.
-- Through the site's route: field-by-field refusals, an oversized body, the
-  honeypot, a post from another origin, a plain form post, the rate limit
-  passed on as 429, and that the history holds a hash where an address would be.
+- Nothing is lost: a delete, a truncate or a rewrite of either table is
+  refused and nothing goes; an edit by hand is a new revision and goes into
+  the history marked as one; a deliberate removal works, keeps its versions,
+  and the next delete is refused again; every version can be listed with the
+  secret key and with nothing else.
+- Through the site's route: field-by-field refusals, an oversized body, a
+  reply kept even with a stray field filled in, a post from another origin, a
+  plain form post, the rate limit passed on as 429, and that the history holds
+  a hash where an address would be.
 
 `tools/verify/reply.js` drives the card itself in a browser.
 

@@ -21,7 +21,10 @@ export async function GET(request: Request) {
   if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new Response(null, { status: 401 });
   }
-  const ping = await call<{ ok: boolean }>("rsvp_ping");
+  const ping = await call<{ ok: boolean; guarded?: boolean }>("rsvp_ping");
+  if (ping.ok && ping.data.guarded !== true) {
+    console.error("rsvp: the database's safeguards are not on: run supabase/schema.sql again in Supabase's SQL Editor");
+  }
   return Response.json(
     { ok: ping.ok && ping.data.ok === true },
     { status: ping.ok ? 200 : 503, headers: { "Cache-Control": "no-store" } },

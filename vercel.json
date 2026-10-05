@@ -1,3 +1,7 @@
 {
-  "crons": [{ "path": "/api/keepalive", "schedule": "23 9 * * *" }]
+  "crons": [
+    { "path": "/api/keepalive", "schedule": "23 9 * * *" },
+    { "path": "/api/keepalive/afternoon", "schedule": "41 17 * * *" },
+    { "path": "/api/keepalive/evening", "schedule": "7 1 * * *" }
+  ]
 }

@@ -21,7 +21,8 @@ const SITE = process.argv[2];
 
 const psql = (sql) =>
   execFileSync("psql", ["-h", process.env.PGHOST ?? "127.0.0.1", "-p", process.env.PGPORT ?? "54329",
-    "-U", process.env.PGUSER ?? "postgres", "-d", process.env.RSVP_DB ?? "rsvp_local", "-Atc", sql], { encoding: "utf8" }).trim();
+    "-U", process.env.PGUSER ?? "postgres", "-d", process.env.RSVP_DB ?? "rsvp_local", "-Atc", sql],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 let failed = 0;
 const ok = (name, pass, detail = "") => {
@@ -120,11 +121,44 @@ ok("the keep-alive is a real query", ping.body?.ok === true && typeof ping.body.
 
 // 8. Two days on, the history keeps what was said and forgets who by.
 ok("a fresh reply's history carries its sender's hash", psql("select count(*) from rsvp_history where via <> ''") !== "0");
-psql("update rsvp_history set received_at = now() - interval '3 days'");
+// Back-dated on purpose: a version is otherwise never rewritten (§ 9).
+psql("begin; set local rsvp.deliberate = 'yes'; update rsvp_history set received_at = now() - interval '3 days'; commit;");
 await rpc("rsvp_ping", {}, SERVICE);
 ok("…and after two days the keep-alive has erased it", psql("select count(*) from rsvp_history where via <> ''") === "0");
 ok("…without touching the reply", psql("select count(*) from rsvp_history where reply->>'name' is not null") !== "0");
 ok("the sweep itself can be called by nobody", (await rpc("rsvp_sweep", {}, SERVICE)).status >= 400);
+
+// 9. Nothing is lost: not to a delete, a truncate or an edit in the table
+// editor, and every version of a reply is in the history whoever wrote it.
+const refused = (sql) => {
+  try { psql(sql); return false; } catch (e) { return /Replies are kept|kept as it arrived/.test(String(e.stderr ?? e.message)); }
+};
+const counts = () => psql("select count(*) from rsvp_replies") + "|" + psql("select count(*) from rsvp_history");
+const kept = counts();
+ok("a reply cannot be deleted", refused("delete from rsvp_replies"));
+ok("…nor the replies emptied", refused("truncate rsvp_replies cascade"));
+ok("a version cannot be deleted", refused("delete from rsvp_history"));
+ok("…nor the history emptied", refused("truncate rsvp_history"));
+ok("…nor rewritten", refused("update rsvp_history set reply = '{}'::jsonb"));
+ok("…and nothing went", counts() === kept, `${kept} then ${counts()}`);
+ok("the guards say they are on", (await rpc("rsvp_list", {}, SERVICE)).body?.guarded === true && (await rpc("rsvp_ping", {}, SERVICE)).body?.guarded === true);
+
+const key = psql("select contact_key from rsvp_replies order by created_at limit 1");
+const rev = Number(psql(`select revision from rsvp_replies where contact_key = '${key}'`));
+psql(`update rsvp_replies set name = 'Corrected By Hand' where contact_key = '${key}'`);
+ok("an edit in the table editor is a new revision", Number(psql(`select revision from rsvp_replies where contact_key = '${key}'`)) === rev + 1);
+ok("…and goes into the history marked as one", psql(`select h.source || '|' || (h.reply->>'name') from rsvp_history h join rsvp_replies r on r.id = h.reply_id where r.contact_key = '${key}' order by h.id desc limit 1`) === "by hand|Corrected By Hand");
+const fromCard = await rpc("rsvp_submit", { p_reply: reply({ contactKey: "p:5553000000", contact: "5553000000" }), p_caller: "caller-gggggggg" }, SERVICE);
+ok("a reply from the card goes in as one, with who sent it", fromCard.body?.ok === true && psql("select h.source || '|' || h.via from rsvp_history h join rsvp_replies r on r.id = h.reply_id where r.contact_key = 'p:5553000000'") === "card|caller-gggggggg");
+
+const versions = psql("select count(*) from rsvp_history h join rsvp_replies r on r.id = h.reply_id where r.contact_key = 'p:5553000000'");
+psql("begin; set local rsvp.deliberate = 'yes'; delete from rsvp_replies where contact_key = 'p:5553000000'; commit;");
+ok("a removal said to be deliberate removes the reply", psql("select count(*) from rsvp_replies where contact_key = 'p:5553000000'") === "0");
+ok("…and keeps its versions", psql("select count(*) from rsvp_history where reply_id is null and reply->>'contact' = '5553000000'") === versions, versions);
+ok("…and the next delete is refused again", refused("delete from rsvp_replies"));
+const every = (await rpc("rsvp_history_list", {}, SERVICE)).body;
+ok("every version can be listed for the family", Array.isArray(every) && every.length === Number(psql("select count(*) from rsvp_history")) && every.some((v) => v.source === "by hand") && every.every((v) => !("via" in v)), String(every?.length));
+ok("…and by nobody without the secret key", (await rpc("rsvp_history_list", {}, ANON)).status === 401 && (await rpc("rsvp_history_list", {})).status === 401);
 
 if (SITE) {
   console.log(`\n— the site's route, at ${SITE} —`);
@@ -153,9 +187,12 @@ if (SITE) {
   ok("a bad card is refused field by field", bad.status === 422 && bad.json?.problems?.name === "missing" && bad.json.problems.contact === "not_a_contact" && bad.json.problems.muhurtham === "missing", JSON.stringify(bad.json));
   ok("a body that is not JSON is refused", (await post("{not json")).status === 422);
   ok("a body past 8 KB is refused", (await post(card({ note: "x".repeat(9000) }))).status === 422);
-  const bot = await post({ ...card({ name: "Bot", contact: "bot@example.com" }), website: "http://spam.example" });
+  // There was a hidden field here that threw a reply away if it was filled
+  // in. Browsers and password managers fill hidden fields, and the guest was
+  // told "sent" either way, so it is gone: a stray field changes nothing now.
+  const filled = await post({ ...card({ name: "Autofilled Guest", contact: "autofill@example.com" }), website: "https://example.com" });
   list = (await rpc("rsvp_list", {}, SERVICE)).body;
-  ok("the honeypot answers yes and keeps nothing", bot.json?.ok === true && !list.replies.some((r) => r.name === "Bot"));
+  ok("a reply is kept even with a stray field filled in", filled.json?.ok === true && list.replies.some((r) => r.name === "Autofilled Guest"));
   const cross = await post(card({ contact: "cross@example.com" }), { origin: "https://evil.example", "sec-fetch-site": "cross-site" });
   list = (await rpc("rsvp_list", {}, SERVICE)).body;
   ok("a post from another site is refused", cross.json?.ok === false && !list.replies.some((r) => r.contact === "cross@example.com"), `${cross.status}`);

@@ -69,7 +69,8 @@ reply "did not go through" when one is sent, which is the truth.
 ## The RSVP
 
 Replies are kept in a free [Supabase](https://supabase.com) project. Setting it
-up is five steps and takes about ten minutes. Nothing here costs money.
+up is five steps and takes about ten minutes. Nothing here costs money — but
+read **Backups** below before the link goes out.
 
 ### 1. Create the project
 
@@ -81,11 +82,16 @@ never uses it.
 
 In the project's dashboard open **SQL Editor**, choose **New query**, paste in
 the whole of [`supabase/schema.sql`](supabase/schema.sql), and press **Run**.
-It should say *Success. No rows returned.* It is safe to run twice.
+It should say *Success. No rows returned.* It is safe to run again, on a
+project that already has replies: it changes none of them.
+
+**A project set up before 5 October 2026 must run it again**: that is what adds
+the safeguards (`docs/revision-9-rsvp.md` § Nothing is lost). Notices that a
+trigger "does not exist, skipping" are expected the first time.
 
 Then run the short check at the very bottom of that file (it is in a comment).
-Every column should read `false`: that is the public key being able to do
-nothing.
+The first four columns should read `false` — the public key able to do
+nothing — and the last `true`, the safeguards on.
 
 ### 3. Copy two values
 
@@ -112,32 +118,60 @@ guest's browser, and all four of these are secrets.
 Then **redeploy**: a deployment only sees the variables that existed when it was
 built.
 
-### 5. Try it, then clear it
+### 5. Try it, then clear the tests
 
 Open the site, send a reply, and open **`/replies`** with the passcode. The reply
-should be there. Before the link goes out to guests, empty the test replies in
-the SQL Editor:
+should be there, and there should be no warning about safeguards.
+
+The database refuses to delete a reply unless it is told the deletion is
+deliberate, so clearing the test replies takes two steps in the SQL Editor.
+First, look at exactly what would go — put in the moment the link went out (or
+is about to), in Central time:
 
 ```sql
-truncate public.rsvp_replies cascade;
-truncate public.rsvp_rate;
+select name, contact, created_at from public.rsvp_replies
+ where created_at < '2026-10-06 00:00:00-05';
 ```
+
+Only if that list is nothing but tests, remove them, and their versions:
+
+```sql
+begin;
+set local rsvp.deliberate = 'yes';
+delete from public.rsvp_replies where created_at < '2026-10-06 00:00:00-05';
+delete from public.rsvp_history where reply_id is null and received_at < '2026-10-06 00:00:00-05';
+commit;
+```
+
+Do not use `truncate` or a bare `delete`: they are refused, on purpose.
 
 ### Reading the replies
 
-`https://<the site>/replies`, with the passcode. Two headcounts — the Muhurtham
-and the reception — then every reply, newest first, and **Download as a
-spreadsheet** for whoever is talking to the caterer. A household that replies
-twice is counted once, by its latest answer; every earlier answer is kept in
-`rsvp_history`.
+`https://<the site>/replies`, with the passcode. Two headcounts — the wedding
+and the reception — then every reply, newest first. **Download as a
+spreadsheet** is the replies as they stand, for whoever is talking to the
+caterer. **Download every version** is everything the database holds: every
+reply as it arrived, including the ones a later reply replaced, with the one
+that counts marked. A household that replies twice is counted once, by its
+latest answer.
 
 Changing `REPLIES_PASSCODE` in Vercel (and redeploying) signs everybody out.
 
 ### Things worth knowing
 
+- **Backups.** On the free plan Supabase keeps **no backups at all**; its own
+  advice is to export regularly. Either download **every version** from
+  `/replies` every few days while replies are coming in, and once more after
+  the reply-by date — that file is a complete copy — or move the project to
+  the Pro plan for October and November, which keeps a daily backup for seven
+  days that **Restore** in the dashboard brings back.
+- **Nothing is deleted by accident.** The database refuses to delete or empty
+  the replies or their history, and records every change to a reply, even one
+  made by hand in the table editor (`docs/revision-9-rsvp.md` § Nothing is
+  lost). Step 5 is the deliberate way.
 - **A free Supabase project is paused after a week without activity.**
-  `vercel.json` has Vercel call `/api/keepalive` once a day, which runs a real
-  query and keeps it awake. That schedule runs on the *production* deployment
+  `vercel.json` has Vercel call `/api/keepalive` three times a day, which runs a
+  real query and keeps it awake. That schedule runs on the *production* deployment
   only. If the project is ever paused anyway, Supabase emails the owner, and
   **Restore** in the dashboard brings it back with its data; meanwhile the reply
   card tells guests their reply did not go through and keeps what they typed.
@@ -157,7 +191,7 @@ Changing `REPLIES_PASSCODE` in Vercel (and redeploying) signs everybody out.
 
 `tools/rsvp/local.sh` stands up what Supabase provides — a Postgres with
 Supabase's three API roles and PostgREST in front of it — and
-`tools/rsvp/test.mjs` runs 49 checks against it and against the site's route:
+`tools/rsvp/test.mjs` runs 64 checks against it and against the site's route:
 
 ```
 tools/rsvp/local.sh up

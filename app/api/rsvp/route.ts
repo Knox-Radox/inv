@@ -46,7 +46,6 @@ function fromForm(form: URLSearchParams): Record<string, unknown> {
     party: form.get("party") ?? "",
     dietary: form.get("dietary"),
     note: form.get("note"),
-    website: form.get("website"),
   };
 }
 
@@ -79,9 +78,11 @@ export async function POST(request: Request) {
     return answer({ ok: false, code: "invalid" });
   }
 
-  // A field no person can see or reach. Something that fills it in is told its
-  // reply was sent, and nothing is kept.
-  if (typeof raw.website === "string" && raw.website.trim() !== "") return answer({ ok: true });
+  // There was a hidden field here, and a reply that arrived with it filled in
+  // was answered "sent" and thrown away. Browsers and password managers fill
+  // hidden fields, so a guest could have been told their reply was sent when
+  // nothing was kept. It was taken out before the link went out, in October
+  // 2026; the rate limits are what stand in front of a script.
 
   if (Date.now() >= Date.parse(invitation.rsvp.closesAt)) {
     return answer({ ok: false, code: "closed" });
