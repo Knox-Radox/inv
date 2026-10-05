@@ -18,6 +18,13 @@ const SENT_KEY = "advika-sooraj-reply-sent";
 /** How long to wait for the server before calling it a failure. The route's own
  *  limit on the database is six seconds; this is that, and the trip. */
 const SEND_TIMEOUT_MS = 12000;
+/**
+ * How long before trying once more, unasked, when a reply could not get
+ * through. Sending a reply twice is safe — the second replaces the first, and
+ * both are kept — so a dropped connection or a slow database costs the guest a
+ * moment rather than a message.
+ */
+const RETRY_AFTER_MS = 1500;
 
 /** How long the sealing takes, to the moment the words appear under it. Must
  *  agree with Reply.module.css § The sealing. */
@@ -184,7 +191,6 @@ export function Reply() {
       party: draft.party.slice(0, others(draft)),
       dietary: draft.dietary,
       note: draft.note,
-      website: new FormData(e.currentTarget).get("website") ?? "",
     };
 
     const checked = check(body);
@@ -204,25 +210,34 @@ export function Reply() {
     setWhy(null);
     setSending(true);
 
-    const abort = new AbortController();
-    const timer = window.setTimeout(() => abort.abort(), SEND_TIMEOUT_MS);
-    let outcome: Outcome;
-    try {
-      const res = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: abort.signal,
-      });
-      outcome = (await res.json()) as Outcome;
-    } catch (error) {
-      // Nothing readable came back: no network, a request given up on, or an
-      // answer that was not this route's (a host's own error page).
-      const name = error instanceof Error ? error.name : "";
-      const why = name === "AbortError" ? "browser_timeout" : name === "SyntaxError" ? "not_json" : "browser_offline";
-      outcome = { ok: false, code: "unavailable", why };
-    } finally {
-      window.clearTimeout(timer);
+    const attempt = async (): Promise<Outcome> => {
+      const abort = new AbortController();
+      const timer = window.setTimeout(() => abort.abort(), SEND_TIMEOUT_MS);
+      try {
+        const res = await fetch("/api/rsvp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: abort.signal,
+        });
+        return (await res.json()) as Outcome;
+      } catch (error) {
+        // Nothing readable came back: no network, a request given up on, or an
+        // answer that was not this route's (a host's own error page).
+        const name = error instanceof Error ? error.name : "";
+        const why = name === "AbortError" ? "browser_timeout" : name === "SyntaxError" ? "not_json" : "browser_offline";
+        return { ok: false, code: "unavailable", why };
+      } finally {
+        window.clearTimeout(timer);
+      }
+    };
+
+    let outcome = await attempt();
+    // Once more when the only answer was that it could not get through — but
+    // not after the browser has already waited the whole twelve seconds.
+    if (!outcome.ok && outcome.code === "unavailable" && outcome.why !== "browser_timeout") {
+      await new Promise((done) => window.setTimeout(done, RETRY_AFTER_MS));
+      outcome = await attempt();
     }
     setSending(false);
 
@@ -567,13 +582,6 @@ export function Reply() {
               }}
             />
             {problems.note && <p className={styles.problem}>{said("note", "note")}</p>}
-          </div>
-
-          {/* Not for people. Off the page, out of the tab order and hidden from
-              assistive technology; something that fills it in is not a guest. */}
-          <div className={styles.trap} aria-hidden="true">
-            <label htmlFor={`${uid}-website`}>Website</label>
-            <input id={`${uid}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" />
           </div>
 
           <div className={styles.foot}>

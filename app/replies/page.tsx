@@ -144,14 +144,22 @@ export default async function Replies({
     );
   }
 
-  const { replies, totals } = list.data;
+  const { replies, totals, guarded } = list.data;
   const [muhurtham, reception] = invitation.day.moments;
 
   return (
     <Shell>
+      {guarded !== true && (
+        <p className={styles.problem} role="alert">
+          The database&rsquo;s safeguards are not switched on, so a reply deleted in Supabase would
+          be gone for good. In Supabase, open SQL Editor, paste in the whole of{" "}
+          <code>supabase/schema.sql</code> and press Run. It is safe on a database that already
+          has replies, and this message goes away when it has worked.
+        </p>
+      )}
       <p className={styles.lede}>
         As of {when.format(new Date())}, Central time. A household that replies twice is counted
-        once, by its latest answer.
+        once, by its latest answer; every earlier answer is kept, in the second download.
       </p>
 
       <dl className={styles.totals}>
@@ -176,6 +184,9 @@ export default async function Replies({
       <div className={styles.actions}>
         <a className={styles.link} href="/replies/export.csv">
           Download as a spreadsheet
+        </a>
+        <a className={styles.link} href="/replies/history.csv">
+          Download every version
         </a>
         <form method="post" action="/replies/leave">
           <button className={styles.linkButton} type="submit">
@@ -214,7 +225,7 @@ export default async function Replies({
                 {r.note && <p className={styles.note}>&ldquo;{r.note}&rdquo;</p>}
                 <p className={styles.meta}>
                   {when.format(new Date(r.updated_at))}
-                  {r.revision > 1 && `, sent ${r.revision} times`}
+                  {r.revision > 1 && `, version ${r.revision}`}
                 </p>
               </div>
             </li>

@@ -441,14 +441,6 @@
 
 /* --- Not for people ------------------------------------------------------- */
 
-.trap {
-  position: absolute;
-  left: -200vw;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
 /* --- Sending it ----------------------------------------------------------- */
 
 .foot {

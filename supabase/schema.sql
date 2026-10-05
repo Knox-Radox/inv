@@ -1,10 +1,13 @@
 -- Advika & Sooraj: where the replies are kept.
 --
--- Run this once, in the Supabase dashboard's SQL editor, on a new project.
--- It is safe to run again: every statement either checks first or replaces.
--- README.md § The RSVP has the five steps around it.
+-- Run this in the Supabase dashboard's SQL editor: once on a new project, and
+-- again whenever this file changes. It is safe to run again on a project that
+-- already has replies: every statement either checks first or replaces, it
+-- runs as one transaction, and nothing in it deletes or rewrites a reply.
+-- README.md § The RSVP has the steps around it.
 --
--- Three tables and six functions, and one rule that explains all of it:
+-- Three tables, seven functions and four guards, and two rules that explain
+-- all of it:
 --
 --   NOTHING HERE CAN BE REACHED WITH THE PROJECT'S PUBLIC KEY.
 --
@@ -16,6 +19,14 @@
 --
 -- So the site's server calls a function; the function decides. A guest's
 -- browser never talks to this database at all.
+--
+--   NOTHING A GUEST SENDS IS EVER LOST.
+--
+-- Every version of every reply is written to `rsvp_history` as it arrives, by
+-- a trigger, so a change made by hand in the table editor is recorded too. A
+-- reply, or any version of one, cannot be deleted or truncated, and a version
+-- cannot be rewritten, unless whoever is doing it says so first in the same
+-- transaction (§ Guards). Added in October 2026, before the link went out.
 
 begin;
 
@@ -54,15 +65,30 @@ create table if not exists public.rsvp_replies (
 -- where it shows.
 create table if not exists public.rsvp_history (
   id          bigint generated always as identity primary key,
-  reply_id    uuid        not null references public.rsvp_replies (id) on delete cascade,
+  -- The reply this is a version of. Empty only if that reply was deliberately
+  -- removed; its versions stay.
+  reply_id    uuid        references public.rsvp_replies (id) on delete set null,
   revision    integer     not null,
   received_at timestamptz not null default now(),
   reply       jsonb       not null,
+  -- 'card' when it came from the reply card; 'by hand' when somebody changed
+  -- the reply in the database directly, in the table editor or the SQL editor.
+  source      text        not null default 'card',
   -- A keyed hash of the sender's address. It tells one sender from another; it
   -- cannot be turned back into an address, and it is erased after two days
   -- (rsvp_sweep). See lib/rsvp/server.ts.
   via         text        not null default ''
 );
+
+-- A table made before October 2026, brought up to the definition above. Each
+-- statement is safe to run again, and none adds to or takes from a reply.
+-- The link to the reply was ON DELETE CASCADE, so deleting one reply from the
+-- table editor would have deleted every version of it as well.
+alter table public.rsvp_history add column if not exists source text not null default 'card';
+alter table public.rsvp_history alter column reply_id drop not null;
+alter table public.rsvp_history drop constraint if exists rsvp_history_reply_id_fkey;
+alter table public.rsvp_history add constraint rsvp_history_reply_id_fkey
+  foreign key (reply_id) references public.rsvp_replies (id) on delete set null;
 
 create index if not exists rsvp_history_reply on public.rsvp_history (reply_id, revision);
 
@@ -148,8 +174,6 @@ declare
   v_m       integer;
   v_r       integer;
   v_party   text[];
-  v_id      uuid;
-  v_rev     integer;
   c_invalid constant jsonb := jsonb_build_object('ok', false, 'code', 'invalid');
 begin
   if p_caller is null or char_length(p_caller) not between 8 and 128 then
@@ -199,6 +223,10 @@ begin
     return jsonb_build_object('ok', false, 'code', 'busy');
   end if;
 
+  -- Who sent it, for the trigger that writes this version to the history
+  -- (rsvp_record). For this transaction only.
+  perform set_config('rsvp.via', p_caller, true);
+
   insert into public.rsvp_replies as r
     (contact_key, contact, name, muhurtham, reception, party, dietary, note)
   values
@@ -212,11 +240,7 @@ begin
     dietary    = excluded.dietary,
     note       = excluded.note,
     revision   = r.revision + 1,
-    updated_at = now()
-  returning r.id, r.revision into v_id, v_rev;
-
-  insert into public.rsvp_history (reply_id, revision, reply, via)
-  values (v_id, v_rev, p_reply - 'contactKey', p_caller);
+    updated_at = now();
 
   perform public.rsvp_sweep();
 
@@ -225,6 +249,23 @@ begin
   -- had already replied.
   return jsonb_build_object('ok', true);
 end;
+$$;
+
+-- Whether the guards below are all in place and switched on. The family's page
+-- says so when they are not, because a project set up before October 2026
+-- has none until this file is run again.
+create or replace function public.rsvp_guarded()
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select count(*) = 7
+    from pg_catalog.pg_trigger t
+   where t.tgrelid in ('public.rsvp_replies'::regclass, 'public.rsvp_history'::regclass)
+     and t.tgname in ('rsvp_touch', 'rsvp_record', 'rsvp_keep', 'rsvp_keep_all', 'rsvp_history_keep')
+     and t.tgenabled <> 'D';
 $$;
 
 -- Everything, for the private page: the replies newest first, and the totals.
@@ -247,8 +288,33 @@ as $$
         'reception', coalesce(sum(reception), 0),
         'declined',  count(*) filter (where muhurtham = 0 and reception = 0),
         'changed',   count(*) filter (where revision > 1))
-        from public.rsvp_replies)
+        from public.rsvp_replies),
+    'guarded', public.rsvp_guarded()
   );
+$$;
+
+-- Every version of every reply, oldest first, for the family's second
+-- spreadsheet. Not the sender's hash: that tells senders apart while it is
+-- fresh, and means nothing in a spreadsheet.
+create or replace function public.rsvp_history_list()
+returns jsonb
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select coalesce(
+    jsonb_agg(jsonb_build_object(
+        'reply_id',    h.reply_id,
+        'revision',    h.revision,
+        'received_at', h.received_at,
+        'source',      h.source,
+        'latest',      h.reply_id is not null and h.revision = r.revision,
+        'reply',       h.reply)
+      order by h.received_at, h.id),
+    '[]'::jsonb)
+    from public.rsvp_history h
+    left join public.rsvp_replies r on r.id = h.reply_id;
 $$;
 
 -- One more wrong passcode from this sender, and whether they may try again:
@@ -274,31 +340,176 @@ set search_path = ''
 as $$
 begin
   perform public.rsvp_sweep();
-  return jsonb_build_object('ok', true, 'replies', (select count(*) from public.rsvp_replies));
+  return jsonb_build_object(
+    'ok', true,
+    'replies', (select count(*) from public.rsvp_replies),
+    'guarded', public.rsvp_guarded());
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- Guards
+-- ---------------------------------------------------------------------------
+-- A reply, and every version of one, is kept. These refuse a DELETE or a
+-- TRUNCATE on either table, and any change to a version once it is written,
+-- from wherever it comes: the table editor, the SQL editor, a stray statement.
+-- Nothing the site does deletes a reply, so the site never meets them.
+--
+-- Removing something on purpose — the test replies, before the link goes out —
+-- is still possible, by saying so first, in the same transaction:
+--
+--   begin;
+--   set local rsvp.deliberate = 'yes';
+--   ...
+--   commit;
+--
+-- README.md § The RSVP, step 5, has the whole statement. A reply removed that
+-- way still leaves its versions in rsvp_history.
+
+create or replace function public.rsvp_keep()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if coalesce(current_setting('rsvp.deliberate', true), '') = 'yes' then
+    return old;  -- a TRUNCATE's trigger is per statement, and its value unused
+  end if;
+  raise exception 'Replies are kept: this % on % was refused.', tg_op, tg_table_name
+    using hint = 'To remove a test reply on purpose, see README.md, The RSVP, step 5.';
+end;
+$$;
+
+create or replace function public.rsvp_history_keep()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  -- Two changes are allowed, and only the database makes them: the sender's
+  -- hash blanked after two days (rsvp_sweep), and the link to a reply that
+  -- was deliberately removed (on delete set null). What a guest said, and
+  -- when, is never rewritten.
+  if new.id = old.id
+     and new.revision = old.revision
+     and new.received_at = old.received_at
+     and new.reply = old.reply
+     and new.source = old.source
+     and (new.via = old.via or new.via = '')
+     and (new.reply_id is not distinct from old.reply_id or new.reply_id is null)
+  then
+    return new;
+  end if;
+  if coalesce(current_setting('rsvp.deliberate', true), '') = 'yes' then
+    return new;
+  end if;
+  raise exception 'A version of a reply is kept as it arrived: this change was refused.'
+    using hint = 'See README.md, The RSVP, step 5.';
+end;
+$$;
+
+-- Every version of a reply goes into rsvp_history as it is written, whichever
+-- way it was written. rsvp_submit says who sent it; anything else is a change
+-- made by hand, and is recorded as one.
+create or replace function public.rsvp_record()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_via text := coalesce(current_setting('rsvp.via', true), '');
+begin
+  insert into public.rsvp_history (reply_id, revision, reply, source, via)
+  values (
+    new.id,
+    new.revision,
+    jsonb_build_object(
+      'name', new.name, 'contact', new.contact,
+      'muhurtham', new.muhurtham, 'reception', new.reception,
+      'party', to_jsonb(new.party), 'dietary', new.dietary, 'note', new.note),
+    case when v_via = '' then 'by hand' else 'card' end,
+    v_via);
+  return null;
+end;
+$$;
+
+-- A change made by hand counts as a change: a new revision, and the time.
+create or replace function public.rsvp_touch()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if coalesce(current_setting('rsvp.via', true), '') = '' then
+    new.revision := old.revision + 1;
+    new.updated_at := now();
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists rsvp_touch on public.rsvp_replies;
+create trigger rsvp_touch before update on public.rsvp_replies
+  for each row execute function public.rsvp_touch();
+
+drop trigger if exists rsvp_record on public.rsvp_replies;
+create trigger rsvp_record after insert or update on public.rsvp_replies
+  for each row execute function public.rsvp_record();
+
+drop trigger if exists rsvp_keep on public.rsvp_replies;
+create trigger rsvp_keep before delete on public.rsvp_replies
+  for each row execute function public.rsvp_keep();
+
+drop trigger if exists rsvp_keep_all on public.rsvp_replies;
+create trigger rsvp_keep_all before truncate on public.rsvp_replies
+  for each statement execute function public.rsvp_keep();
+
+drop trigger if exists rsvp_keep on public.rsvp_history;
+create trigger rsvp_keep before delete on public.rsvp_history
+  for each row execute function public.rsvp_keep();
+
+drop trigger if exists rsvp_keep_all on public.rsvp_history;
+create trigger rsvp_keep_all before truncate on public.rsvp_history
+  for each statement execute function public.rsvp_keep();
+
+drop trigger if exists rsvp_history_keep on public.rsvp_history;
+create trigger rsvp_history_keep before update on public.rsvp_history
+  for each row execute function public.rsvp_history_keep();
+
+-- ---------------------------------------------------------------------------
+-- Who may call what
+-- ---------------------------------------------------------------------------
 -- Postgres gives EXECUTE on a new function to everybody, and Supabase's API
 -- roles inherit that. Take it back from all of them and give it to one.
 revoke all on function public.rsvp_hit(text, integer, integer) from public, anon, authenticated, service_role;
 revoke all on function public.rsvp_submit(jsonb, text)         from public, anon, authenticated;
 revoke all on function public.rsvp_list()                      from public, anon, authenticated;
+revoke all on function public.rsvp_history_list()              from public, anon, authenticated;
 revoke all on function public.rsvp_gate(text)                  from public, anon, authenticated;
 revoke all on function public.rsvp_ping()                      from public, anon, authenticated;
 revoke all on function public.rsvp_sweep()                     from public, anon, authenticated, service_role;
+revoke all on function public.rsvp_guarded()                   from public, anon, authenticated, service_role;
+revoke all on function public.rsvp_keep()                      from public, anon, authenticated, service_role;
+revoke all on function public.rsvp_history_keep()              from public, anon, authenticated, service_role;
+revoke all on function public.rsvp_record()                    from public, anon, authenticated, service_role;
+revoke all on function public.rsvp_touch()                     from public, anon, authenticated, service_role;
 
 grant execute on function public.rsvp_submit(jsonb, text) to service_role;
 grant execute on function public.rsvp_list()              to service_role;
+grant execute on function public.rsvp_history_list()      to service_role;
 grant execute on function public.rsvp_gate(text)          to service_role;
 grant execute on function public.rsvp_ping()              to service_role;
--- rsvp_hit and rsvp_sweep are granted to nobody: only the functions above
+-- The rest are granted to nobody: only the functions above and the triggers
 -- call them.
 
 commit;
 
--- To check it took, run this. Every line should say `false`:
+-- To check it took, run this. The first four columns should say `false` and
+-- the last `true`:
 --
 --   select has_function_privilege('anon', 'public.rsvp_submit(jsonb, text)', 'execute'),
 --          has_function_privilege('anon', 'public.rsvp_list()', 'execute'),
 --          has_function_privilege('authenticated', 'public.rsvp_list()', 'execute'),
---          has_table_privilege('anon', 'public.rsvp_replies', 'select');
+--          has_table_privilege('anon', 'public.rsvp_replies', 'select'),
+--          public.rsvp_guarded();

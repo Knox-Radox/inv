@@ -40,6 +40,8 @@ cannot set four capitals in a row; the heading over the schedule carries its
 weekday; and the one photograph of the couple sits at the close, above their
 note, laid into the paper by `couple()` in `tools/paint.py`. Its original is
 deliberately not in the repository: `ASSETS.md` § The couple's photograph.
+Before the link went out, the database was made to refuse to lose a reply:
+`docs/revision-9-rsvp.md` § Nothing is lost. Never add a way to delete one.
 
 **Read `docs/handoff-revision-9.md` first**, then `docs/revision-9-plan.md`,
 `docs/revision-9-cover.md` and `docs/revision-9-rsvp.md`.
