@@ -31,7 +31,7 @@ revision. The photographs and the card's paper are Unsplash's.)
 
 | File | What | Source | Shipped |
 |---|---|---|---|
-| `assets/private/proposal.jpg` → `public/photos/couple-tall.webp`, `public/photos/couple-wide.webp` | Advika & Sooraj walking along a beach; at the close, above their note. `couple()` in `tools/paint.py` cuts it twice (tall for a phone, the whole frame wider), tones it a little toward the field's ground, carries the sand on below their feet and gives it a wash's edge instead of a frame (900×1182, 127 KB; 1400×1138, 208 KB) | Taken by their photographer, Able Liang of Able2Capture, © 2026. Supplied by the client, who confirmed on 5 October 2026 that it may be used on this page and that no credit is asked | The two WebPs only |
+| `assets/private/proposal.jpg` → `public/photos/couple-tall.webp`, `public/photos/couple-wide.webp` | Advika & Sooraj walking along a beach; at the close, above their note. `couple()` in `tools/paint.py` cuts it twice (tall for a phone, the whole frame wider), tones it a little toward the field's ground, carries the sand on below their feet and gives it a wash's edge instead of a frame (900×1182, 140 KB; 1400×1138, 208 KB) | Taken by their photographer, Able Liang of Able2Capture, © 2026. Supplied by the client, who confirmed on 5 October 2026 that it may be used on this page and that no credit is asked | The two WebPs only |
 
 **The original is not in the repository, on purpose.** The repository is
 public and the full-size file (5731×3821, 9.1 MB) is the photographer's work. It

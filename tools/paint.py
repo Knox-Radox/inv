@@ -701,9 +701,13 @@ COUPLE_TONE = 0.6
 #: How much the thin paint takes the paper's tooth.
 COUPLE_TOOTH = 0.10
 COUPLE = {
-    # Runs off the right: on a phone that side is the edge of the screen.
-    "couple-tall": dict(crop=(0.17, 0.0, 0.83, 1.0), width=900, more=0.30,
-                        band=(0.21, 0.115, 0.0, 0.2), lift=(0.25, 0.0), push=(0.03, 0.012), seed=7),
+    # Thins out on all four sides, on a phone as well: the client's choice,
+    # October 2026, over running off the right-hand edge of the screen. The
+    # sides are narrower than the wide one's, because the two of them fill
+    # more of this frame: her hand is 25% in from the left and his 25% in
+    # from the right.
+    "couple-tall": dict(crop=(0.193, 0.0, 0.853, 1.0), width=900, more=0.30,
+                        band=(0.17, 0.115, 0.17, 0.2), lift=(0.25, 0.25), push=(0.025, 0.012), seed=7),
     "couple-wide": dict(crop=(0.0, 0.0, 1.0, 1.0), width=1400, more=0.22,
                         band=(0.25, 0.112, 0.21, 0.15), lift=(0.22, 0.22), push=(0.05, 0.02), seed=11),
 }
