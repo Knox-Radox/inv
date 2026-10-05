@@ -13,3 +13,8 @@ __pycache__/
 
 # Second checkouts made for agents working in parallel.
 .claude/worktrees/
+
+# Originals that must not be published. The repository is public: the
+# photographer's full-size file of the couple stays on the family's machines.
+# tools/paint.py reads it from here and writes only web-sized copies.
+assets/private/

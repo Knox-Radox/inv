@@ -11,6 +11,7 @@ not shipped. (Sizes in this file are KB of 1024 bytes.)
 | What | Terms | Section |
 |---|---|---|
 | Two photographs of blossom, and the card's paper, which is cut from a third photograph | Unsplash License | Revision 9, Revision 4, Revision 3 |
+| The photograph of the couple at the close | Their photographer's. The client confirmed on 5 October 2026 that it may be used here and that no credit is asked | The couple's photograph |
 | OpenStreetMap geometry, which the map plate is traced from | ODbL 1.0. **The credit it requires is currently not on the page** | Map data |
 | Parfumerie Script and Mrs Eaves | Commercial desktop fonts. Whether the licence covers web embedding is open | Fonts |
 | Supabase (RSVP replies); Google Maps and Google Calendar (outbound links) | Services, not assets | What the page talks to at runtime |
@@ -25,6 +26,19 @@ less true again since revision 6 added the wash sheets. Both are listed below.
 Corrected at revision 9: the next sentence, "No third-party image, texture, icon
 or illustration is shipped", was untrue for the same reason and from the same
 revision. The photographs and the card's paper are Unsplash's.)
+
+## The couple's photograph
+
+| File | What | Source | Shipped |
+|---|---|---|---|
+| `assets/private/proposal.jpg` → `public/photos/couple-tall.webp`, `public/photos/couple-wide.webp` | Advika & Sooraj walking along a beach; at the close, above their note. `couple()` in `tools/paint.py` cuts it twice (tall for a phone, the whole frame wider), tones it a little toward the field's ground, carries the sand on below their feet and gives it a wash's edge instead of a frame (900×1182, 127 KB; 1400×1138, 208 KB) | Taken by their photographer, Able Liang of Able2Capture, © 2026. Supplied by the client, who confirmed on 5 October 2026 that it may be used on this page and that no credit is asked | The two WebPs only |
+
+**The original is not in the repository, on purpose.** The repository is
+public and the full-size file (5731×3821, 9.1 MB) is the photographer's work. It
+is kept in `assets/private/`, which is git-ignored, on the machine that makes
+the art; without it, `python3 tools/paint.py --only photos` leaves the two
+published files as they are. Both published files carry the photographer's name
+and copyright in their EXIF, copied across from the original.
 
 ## Revision 9 — the cover is drawn
 

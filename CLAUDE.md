@@ -32,6 +32,15 @@ for *no frames*, with every timing correct, until a contact sheet showed it.
 And the envelope's edge ran forty pixels ahead of its own cut, because a
 transform is composited and a `clip-path` is not. **Look at the frames.**
 
+**Since revision 9, at the client's request (October 2026):** the first
+moment is called "Wedding" on the page (it is still `muhurtham` in the ids, the
+database and the family's print); the reply card's heading and the bar's first
+button say "RSVP", the heading set in Mrs Eaves capitals because the script
+cannot set four capitals in a row; the heading over the schedule carries its
+weekday; and the one photograph of the couple sits at the close, above their
+note, laid into the paper by `couple()` in `tools/paint.py`. Its original is
+deliberately not in the repository: `ASSETS.md` § The couple's photograph.
+
 **Read `docs/handoff-revision-9.md` first**, then `docs/revision-9-plan.md`,
 `docs/revision-9-cover.md` and `docs/revision-9-rsvp.md`.
 
@@ -171,7 +180,7 @@ provider still hold — nothing on the page fetches a map at runtime.
 
 What a guest can act on, as of revision 9: the cover (the whole of it opens the
 envelope — there is no label and no visible skip link), the bar's three
-controls (Reply, Places to stay, and Add to calendar, which opens onto two
+controls (RSVP, Places to stay, and Add to calendar, which opens onto two
 calendars), the map plate, the six hotel links and the one phone number, and the
 reply card. There is still no contact block. If you are adding a new *kind* of
 control, stop and ask.

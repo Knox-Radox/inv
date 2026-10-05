@@ -217,6 +217,12 @@ export const invitation = {
      */
     closingNote: ["We can’t wait to celebrate this special day with the people we love most."],
 
+    /**
+     * The photograph above the note, said for anyone who cannot see it. What
+     * is in it, and nothing the picture does not show.
+     */
+    closingPortraitAlt: `${couple.both} walking hand in hand along a beach`,
+
     /** Set beneath the note, in the body face. */
     closingSignoff: "With love,",
 

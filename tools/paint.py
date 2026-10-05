@@ -206,7 +206,8 @@ def over(dst: np.ndarray, rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
     return np.concatenate([out_rgb, out_a], axis=2)
 
 
-def save_rgba(arr: np.ndarray, path: Path, quality: int, lossless_alpha: bool = False) -> None:
+def save_rgba(arr: np.ndarray, path: Path, quality: int, lossless_alpha: bool = False,
+              exif: bytes | None = None) -> None:
     out = np.clip(arr, 0.0, 1.0)
     out = np.concatenate([out[..., :3] * 255.0, out[..., 3:4] * 255.0], axis=2).astype(np.uint8)
     im = Image.fromarray(out, "RGBA")
@@ -214,7 +215,8 @@ def save_rgba(arr: np.ndarray, path: Path, quality: int, lossless_alpha: bool = 
     if path.suffix == ".png":
         im.save(path, "PNG", optimize=True)
     else:
-        im.save(path, "WEBP", quality=quality, method=6, alpha_quality=100 if lossless_alpha else 82)
+        im.save(path, "WEBP", quality=quality, method=6, alpha_quality=100 if lossless_alpha else 82,
+                **({"exif": exif} if exif else {}))
 
 
 # ---------------------------------------------------------------------------
@@ -671,6 +673,128 @@ def blossoms() -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------
+# The couple, painted into the page
+# ---------------------------------------------------------------------------
+#: The one photograph of the two of them, at the close, above their note. The
+#: original is not in the repository, which is public — see ASSETS.md. Put it
+#: here to regenerate; without it `--only photos` leaves the two files alone.
+COUPLE_SRC = ROOT / "assets" / "private" / "proposal.jpg"
+
+#: name: the crop as fractions of the frame (x0, y0, x1, y1); the width in
+#: pixels; the ground carried on below, as a fraction of the crop's height;
+#: the band along each side that the picture thins out across (left, top,
+#: right, bottom), as fractions of the finished picture, where 0 is a side it
+#: runs off instead; how much sooner the ground gives out toward the left and
+#: the right than under their feet; and how far the edge is pushed about,
+#: across and down. Down is held tighter: their shoes are close to the ground
+#: that runs out under them.
+#:
+#: Every band, plus the push, stops short of the two of them: his hair is 21%
+#: down the frame, their shoes 97%, and they stand between 36% and 69% across.
+COUPLE_QUALITY = 72
+#: The field's ground — `--ground-deep` in app/globals.css. The paper it is on.
+FIELD = np.array([240, 233, 219], dtype=np.float64) / 255.0
+#: How far the photograph is toned toward that sheet: at 0 a white shirt is
+#: whiter than the page, which is a screen showing through a hole in it; at 1
+#: it is ink on this stock.
+COUPLE_TONE = 0.6
+#: How much the thin paint takes the paper's tooth.
+COUPLE_TOOTH = 0.10
+COUPLE = {
+    # Runs off the right: on a phone that side is the edge of the screen.
+    "couple-tall": dict(crop=(0.17, 0.0, 0.83, 1.0), width=900, more=0.30,
+                        band=(0.21, 0.115, 0.0, 0.2), lift=(0.25, 0.0), push=(0.03, 0.012), seed=7),
+    "couple-wide": dict(crop=(0.0, 0.0, 1.0, 1.0), width=1400, more=0.22,
+                        band=(0.25, 0.112, 0.21, 0.15), lift=(0.22, 0.22), push=(0.05, 0.02), seed=11),
+}
+
+
+def couple(name: str) -> tuple[np.ndarray, bytes]:
+    """The photograph, laid into the paper the way the washes are.
+
+    A photograph has four straight sides and this page has no boxes, so it has
+    a wash's edge instead: it thins out along a line that wanders, and where it
+    is thin the paper's tooth shows through. It keeps its own colours, toned a
+    little toward the sheet it is on as a print on ivory stock is, and nothing
+    here is run by the browser — the page gets a still image with its edge
+    already in it.
+
+    Their shoes are 3% from the bottom of the frame, which is no room to run
+    out in. So the ground is carried on below, the way the photograph already
+    treats the sand nearest the lens: the last strip below their shoes, turned
+    over to meet itself, going out of focus further the further down it goes,
+    until it is only its colour. Cut off sharp and then blurred, as the first
+    try did, there was a line under their feet where the photograph stopped.
+    """
+    c = COUPLE[name]
+    width = c["width"]
+    push_x, push_y = c["push"]
+    src = Image.open(COUPLE_SRC)
+    tags = src.getexif()
+    im = src.convert("RGB")
+    W, H = im.size
+    x0, y0, x1, y1 = c["crop"]
+    im = im.crop((round(x0 * W), round(y0 * H), round(x1 * W), round(y1 * H)))
+    h0 = round(width * im.height / im.width)
+    rgb = np.asarray(im.resize((width, h0), Image.LANCZOS), dtype=np.float64) / 255.0
+    rng = np.random.default_rng(c["seed"])
+
+    ext = round(h0 * c["more"])
+    h = h0 + ext
+    yy, xx = np.mgrid[0:h, 0:width]
+    u, v = (xx + 0.5) / width, (yy + 0.5) / h
+    # The strip below their shoes, turned over so it meets itself, and then
+    # the strip's own colour, held. Never more than the strip: a row further
+    # up has a shoe in it. Holding its last row instead held his shadow too,
+    # as a dark column all the way down.
+    tail = max(8, round(h0 * 0.022))
+    turned = rgb[-tail:][::-1]
+    held = ndimage.gaussian_filter1d(turned.mean(axis=0), sigma=width / 60, axis=0, mode="nearest")
+    canvas = np.concatenate([rgb, turned, np.repeat(held[None], ext - tail, axis=0)], axis=0).astype(np.float32)
+    # Out of focus by degrees: a stack of blurs, and each row takes the one its
+    # depth below their shoes asks for. Wider than tall, because the sand
+    # below is a colour along the width, and blurring down only smears it.
+    sigmas = [0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0]
+    stack = np.stack([canvas] + [ndimage.gaussian_filter(canvas, sigma=(0.35 * s, s, 0), mode="nearest")
+                                 for s in sigmas[1:]])
+    want = np.clip((np.arange(h) - (h0 - 0.6 * tail)) * (64.0 / ext) * 3.0, 0.0, 64.0)
+    at = np.interp(want, sigmas, np.arange(len(sigmas)))
+    lo = np.floor(at).astype(int)
+    hi = np.minimum(lo + 1, len(sigmas) - 1)
+    f = (at - lo)[:, None, None]
+    rows = np.arange(h)
+    pic = stack[lo, rows] * (1 - f) + stack[hi, rows] * f
+    pic = FIELD ** COUPLE_TONE * pic.astype(np.float64)
+
+    # How far in from the edge, 0 to 1. Pushed about before it is measured, so
+    # the edge is a hand's and not a ruler's; on a side that thins out the
+    # measure starts the push's own width inside the box, which keeps that
+    # side at nothing whichever way a point is pushed.
+    uu = u + (fbm(h, width, [(2.3, 1.0), (5.5, 0.45)], rng) - 0.5) * 2 * push_x
+    vv = v + (fbm(h, width, [(2.3, 1.0), (5.5, 0.45)], rng) - 0.5) * 2 * push_y
+    fl, ft, fr, fb = c["band"]
+    side = np.where(u < 0.5, c["lift"][0], c["lift"][1]) * np.abs(2 * u - 1) ** 2.2
+    zero = np.zeros_like(u)
+    ex = np.maximum(1 - (uu - push_x) / fl if fl else zero, 1 - (1 - push_x - uu) / fr if fr else zero)
+    ey = np.maximum(1 - (vv - push_y) / ft if ft else zero, 1 - (1 - push_y - vv) / (fb + side) if fb else zero)
+    m = 1 - np.clip(np.hypot(np.clip(ex, 0, 1), np.clip(ey, 0, 1)), 0.0, 1.0)
+    # Thinner here, fuller there; scaled by how far out it is, so the middle
+    # stays whole.
+    x = m - 0.34 * fbm(h, width, [(4, 1.0), (9, 0.5), (21, 0.25)], rng) * (1 - m) ** 0.7
+    e = np.clip(x, 0.0, 1.0)
+    alpha = e * e * e * (e * (6 * e - 15) + 10)
+    # Thin paint sits in the tooth; thick paint and bare paper do not show it.
+    alpha = np.clip(alpha + COUPLE_TOOTH * tooth(h, width, rng, scale=1.6) * 4 * alpha * (1 - alpha), 0.0, 1.0)
+
+    # The photographer's name and copyright travel with every copy.
+    keep = Image.Exif()
+    for tag in (0x013B, 0x8298):
+        if tags.get(tag):
+            keep[tag] = str(tags[tag]).strip()
+    return np.dstack([np.clip(pic, 0.0, 1.0), alpha]), keep.tobytes()
+
+
+# ---------------------------------------------------------------------------
 def main() -> None:
     proof = Path(sys.argv[sys.argv.index("--proof") + 1]) if "--proof" in sys.argv else None
     only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
@@ -711,6 +835,20 @@ def main() -> None:
                 a = arr[..., 3:4] * (0.2 if name == "backdrop" else 1.0)
                 on = np.broadcast_to(np.array([240, 233, 219]) / 255.0, (h, w, 3)) * (1 - a) + arr[..., :3] * a
                 Image.fromarray((on * 255).astype(np.uint8)).save(proof / f"{name}.png")
+
+    if want("photos") and COUPLE_SRC.exists():
+        for name in COUPLE:
+            arr, credit = couple(name)
+            save_rgba(arr, PHOTOS / f"{name}.webp", quality=COUPLE_QUALITY, exif=credit)
+            h, w, _ = arr.shape
+            print(f"  {name}.webp  {w}x{h}  {(PHOTOS / f'{name}.webp').stat().st_size / 1024:6.1f} KB")
+            if proof:
+                a = arr[..., 3:4]
+                on = np.broadcast_to(np.array([240, 233, 219]) / 255.0, (h, w, 3)) * (1 - a) + arr[..., :3] * a
+                Image.fromarray((on * 255).astype(np.uint8)).save(proof / f"{name}.png")
+                Image.fromarray((a[..., 0] * 255).astype(np.uint8)).save(proof / f"{name}-alpha.png")
+    elif want("photos"):
+        print(f"  couple: no {COUPLE_SRC.relative_to(ROOT)}, so the two published copies are left as they are")
 
     if want("liner"):
         ln = liner()
