@@ -44,7 +44,7 @@ All of this lives in `content/invitation.ts` as a single typed source of truth.
 | Address | 9981 County Road 419, Anna, TX 75409 |
 | Timezone | America/Chicago (CST, UTC−06:00 on that date) |
 | Language | English only |
-| RSVP | A reply card, by **Sunday, November 15**. See the note below: this row said "None" until revision 9. |
+| RSVP | A reply card, by **Friday, October 30**. See the note below: this row said "None" until revision 9. |
 
 **Every fact above is confirmed.** There is nothing left to fill in. The year is
 2026; November 27, 2026 is a Friday, which is consistent with an 8:30 AM

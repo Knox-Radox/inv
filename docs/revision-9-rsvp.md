@@ -169,7 +169,7 @@ backups for seven days and restores them from the dashboard.
 | A line is blank or malformed | That line marked, in words; focus goes to the first | Nothing sent |
 | No network, the database paused, a timeout | Tried once more by itself; if that fails too, "Your reply did not go through. It is saved on this device…" | Kept on the device; the same button sends it again |
 | Too many from one connection | Asked to wait ten minutes | Kept on the device |
-| After November 15 | "Replies closed on Sunday, November 15." | The server refuses, whatever the browser's clock says |
+| After October 30 | "Replies closed on Friday, October 30." | The server refuses, whatever the browser's clock says |
 | JavaScript never loaded | A plain form that posts itself, and a plain "Reply sent" | Stored the same way |
 | Environment variables not set | The same "did not go through" | Kept on the device |
 
@@ -267,5 +267,5 @@ Each is one line to change.
 |---|---|---|
 | Guests per reply, per event | 10 | `LIMITS.guests` in `lib/rsvp/reply.ts`, and the two CHECKs in `supabase/schema.sql` |
 | Other guests' names | optional | `check()` in `lib/rsvp/reply.ts` |
-| Replies close | midnight Central at the end of November 15 | `rsvp.closesAt` in `content/invitation.ts` |
+| Replies close | midnight Central (CDT) at the end of Friday, October 30 | `rsvp.closesAt` in `content/invitation.ts` |
 | A reply can be changed | until then, from any device | — |

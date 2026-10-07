@@ -24,7 +24,7 @@ is merged.
 | Extra blanks | **A note to the couple, names of everyone coming, dietary or allergy notes** |
 | Contact | **Phone or email, the guest's choice** — it is what merges a repeat reply |
 | The RSVP's form | **A reply card, formal wording, sealed in wax on sending** |
-| Reply by | **Sunday, November 15** |
+| Reply by | **Friday, October 30** |
 | Reading replies | **A passcode-protected page on the site**, with a CSV download |
 | Supabase | **Build now against a local Postgres; connect the real project at the end** |
 | Colour | **Ivory paper, jewel inks.** Maroon, marigold and kumkum pink arrive as pigment only. One saturated surface: the envelope's liner |
@@ -192,7 +192,7 @@ than confirmed, reduced motion, and LCP with the element recorded beside it.
 ### What is asked
 
 ```
-  The favour of a reply is requested by Sunday, November 15
+  The favour of a reply is requested by Friday, October 30
 
   Name                    ____________________________
 
@@ -215,7 +215,7 @@ Defaults taken where the client was not asked, each one line to change:
 - At most **10** guests per reply, per event.
 - The lines for other guests' names are **optional**. A blank line is not an
   error; an elder who gives a number and no names has still replied.
-- The reply-by date ends at **midnight Central** on November 15.
+- The reply-by date ends at **midnight Central** on October 30.
 - A reply can be **changed** until then, from any device, by sending again with
   the same phone or email. The latest one counts and every earlier one is kept.
 
