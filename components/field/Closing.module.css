@@ -108,6 +108,30 @@
   color: var(--sage-deep);
 }
 
+/*
+ * The way to the registry: one plain line under the signature, as a postscript
+ * is, in the gold-hairline link the page uses everywhere. It is a link to
+ * another page, not a button, and it carries no ornament; the registry says
+ * the warm things itself.
+ */
+.registry {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: clamp(14px, 2.4vh, 22px);
+  font-size: var(--text-body-l);
+  color: var(--sage-deep);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.registry:hover {
+  text-decoration-color: var(--sage-deep);
+}
+
 /* Sits on the datum, where the thread has been running all along. */
 .knot {
   position: absolute;

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# What Supabase gives the RSVP, stood up on this machine: a Postgres with the
+# What Supabase gives the RSVP and the registry, stood up on this machine: a Postgres with the
 # three API roles, and PostgREST in front of it.
 #
 #   tools/rsvp/local.sh up      # fresh database, schema applied, REST on :54330
@@ -44,6 +44,7 @@ case "${1:-up}" in
     psql -qAt -d postgres -c "drop database if exists $DB" -c "create database $DB"
     psql -q -d "$DB" -v ON_ERROR_STOP=1 -f tools/rsvp/roles.sql
     psql -q -d "$DB" -v ON_ERROR_STOP=1 -f supabase/schema.sql
+    psql -q -d "$DB" -v ON_ERROR_STOP=1 -f supabase/registry.sql
     PGRST_DB_URI="postgres://authenticator:local@$PGHOST:$PGPORT/$DB" \
     PGRST_DB_SCHEMAS=public PGRST_DB_ANON_ROLE=anon \
     PGRST_JWT_SECRET="$SECRET" PGRST_SERVER_PORT="$REST_PORT" \

@@ -1,0 +1,80 @@
+/*
+ * The registry page: the invitation's field, without the thread. Champagne
+ * ground and its lattice, one column, and no ornament of its own. The gifts
+ * are the content and the page's boldest thing is the title, which is the
+ * boldest thing on every page here.
+ */
+
+.page {
+  min-height: 100svh;
+  background-color: var(--ground-deep);
+  background-image: var(--lattice-image);
+  background-size: var(--lattice-size);
+  background-position: var(--lattice-position);
+}
+
+.inner {
+  max-width: 760px;
+  margin-inline: auto;
+  padding: clamp(12px, 3vh, 28px) clamp(20px, 6vw, 48px) clamp(64px, 12vh, 128px);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-body);
+  color: var(--sage-deep);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.back:hover {
+  text-decoration-color: var(--sage-deep);
+}
+
+.title {
+  margin-top: clamp(20px, 5vh, 52px);
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+/*
+ * The note about money, ruled off above and below like a line on a printed
+ * card. It is set larger than the gifts' own words because it is the first
+ * thing a guest is asked to read.
+ */
+.welcome {
+  margin-top: clamp(20px, 3.4vh, 32px);
+  margin-bottom: clamp(28px, 5vh, 48px);
+  padding: clamp(18px, 3vh, 26px) 0;
+  max-width: min(46ch, 100%);
+  font-size: var(--text-body-l);
+  line-height: 1.64;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.said {
+  padding: clamp(18px, 3vh, 26px) 0;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  font-size: var(--text-body-l);
+  line-height: 1.6;
+}
+
+/* The page's last words, signed as the invitation is. */
+.signoff {
+  margin-top: clamp(40px, 8vh, 72px);
+  font-size: var(--text-body-l);
+  line-height: 1.6;
+}
+
+.signature {
+  display: block;
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+  color: var(--sage-deep);
+}

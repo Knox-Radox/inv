@@ -32,7 +32,7 @@ const PORTRAIT = {
  * runs out where the note begins.
  */
 export function Closing() {
-  const { copy } = invitation;
+  const { copy, registry } = invitation;
 
   return (
     <section className={styles.section}>
@@ -75,6 +75,9 @@ export function Closing() {
           {copy.closingSignoff}
           <span className={styles.signature}>{copy.closingSignature}</span>
         </p>
+        <a className={styles.registry} href="/registry">
+          {registry.linkLabel}
+        </a>
       </div>
       <Knot className={styles.knot} size={26} />
     </section>

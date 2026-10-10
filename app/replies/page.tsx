@@ -188,6 +188,9 @@ export default async function Replies({
         <a className={styles.link} href="/replies/history.csv">
           Download every version
         </a>
+        <a className={styles.link} href="/replies/registry">
+          The registry
+        </a>
         <form method="post" action="/replies/leave">
           <button className={styles.linkButton} type="submit">
             Sign out

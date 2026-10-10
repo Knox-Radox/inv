@@ -502,6 +502,28 @@ The site is deployed on Vercel, which also calls `/api/keepalive` once a day
 (`vercel.json`) so that a free Supabase project is not paused for want of
 traffic.
 
+## The registry — revision 10
+
+`/registry` shows gift photographs that are **not ours and not in this
+repository**. The family adds each gift by hand and gives its photograph either
+as an address on the shop's own site, which the guest's browser then loads from
+the shop (with no referrer sent), or as a file they upload, which is kept in the
+`registry` bucket of the project's Supabase Storage and shown from there.
+
+- A shop's photograph belongs to the shop. Showing it beside a link to that
+  shop's own page is what any registry does, but it is not a licence, and a shop
+  can withdraw or change the file at any time; the card then shows a blank of
+  paper with the gift's first letter.
+- A photograph the family uploads is theirs to have the right to use. Nothing
+  here checks.
+- Nothing is fetched or copied from a shop by this site: no scraping, no proxy.
+  The guest's browser contacts the shop's image host directly, so that host sees
+  the guest's address and browser, as it would on any page that shows its image.
+- This is a second new runtime contact, beside Supabase's REST API: Supabase
+  Storage, from the site's server only, with the same secret key, to write; and
+  from a guest's browser, to read a picture the family uploaded.
+- No icon, font or other asset was added.
+
 ## The couple's mark
 
 `assets/source/wedding-logo.png` is the couple's own wedding logo, supplied by

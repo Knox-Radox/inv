@@ -93,6 +93,17 @@ Then run the short check at the very bottom of that file (it is in a comment).
 Every column should read `false` — the public key able to do nothing — except
 `safeguards_on`, which should read `true`.
 
+### 2b. Create the registry's tables
+
+If you are setting up the registry (`docs/revision-10-registry.md`), run
+[`supabase/registry.sql`](supabase/registry.sql) the same way, **after**
+`schema.sql`. It is safe to run again. It also makes the `registry` Storage
+bucket for photographs the family uploads. Its last lines, in a comment, are a
+check like the one above.
+
+The family adds gifts at `/replies/registry`, behind the same passcode as the
+replies. No new setting is needed in Vercel.
+
 ### 3. Copy two values
 
 - **The project's URL** — dashboard, **Integrations → Data API**, under
@@ -198,6 +209,7 @@ tools/rsvp/local.sh up
 tools/rsvp/local.sh env > .env.local       # then add REPLIES_PASSCODE=...
 npm run dev
 node tools/rsvp/test.mjs http://localhost:3000
+node tools/rsvp/registry.test.mjs http://localhost:3000
 ```
 
 It needs a local Postgres and the `postgrest` binary; the script's header says

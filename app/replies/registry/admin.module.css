@@ -1,0 +1,322 @@
+/*
+ * The registry page for the family. Like the replies page it has no ornament:
+ * the invitation's two faces, and everything sized to be read across a
+ * kitchen table. Blanks are ruled lines, not boxes, here as on the reply card.
+ */
+
+.page {
+  min-height: 100svh;
+  max-width: 880px;
+  margin-inline: auto;
+  padding: clamp(40px, 8vh, 88px) clamp(20px, 6vw, 48px) clamp(64px, 10vh, 120px);
+}
+
+.title {
+  font-size: var(--text-script-l);
+  line-height: 1.15;
+}
+
+.lede {
+  margin-top: clamp(18px, 3vh, 28px);
+  max-width: 60ch;
+  font-size: var(--text-body);
+  line-height: 1.64;
+}
+
+.actions {
+  margin-top: clamp(14px, 2vh, 22px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px clamp(20px, 5vw, 36px);
+}
+
+.link,
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--sage-deep);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.said {
+  margin-top: 18px;
+  padding-left: 14px;
+  border-left: 2px solid var(--sage);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--sage-deep);
+}
+
+.problem {
+  margin-top: 18px;
+  padding-left: 14px;
+  border-left: 2px solid var(--arakku);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--arakku);
+}
+
+.section {
+  margin-top: clamp(36px, 6vh, 60px);
+}
+
+.heading {
+  font-family: var(--font-eaves), Georgia, serif;
+  font-size: var(--text-display-l);
+  line-height: 1.15;
+  color: var(--sage-deep);
+}
+
+/* --- The form -------------------------------------------------------------- */
+
+.form {
+  margin-top: 16px;
+  display: grid;
+  gap: 18px;
+  max-width: 34rem;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field label {
+  font-size: var(--text-body-s);
+  line-height: 1.4;
+}
+
+/* 16px or more, always: iOS zooms the page on focus for anything smaller. */
+.field input:not([type="file"]) {
+  min-height: 48px;
+  padding: 8px 2px;
+  font: inherit;
+  font-size: var(--text-body-l);
+  line-height: 1.3;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 55%, transparent);
+  border-radius: 0;
+}
+
+.field input[type="file"] {
+  font: inherit;
+  font-size: var(--text-body-s);
+  min-height: 44px;
+  padding: 8px 0;
+}
+
+.pair {
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 560px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+.help {
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+.photoField {
+  display: grid;
+  gap: 18px;
+}
+
+.preview {
+  width: 112px;
+  aspect-ratio: 1 / 1;
+  background: white;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+.preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.button {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0 28px;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--ground);
+  background: var(--sage-deep);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* --- The list -------------------------------------------------------------- */
+
+.list {
+  margin-top: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px 18px;
+  padding: clamp(14px, 2.4vh, 20px) 0;
+  border-top: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
+  scroll-margin-top: 24px;
+}
+
+.row:target {
+  background: color-mix(in srgb, var(--gold-light) 18%, transparent);
+}
+
+.thumb {
+  width: 72px;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: white;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  font-family: var(--font-parfumerie), "Snell Roundhand", cursive;
+  font-size: 2rem;
+  color: var(--sage-deep);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.what {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.what p {
+  overflow-wrap: anywhere;
+}
+
+.name {
+  font-size: var(--text-body-l);
+  line-height: 1.4;
+  color: var(--sage-deep);
+}
+
+.meta {
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+}
+
+.meta a {
+  color: var(--sage-deep);
+}
+
+.chosen {
+  font-size: var(--text-body-s);
+  line-height: 1.5;
+  color: var(--arakku);
+}
+
+.buttons,
+.edit {
+  grid-column: 1 / -1;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+}
+
+.small {
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-body-s);
+  color: var(--sage-deep);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.edit > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-body-s);
+  color: var(--sage-deep);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.26em;
+}
+
+.edit[open] > summary {
+  margin-bottom: 8px;
+}
+
+.log {
+  margin-top: clamp(36px, 6vh, 60px);
+  font-size: var(--text-body-s);
+  line-height: 1.55;
+}
+
+.log summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--sage-deep);
+}
+
+.log ul {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.page code {
+  font-family: inherit;
+  font-size: 0.94em;
+  color: var(--sage-deep);
+}
+
+@media (min-width: 720px) {
+  .row {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .buttons {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+}

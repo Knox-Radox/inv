@@ -526,6 +526,49 @@ export const invitation = {
       }),
     ],
   },
+
+  /**
+   * The registry — revision 10, docs/revision-10-registry.md. The wish list
+   * lives on its own page, /registry, and the invitation only points to it.
+   *
+   * The note at its head is the whole of what the page says about money: no
+   * account, no handle, no button. The client's instruction was that a note is
+   * enough, "we appreciate the cash gift, or if you prefer the registry is
+   * right there", gracefully put. It does not say what the money is for,
+   * because nothing here says where the couple will live, and nothing may be
+   * invented about their lives.
+   */
+  registry: {
+    /** On the invitation, under the signature, and over the registry itself. */
+    linkLabel: "Our registry",
+    title: "Our registry",
+    /** The way back, at the top of the registry. */
+    backLabel: "The invitation",
+    welcome:
+      "Your presence is the gift we most wish for. Should you wish to give something more, a gift of money is as gratefully received as anything below, and this list is here only if it helps.",
+
+    /** The shop's name follows; "View online" when the family gave none. */
+    viewAt: "View at",
+    viewOnline: "View online",
+
+    claim: "I’ll give this",
+    /** What the guest who chose a gift sees on it, on the phone they chose it on. */
+    chosenByYou: "You have chosen this one. Thank you.",
+    undo: "I’ve changed my mind",
+    /** What every other guest sees. It does not say who. */
+    chosenByOther: "Already chosen",
+    /** Said once, if two guests reach for the same gift at the same moment. */
+    taken: "Someone has just chosen this one. Thank you for thinking of it.",
+    /** For anything that went wrong with choosing or undoing, and what to do. */
+    failures: {
+      slow_down: "Please wait a few minutes and try again.",
+      unavailable: "That did not go through. Please try again in a moment.",
+      gone: "That gift is no longer on the list.",
+    },
+
+    empty: "The list is still being put together. Please look again soon.",
+    unavailable: "The registry cannot be opened just now. Please try again in a little while.",
+  },
 } as const;
 
 export type Invitation = typeof invitation;

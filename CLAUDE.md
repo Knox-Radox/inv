@@ -43,6 +43,19 @@ deliberately not in the repository: `ASSETS.md` § The couple's photograph.
 Before the link went out, the database was made to refuse to lose a reply:
 `docs/revision-9-rsvp.md` § Nothing is lost. Never add a way to delete one.
 
+**Revision 10 (October 2026) added a registry**, on its own page, `/registry`,
+reached by one plain line under the signature. It is a wish list the family
+fills in by hand at `/replies/registry` (same passcode, same sign-in), with a
+Supabase table behind it and a bucket for photographs they upload. A guest can
+say "I'll give this" without giving a name; the same phone can take it back.
+**Cash gifts are a note and nothing else** — the client's own instruction —
+so there is no account, handle, QR code or payment button anywhere, and there
+must not be one. The photographs are the shops' own, shown as the shops have
+them. Read `docs/revision-10-registry.md` before touching any of it, and run
+`node tools/rsvp/registry.test.mjs` after touching `supabase/registry.sql`,
+`lib/registry/` or anything under `app/registry/`, `app/api/registry/` or
+`app/replies/registry/`.
+
 **Read `docs/handoff-revision-9.md` first**, then `docs/revision-9-plan.md`,
 `docs/revision-9-cover.md` and `docs/revision-9-rsvp.md`.
 
@@ -134,6 +147,8 @@ Invoke the `frontend-design` skill for all UI work.
   supabase-js, and no database key with a `NEXT_PUBLIC_` name
 - `next/font` with self-hosted, subset faces. Cut by `tools/fonts.sh` from the
   originals in `assets/fonts/` — never `public/`, which serves what it holds
+- Supabase Storage, for the registry's uploaded photographs only, written from
+  the server and read by the guest's browser from a public bucket
 - `next/og` for the share card
 - Deployed to Vercel
 - No component library, no UI kit, no icon pack. Every mark on this page is drawn
@@ -184,7 +199,8 @@ What a guest can act on, as of revision 9: the cover (the whole of it opens the
 envelope — there is no label and no visible skip link), the bar's three
 controls (RSVP, Places to stay, and Add to calendar, which opens onto two
 calendars), the map plate, the six hotel links and the one phone number, and the
-reply card. There is still no contact block. If you are adding a new *kind* of
+reply card. Revision 10 added the line to the registry under the signature, and on the
+registry itself, each gift's shop link and the "I'll give this" button. There is still no contact block. If you are adding a new *kind* of
 control, stop and ask.
 
 ## Motion budget
@@ -235,11 +251,13 @@ on Slow 4G is the only hard line. What survives, and is still enforced:
   painted figures and scenes, parrots
 - A Devanagari-styled Latin face. The family's printed invitation uses one for
   the invocation; here it is Mrs Eaves
-- Any copyrighted or unlicensed third-party asset — **including anything from
+- Any copyrighted or unlicensed third-party asset, **including anything from
   the family's Canva PDFs**, whose artwork is stock and whose own metadata
   flags generated content. They were art direction; every motif taken from
-  them is redrawn from this page's primitives. The one third-party thing on
-  the page is the OpenStreetMap geometry the map plate is traced from, which is
+  them is redrawn from this page's primitives. Two third-party things are on
+  the site: the gift photographs on `/registry`, which the family chose to show
+  as the shops have them and which are never copied into the repository
+  (`ASSETS.md` § The registry), and the OpenStreetMap geometry the map plate is traced from, which is
   ODbL. Its licence requires a visible credit, and **that credit is currently
   off at the client's instruction** — see `ASSETS.md`. Do not add a second
   OSM-derived drawing while it is

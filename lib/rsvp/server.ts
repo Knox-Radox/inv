@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 /**
  * The server's side of the RSVP: the one place the database's secret key is
@@ -23,7 +23,7 @@ function pasted(value: string | undefined): string {
   return (value ?? "").trim().replace(/^["']|["']$/g, "");
 }
 
-function config(): { rest: string; key: string } | null {
+function config(): { rest: string; storage: string; key: string } | null {
   const key = pasted(process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY);
   // The dashboard shows the project's address in more than one place, and one
   // of them already ends `/rest/v1`. Either is accepted.
@@ -31,7 +31,10 @@ function config(): { rest: string; key: string } | null {
   // `SUPABASE_REST_URL` is for tools/rsvp/, which runs PostgREST on its own
   // without Supabase's `/rest/v1` gateway in front of it. Not set in production.
   const rest = pasted(process.env.SUPABASE_REST_URL).replace(/\/+$/, "") || (url ? `${url}/rest/v1` : "");
-  return key && rest ? { rest, key } : null;
+  // Storage is a different service behind the same address. There is none
+  // under tools/rsvp/'s bare PostgREST, so it is only known from SUPABASE_URL.
+  const storage = url ? `${url}/storage/v1` : "";
+  return key && rest ? { rest, storage, key } : null;
 }
 
 export function configured(): boolean {
@@ -122,6 +125,67 @@ export async function call<T>(fn: string, args: Record<string, unknown> = {}): P
         : `${error instanceof Error ? error.message : "request failed"}${cause ? `: ${cause}` : ""}`.slice(0, 300),
     };
     console.error(`rsvp: ${fn} failed: ${JSON.stringify(trouble)}`);
+    return { ok: false, reason: "unavailable", trouble };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Put a picture in the registry's bucket (supabase/registry.sql § The
+ * photographs) and say where it can be seen.
+ *
+ * The bucket is public to read and refuses anything but a small JPEG, PNG or
+ * WebP, whatever this sends. A guest's browser is never given the key: the
+ * family's form posts the picture to this site and this posts it on.
+ */
+export async function storeImage(
+  bytes: Uint8Array,
+  type: "image/jpeg" | "image/png" | "image/webp",
+): Promise<Called<string>> {
+  const cfg = config();
+  if (!cfg || !cfg.storage) {
+    const trouble: Trouble = { why: "not_configured" };
+    console.error("registry: upload not attempted: SUPABASE_URL or SUPABASE_SECRET_KEY is not set in this deployment");
+    return { ok: false, reason: "not_configured", trouble };
+  }
+  const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[type];
+  const name = `${randomUUID()}.${extension}`;
+  const headers: Record<string, string> = {
+    apikey: cfg.key,
+    "Content-Type": type,
+    // Every file has its own name and is never replaced, so it may be kept for
+    // as long as a browser will keep it.
+    "Cache-Control": "max-age=31536000, immutable",
+    "x-upsert": "false",
+  };
+  if (cfg.key.startsWith("eyJ")) headers.Authorization = `Bearer ${cfg.key}`;
+
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), TIMEOUT_MS * 2);
+  try {
+    const res = await fetch(`${cfg.storage}/object/registry/${name}`, {
+      method: "POST",
+      headers,
+      body: bytes as unknown as BodyInit,
+      signal: abort.signal,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const said = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+      const text = (v: unknown) => (typeof v === "string" ? v.slice(0, 300) : undefined);
+      const trouble: Trouble = { why: `http_${res.status}`, status: res.status, message: text(said?.message ?? said?.error) };
+      console.error(`registry: upload failed: ${JSON.stringify(trouble)}`);
+      return { ok: false, reason: "unavailable", trouble };
+    }
+    return { ok: true, data: `${cfg.storage}/object/public/registry/${name}` };
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    const trouble: Trouble = {
+      why: timedOut ? "timeout" : "network",
+      message: timedOut ? "no answer" : (error instanceof Error ? error.message : "request failed").slice(0, 300),
+    };
+    console.error(`registry: upload failed: ${JSON.stringify(trouble)}`);
     return { ok: false, reason: "unavailable", trouble };
   } finally {
     clearTimeout(timer);
