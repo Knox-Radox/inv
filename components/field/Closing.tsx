@@ -75,7 +75,7 @@ export function Closing() {
           {copy.closingSignoff}
           <span className={styles.signature}>{copy.closingSignature}</span>
         </p>
-        <a className={styles.registry} href="/registry">
+        <a className={styles.registry} href="https://www.amazon.com/wedding/share/soorajandadvika" target="_blank" rel="noopener noreferrer">
           {registry.linkLabel}
         </a>
       </div>
