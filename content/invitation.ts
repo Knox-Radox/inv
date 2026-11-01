@@ -366,12 +366,12 @@ export const invitation = {
    */
   rsvp: {
     /**
-     * Replies are taken until the end of Friday, October 30, Central time.
+     * Replies are taken until the end of Thursday, November 20, Central time.
      * The route checks this on the server's clock; the card checks it on the
      * guest's, only to say so sooner.
      */
-    closesAt: "2026-10-31T05:00:00Z" as Instant, // midnight CDT ending Friday the 30th (DST ends Nov 1)
-    replyByDisplay: "Friday, October 30",
+    closesAt: "2026-11-21T06:00:00Z" as Instant, // midnight CST ending Thursday the 20th (DST ended Nov 1)
+    replyByDisplay: "Thursday, November 20",
 
     /**
      * The client's word for it. Four capitals cannot be set in a connecting
